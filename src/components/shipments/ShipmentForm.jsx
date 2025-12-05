@@ -13,7 +13,18 @@ import {
 import { Switch } from '@/components/ui/switch';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
-import { Calculator, Package, Truck } from 'lucide-react';
+import { Calculator, Package, Truck, Check, ChevronsUpDown, AlertCircle } from 'lucide-react';
+import {
+  Command,
+  CommandEmpty,
+  CommandGroup,
+  CommandInput,
+  CommandItem,
+  CommandList,
+} from '@/components/ui/command';
+import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
+import { Progress } from '@/components/ui/progress';
+import { cn } from '@/lib/utils';
 
 const serviceTypes = [
   { value: 'cargo_small', label: 'Cargo (1-5kg)', costBasis: 90, price: 120 },
@@ -32,6 +43,7 @@ export default function ShipmentForm({
   onCancel,
   purchaseOrders = [],
   vendors = [],
+  customers = [],
 }) {
   const [form, setForm] = useState({
     customer_name: '',
@@ -50,6 +62,7 @@ export default function ShipmentForm({
     vendor_id: '',
     vendor_name: '',
     vendor_cost_per_kg: 0,
+    customer_id: '',
     ...shipment,
   });
 
@@ -60,6 +73,9 @@ export default function ShipmentForm({
     total: 0,
     vendorCost: 0,
   });
+
+  const [openCombobox, setOpenCombobox] = useState(false);
+  const [poWeightStatus, setPoWeightStatus] = useState(null);
 
   // Filter POs that are approved/received and have remaining weight
   const availablePOs = purchaseOrders.filter(
@@ -92,6 +108,29 @@ export default function ShipmentForm({
         vendorCost,
         vendorCostPerKg,
       });
+
+      // Update PO weight status
+      if (form.vendor_po_id) {
+        const po = purchaseOrders.find((p) => p.id === form.vendor_po_id);
+        if (po && po.total_weight_kg) {
+          const remaining = po.remaining_weight_kg || 0;
+          const isOverLimit = weight > remaining;
+          const percentUsed = Math.min(100, ((po.allocated_weight_kg || 0) + weight) / po.total_weight_kg * 100);
+
+          setPoWeightStatus({
+            remaining,
+            isOverLimit,
+            percentUsed,
+            total: po.total_weight_kg
+          });
+        } else {
+          setPoWeightStatus(null);
+        }
+      } else {
+        setPoWeightStatus(null);
+      }
+    } else {
+      setPoWeightStatus(null);
     }
   }, [
     form.service_type,
@@ -99,6 +138,8 @@ export default function ShipmentForm({
     form.insurance_opted,
     form.packaging_fee,
     form.vendor_cost_per_kg,
+    form.vendor_po_id,
+    purchaseOrders
   ]);
 
   const handlePOChange = (poId) => {
@@ -127,8 +168,29 @@ export default function ShipmentForm({
     }
   };
 
+  const handleCustomerSelect = (customerName) => {
+    const customer = customers.find((c) => c.name === customerName);
+    if (customer) {
+      setForm({
+        ...form,
+        customer_name: customer.name,
+        customer_phone: customer.phone || '',
+        delivery_address: customer.address || '',
+        customer_id: customer.id,
+      });
+    } else {
+      setForm({ ...form, customer_name: customerName, customer_id: '' });
+    }
+    setOpenCombobox(false);
+  };
+
   const handleSubmit = (e) => {
     e.preventDefault();
+
+    if (poWeightStatus?.isOverLimit) {
+      return; // Prevent submission if over weight
+    }
+
     const service = serviceTypes.find((s) => s.value === form.service_type);
     const weight = parseFloat(form.weight_kg);
 
@@ -143,6 +205,8 @@ export default function ShipmentForm({
       profit: calculated.profit,
       insurance_amount: calculated.insurance || 0,
       tracking_number: form.tracking_number || `BKK${Date.now().toString(36).toUpperCase()}`,
+      origin: 'Bangkok',
+      destination: 'Yangon',
     });
   };
 
@@ -154,14 +218,46 @@ export default function ShipmentForm({
       <CardContent className="p-6">
         <form onSubmit={handleSubmit} className="space-y-6">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="space-y-2">
+            <div className="space-y-2 flex flex-col">
               <Label>Customer Name *</Label>
-              <Input
-                value={form.customer_name}
-                onChange={(e) => setForm({ ...form, customer_name: e.target.value })}
-                placeholder="Enter customer name"
-                required
-              />
+              <Popover open={openCombobox} onOpenChange={setOpenCombobox}>
+                <PopoverTrigger asChild>
+                  <Button
+                    variant="outline"
+                    role="combobox"
+                    aria-expanded={openCombobox}
+                    className="w-full justify-between"
+                  >
+                    {form.customer_name || "Select customer..."}
+                    <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                  </Button>
+                </PopoverTrigger>
+                <PopoverContent className="w-[300px] p-0">
+                  <Command>
+                    <CommandInput placeholder="Search customer..." />
+                    <CommandList>
+                      <CommandEmpty>No customer found.</CommandEmpty>
+                      <CommandGroup>
+                        {customers.map((customer) => (
+                          <CommandItem
+                            key={customer.id}
+                            value={customer.name}
+                            onSelect={handleCustomerSelect}
+                          >
+                            <Check
+                              className={cn(
+                                "mr-2 h-4 w-4",
+                                form.customer_name === customer.name ? "opacity-100" : "opacity-0"
+                              )}
+                            />
+                            {customer.name}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
             </div>
             <div className="space-y-2">
               <Label>Phone Number *</Label>
@@ -196,13 +292,38 @@ export default function ShipmentForm({
                   ))}
                 </SelectContent>
               </Select>
+
               {form.vendor_po_id && (
-                <div className="flex items-center gap-2 text-sm">
-                  <Badge className="bg-blue-100 text-blue-800">
-                    <Package className="w-3 h-3 mr-1" />
-                    {form.vendor_name}
-                  </Badge>
-                  <span className="text-blue-600">Cost: ฿{form.vendor_cost_per_kg}/kg</span>
+                <div className="space-y-2">
+                  <div className="flex items-center justify-between text-sm">
+                    <div className="flex items-center gap-2">
+                      <Badge className="bg-blue-100 text-blue-800">
+                        <Package className="w-3 h-3 mr-1" />
+                        {form.vendor_name}
+                      </Badge>
+                      <span className="text-blue-600">Cost: ฿{form.vendor_cost_per_kg}/kg</span>
+                    </div>
+                    {poWeightStatus && (
+                      <span className={cn(
+                        "font-medium",
+                        poWeightStatus.isOverLimit ? "text-rose-600" : "text-slate-600"
+                      )}>
+                        {poWeightStatus.remaining}kg remaining
+                      </span>
+                    )}
+                  </div>
+
+                  {poWeightStatus && (
+                    <div className="space-y-1">
+                      <Progress value={poWeightStatus.percentUsed} className={cn("h-2", poWeightStatus.isOverLimit ? "bg-rose-100" : "")} indicatorClassName={poWeightStatus.isOverLimit ? "bg-rose-500" : "bg-blue-500"} />
+                      {poWeightStatus.isOverLimit && (
+                        <div className="flex items-center gap-1 text-xs text-rose-600 font-medium">
+                          <AlertCircle className="w-3 h-3" />
+                          Weight exceeds available capacity!
+                        </div>
+                      )}
+                    </div>
+                  )}
                 </div>
               )}
             </div>
@@ -237,6 +358,7 @@ export default function ShipmentForm({
                 onChange={(e) => setForm({ ...form, weight_kg: e.target.value })}
                 placeholder="Enter weight"
                 required
+                className={cn(poWeightStatus?.isOverLimit && "border-rose-500 focus-visible:ring-rose-500")}
               />
             </div>
           </div>
@@ -371,7 +493,11 @@ export default function ShipmentForm({
             <Button type="button" variant="outline" onClick={onCancel} className="flex-1">
               Cancel
             </Button>
-            <Button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-700">
+            <Button
+              type="submit"
+              className="flex-1 bg-blue-600 hover:bg-blue-700"
+              disabled={poWeightStatus?.isOverLimit}
+            >
               {shipment ? 'Update Shipment' : 'Create Shipment'}
             </Button>
           </div>

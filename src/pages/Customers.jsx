@@ -15,6 +15,17 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Checkbox } from '@/components/ui/checkbox';
 import {
   Plus,
@@ -32,6 +43,7 @@ import {
   AlertTriangle,
   Clock,
   Star,
+  Trash2,
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
@@ -53,6 +65,7 @@ export default function Customers() {
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [newCustomer, setNewCustomer] = useState(null);
   const [sendWelcomeEmail, setSendWelcomeEmail] = useState(true);
+  const [customerToDelete, setCustomerToDelete] = useState(null);
 
   const queryClient = useQueryClient();
 
@@ -112,6 +125,18 @@ export default function Customers() {
       queryClient.invalidateQueries({ queryKey: ['customers'] });
       setShowForm(false);
       setEditingCustomer(null);
+      toast.success('Customer updated successfully');
+    },
+  });
+
+  const deleteMutation = useMutation({
+    mutationFn: (id) => db.customers.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['customers'] });
+      setShowForm(false);
+      setEditingCustomer(null);
+      setCustomerToDelete(null);
+      toast.success('Customer deleted successfully');
     },
   });
 
@@ -148,6 +173,12 @@ export default function Customers() {
       referred_by: customer.referred_by || '',
     });
     setShowForm(true);
+  };
+
+  const handleDelete = () => {
+    if (customerToDelete) {
+      deleteMutation.mutate(customerToDelete.id);
+    }
   };
 
   const resetForm = () => {
@@ -544,6 +575,16 @@ export default function Customers() {
               )}
 
               <div className="flex gap-3 pt-4">
+                {editingCustomer && (
+                  <Button
+                    type="button"
+                    variant="destructive"
+                    onClick={() => setCustomerToDelete(editingCustomer)}
+                    className="px-3"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                )}
                 <Button
                   type="button"
                   variant="outline"
@@ -562,6 +603,28 @@ export default function Customers() {
             </form>
           </DialogContent>
         </Dialog>
+
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog open={!!customerToDelete} onOpenChange={() => setCustomerToDelete(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete the customer
+                "{customerToDelete?.name}" and remove their data from our servers.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDelete}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
 
         {/* Onboarding Modal for New Customers */}
         <Dialog open={showOnboarding} onOpenChange={setShowOnboarding}>

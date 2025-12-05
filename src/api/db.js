@@ -56,7 +56,7 @@ const createEntityClient = (tableName) => ({
         return true;
     },
 
-    filter: async (filters, sortString) => {
+    filter: async (filters, sortString, limit) => {
         let query = supabase.from(tableName).select('*');
 
         // Apply filters
@@ -67,6 +67,10 @@ const createEntityClient = (tableName) => ({
         if (sortString) {
             const { column, ascending } = parseSort(sortString);
             query = query.order(column, { ascending });
+        }
+
+        if (limit) {
+            query = query.limit(limit);
         }
 
         const { data, error } = await query;

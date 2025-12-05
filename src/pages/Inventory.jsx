@@ -18,6 +18,17 @@ import {
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Progress } from '@/components/ui/progress';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
+import {
   Package,
   Plus,
   Search,
@@ -30,6 +41,9 @@ import {
   ArrowDownCircle,
   RefreshCw,
   Bell,
+  HelpCircle,
+  Trash2,
+  MapPin,
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
@@ -40,6 +54,9 @@ import {
   getReorderAlerts,
 } from '@/components/inventory/InventoryAnalytics';
 import { triggerLowStockAlert } from '@/components/notifications/NotificationService';
+import BulkInventoryActions from '@/components/inventory/BulkInventoryActions';
+import InventoryCharts from '@/components/inventory/InventoryCharts';
+import { startInventoryTour } from '@/components/common/TourGuide';
 
 const categoryConfig = {
   packaging: { label: 'Packaging', icon: Box, color: 'bg-blue-100 text-blue-800' },
@@ -55,6 +72,7 @@ export default function Inventory() {
   const [searchQuery, setSearchQuery] = useState('');
   const [categoryFilter, setCategoryFilter] = useState('all');
   const [activeTab, setActiveTab] = useState('inventory');
+  const [itemToDelete, setItemToDelete] = useState(null);
 
   const queryClient = useQueryClient();
 
@@ -73,6 +91,11 @@ export default function Inventory() {
     queryFn: () => db.shipments.list('-created_date', 200),
   });
 
+  const { data: vendors = [] } = useQuery({
+    queryKey: ['vendors'],
+    queryFn: () => db.vendors.list('name'),
+  });
+
   const createItemMutation = useMutation({
     mutationFn: (data) => db.inventoryItems.create(data),
     onSuccess: () => {
@@ -86,6 +109,15 @@ export default function Inventory() {
     mutationFn: ({ id, data }) => db.inventoryItems.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['inventory'] });
+    },
+  });
+
+  const deleteItemMutation = useMutation({
+    mutationFn: (id) => db.inventoryItems.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['inventory'] });
+      setItemToDelete(null);
+      toast.success('Item deleted successfully');
     },
   });
 
@@ -160,9 +192,37 @@ export default function Inventory() {
     reorder_point: 10,
     reorder_quantity: 50,
     unit_cost: 0,
-    supplier: '',
+    vendor_id: '',
+    location: '',
     lead_time_days: 7,
   });
+
+  const handleBulkImport = async (importedItems) => {
+    try {
+      // Process imports sequentially to avoid overwhelming the DB
+      for (const item of importedItems) {
+        // Check if item exists by SKU
+        const existing = items.find(i => i.sku === item.sku && item.sku);
+
+        if (existing) {
+          await db.inventoryItems.update(existing.id, item);
+        } else {
+          await db.inventoryItems.create(item);
+        }
+      }
+      queryClient.invalidateQueries({ queryKey: ['inventory'] });
+      toast.success(`Successfully processed ${importedItems.length} items`);
+    } catch (error) {
+      console.error('Import error:', error);
+      toast.error('Failed to import items');
+    }
+  };
+
+  const handleDeleteItem = () => {
+    if (itemToDelete) {
+      deleteItemMutation.mutate(itemToDelete.id);
+    }
+  };
 
   const [movementForm, setMovementForm] = useState({
     movement_type: 'in',
@@ -175,12 +235,17 @@ export default function Inventory() {
     <div className="min-h-screen bg-slate-50 p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4" id="inventory-header">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-slate-900">Inventory Management</h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl md:text-3xl font-bold text-slate-900">Inventory Management</h1>
+              <Button variant="ghost" size="icon" onClick={startInventoryTour} className="text-slate-400 hover:text-blue-600" title="Take a Tour">
+                <HelpCircle className="w-5 h-5" />
+              </Button>
+            </div>
             <p className="text-slate-500 mt-1">Track stock levels and manage supplies</p>
           </div>
-          <Button onClick={() => setShowForm(true)} className="bg-blue-600 hover:bg-blue-700">
+          <Button onClick={() => setShowForm(true)} className="bg-blue-600 hover:bg-blue-700" id="add-item-btn">
             <Plus className="w-4 h-4 mr-2" />
             Add Item
           </Button>
@@ -239,6 +304,10 @@ export default function Inventory() {
             <TabsTrigger value="inventory" className="text-xs sm:text-sm">
               Inventory
             </TabsTrigger>
+            <TabsTrigger value="analytics" className="text-xs sm:text-sm">
+              <TrendingUp className="w-3 h-3 sm:w-4 sm:h-4 mr-1" />
+              Analytics
+            </TabsTrigger>
             <TabsTrigger value="alerts" className="gap-1 sm:gap-2 text-xs sm:text-sm">
               <Bell className="w-3 h-3 sm:w-4 sm:h-4" />
               Alerts{' '}
@@ -251,11 +320,15 @@ export default function Inventory() {
             </TabsTrigger>
           </TabsList>
 
+          <TabsContent value="analytics" className="mt-4">
+            <InventoryCharts movements={movements} items={items} />
+          </TabsContent>
+
           <TabsContent value="inventory" className="space-y-4 mt-4">
             {/* Filters */}
             <Card className="border-0 shadow-sm">
-              <CardContent className="p-4 flex flex-col md:flex-row gap-4">
-                <div className="relative flex-1">
+              <CardContent className="p-4 flex flex-col md:flex-row gap-4 items-center">
+                <div className="relative flex-1 w-full">
                   <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
                   <Input
                     placeholder="Search items..."
@@ -276,6 +349,9 @@ export default function Inventory() {
                     <SelectItem value="goods">Goods</SelectItem>
                   </SelectContent>
                 </Select>
+                <div id="bulk-actions">
+                  <BulkInventoryActions items={items} onImport={handleBulkImport} />
+                </div>
               </CardContent>
             </Card>
 
@@ -309,6 +385,11 @@ export default function Inventory() {
                             <div>
                               <p className="font-semibold text-slate-900">{item.name}</p>
                               <p className="text-xs text-slate-500">{item.sku}</p>
+                              {item.location && (
+                                <p className="text-xs text-blue-600 flex items-center gap-1 mt-1">
+                                  <MapPin className="w-3 h-3" /> {item.location}
+                                </p>
+                              )}
                             </div>
                           </div>
                           <Badge className={status.color}>{status.status.replace('_', ' ')}</Badge>
@@ -372,6 +453,14 @@ export default function Inventory() {
                             }}
                           >
                             <ArrowUpCircle className="w-4 h-4 mr-1" /> Restock
+                          </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 px-2"
+                            onClick={() => setItemToDelete(item)}
+                          >
+                            <Trash2 className="w-4 h-4" />
                           </Button>
                         </div>
                       </CardContent>
@@ -605,12 +694,29 @@ export default function Inventory() {
                     onChange={(e) => setForm({ ...form, lead_time_days: +e.target.value })}
                   />
                 </div>
-                <div className="col-span-2">
-                  <Label>Supplier</Label>
+                <div>
+                  <Label>Location</Label>
                   <Input
-                    value={form.supplier}
-                    onChange={(e) => setForm({ ...form, supplier: e.target.value })}
+                    value={form.location}
+                    onChange={(e) => setForm({ ...form, location: e.target.value })}
+                    placeholder="e.g. Warehouse A - Shelf 1"
                   />
+                </div>
+                <div className="col-span-2">
+                  <Label>Supplier (Vendor)</Label>
+                  <Select
+                    value={form.vendor_id}
+                    onValueChange={(v) => setForm({ ...form, vendor_id: v })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a vendor" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      {vendors.map(v => (
+                        <SelectItem key={v.id} value={v.id}>{v.name}</SelectItem>
+                      ))}
+                    </SelectContent>
+                  </Select>
                 </div>
               </div>
               <div className="flex gap-3 pt-4">
@@ -710,6 +816,28 @@ export default function Inventory() {
             </form>
           </DialogContent>
         </Dialog>
+
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog open={!!itemToDelete} onOpenChange={() => setItemToDelete(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete the item
+                "{itemToDelete?.name}" and remove it from our servers.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDeleteItem}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );

@@ -16,6 +16,16 @@ import {
 } from '@/components/ui/select';
 import { Progress } from '@/components/ui/progress';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
   Plus,
   Search,
   Building2,
@@ -33,6 +43,7 @@ import {
   XCircle,
   BarChart3,
   FileText,
+  Trash2,
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
@@ -92,6 +103,7 @@ export default function Vendors() {
   const [searchQuery, setSearchQuery] = useState('');
   const [typeFilter, setTypeFilter] = useState('all');
   const [activeTab, setActiveTab] = useState('vendors');
+  const [vendorToDelete, setVendorToDelete] = useState(null);
 
   const queryClient = useQueryClient();
 
@@ -136,6 +148,15 @@ export default function Vendors() {
       setShowForm(false);
       setEditingVendor(null);
       toast.success('Vendor updated');
+    },
+  });
+
+  const deleteVendorMutation = useMutation({
+    mutationFn: (id) => db.vendors.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['vendors'] });
+      setVendorToDelete(null);
+      toast.success('Vendor deleted successfully');
     },
   });
 
@@ -220,6 +241,12 @@ export default function Vendors() {
       updateVendorMutation.mutate({ id: editingVendor.id, data });
     } else {
       createVendorMutation.mutate(data);
+    }
+  };
+
+  const handleDeleteVendor = () => {
+    if (vendorToDelete) {
+      deleteVendorMutation.mutate(vendorToDelete.id);
     }
   };
 
@@ -478,6 +505,19 @@ export default function Vendors() {
                             <span>{vendor.metrics?.onTimeRate || 100}% on-time</span>
                           </div>
                         </div>
+                        <div className="pt-3 flex justify-end">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="text-rose-600 hover:text-rose-700 hover:bg-rose-50 px-2"
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              setVendorToDelete(vendor);
+                            }}
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
+                        </div>
                       </CardContent>
                     </Card>
                   );
@@ -712,6 +752,28 @@ export default function Vendors() {
             onCancel={() => setShowOrderForm(false)}
           />
         </Dialog>
+
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog open={!!vendorToDelete} onOpenChange={() => setVendorToDelete(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete the vendor
+                "{vendorToDelete?.name}" and remove them from our servers.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDeleteVendor}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );

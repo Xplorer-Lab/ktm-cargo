@@ -14,6 +14,17 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import SegmentCard from '@/components/customers/SegmentCard';
 import CustomerSegmentTable from '@/components/customers/CustomerSegmentTable';
 import CampaignForm from '@/components/customers/CampaignForm';
@@ -55,6 +66,7 @@ export default function CustomerSegments() {
   const [searchQuery, setSearchQuery] = useState('');
   const [valueTierFilter, setValueTierFilter] = useState('all');
   const [activeTab, setActiveTab] = useState('segments');
+  const [campaignToDelete, setCampaignToDelete] = useState(null);
 
   const queryClient = useQueryClient();
 
@@ -91,6 +103,15 @@ export default function CustomerSegments() {
     mutationFn: ({ id, data }) => db.campaigns.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['campaigns'] });
+    },
+  });
+
+  const deleteCampaignMutation = useMutation({
+    mutationFn: (id) => db.campaigns.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['campaigns'] });
+      setCampaignToDelete(null);
+      toast.success('Campaign deleted successfully');
     },
   });
 
@@ -226,6 +247,12 @@ export default function CustomerSegments() {
     }
   };
 
+  const handleDeleteCampaign = () => {
+    if (campaignToDelete) {
+      deleteCampaignMutation.mutate(campaignToDelete.id);
+    }
+  };
+
   // Handle customer selection
   const handleSelectCustomer = (customerId, checked) => {
     if (checked) {
@@ -321,8 +348,8 @@ export default function CustomerSegments() {
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <Card
                 className={`border-2 cursor-pointer transition-all hover:shadow-md ${selectedSegment === 'high_value'
-                    ? 'border-emerald-500 bg-emerald-50'
-                    : 'border-transparent'
+                  ? 'border-emerald-500 bg-emerald-50'
+                  : 'border-transparent'
                   }`}
                 onClick={() => setSelectedSegment('high_value')}
               >
@@ -341,8 +368,8 @@ export default function CustomerSegments() {
 
               <Card
                 className={`border-2 cursor-pointer transition-all hover:shadow-md ${selectedSegment === 'loyal'
-                    ? 'border-amber-500 bg-amber-50'
-                    : 'border-transparent'
+                  ? 'border-amber-500 bg-amber-50'
+                  : 'border-transparent'
                   }`}
                 onClick={() => setSelectedSegment('loyal')}
               >
@@ -359,8 +386,8 @@ export default function CustomerSegments() {
 
               <Card
                 className={`border-2 cursor-pointer transition-all hover:shadow-md ${selectedSegment === 'at_risk'
-                    ? 'border-rose-500 bg-rose-50'
-                    : 'border-transparent'
+                  ? 'border-rose-500 bg-rose-50'
+                  : 'border-transparent'
                   }`}
                 onClick={() => setSelectedSegment('at_risk')}
               >
@@ -379,8 +406,8 @@ export default function CustomerSegments() {
 
               <Card
                 className={`border-2 cursor-pointer transition-all hover:shadow-md ${selectedSegment === 'new_customers'
-                    ? 'border-blue-500 bg-blue-50'
-                    : 'border-transparent'
+                  ? 'border-blue-500 bg-blue-50'
+                  : 'border-transparent'
                   }`}
                 onClick={() => setSelectedSegment('new_customers')}
               >
@@ -414,8 +441,8 @@ export default function CustomerSegments() {
                       <Card
                         key={segment.id}
                         className={`border-2 cursor-pointer transition-all hover:shadow-md ${selectedSegment === `custom_${segment.id}`
-                            ? `border-${segment.color || 'blue'}-500 bg-${segment.color || 'blue'}-50`
-                            : 'border-transparent'
+                          ? `border-${segment.color || 'blue'}-500 bg-${segment.color || 'blue'}-50`
+                          : 'border-transparent'
                           }`}
                         onClick={() => setSelectedSegment(`custom_${segment.id}`)}
                       >
@@ -586,18 +613,18 @@ export default function CustomerSegments() {
                         <div className="flex items-start gap-4">
                           <div
                             className={`p-3 rounded-xl ${campaign.status === 'active'
-                                ? 'bg-emerald-100'
-                                : campaign.status === 'completed'
-                                  ? 'bg-slate-100'
-                                  : 'bg-blue-100'
+                              ? 'bg-emerald-100'
+                              : campaign.status === 'completed'
+                                ? 'bg-slate-100'
+                                : 'bg-blue-100'
                               }`}
                           >
                             <Megaphone
                               className={`w-5 h-5 ${campaign.status === 'active'
-                                  ? 'text-emerald-600'
-                                  : campaign.status === 'completed'
-                                    ? 'text-slate-600'
-                                    : 'text-blue-600'
+                                ? 'text-emerald-600'
+                                : campaign.status === 'completed'
+                                  ? 'text-slate-600'
+                                  : 'text-blue-600'
                                 }`}
                             />
                           </div>
@@ -651,16 +678,27 @@ export default function CustomerSegments() {
                             <p className="text-xs text-slate-500">Converted</p>
                           </div>
 
-                          {campaign.status === 'draft' && (
+                          <div className="flex flex-col gap-2">
+                            {campaign.status === 'draft' && (
+                              <Button
+                                onClick={() => handleLaunchCampaign(campaign)}
+                                size="sm"
+                                className="bg-emerald-600 hover:bg-emerald-700 w-full"
+                              >
+                                <Send className="w-4 h-4 mr-1" />
+                                Launch
+                              </Button>
+                            )}
                             <Button
-                              onClick={() => handleLaunchCampaign(campaign)}
+                              variant="ghost"
                               size="sm"
-                              className="bg-emerald-600 hover:bg-emerald-700"
+                              className="text-rose-600 hover:text-rose-700 hover:bg-rose-50"
+                              onClick={() => setCampaignToDelete(campaign)}
                             >
-                              <Send className="w-4 h-4 mr-1" />
-                              Launch
+                              <Trash2 className="w-4 h-4 mr-1" />
+                              Delete
                             </Button>
-                          )}
+                          </div>
                         </div>
                       </div>
                     </CardContent>
@@ -734,6 +772,28 @@ export default function CustomerSegments() {
             />
           </DialogContent>
         </Dialog>
+
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog open={!!campaignToDelete} onOpenChange={() => setCampaignToDelete(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete the campaign
+                "{campaignToDelete?.name}" and remove it from our servers.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDeleteCampaign}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );

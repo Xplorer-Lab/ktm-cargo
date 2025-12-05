@@ -16,6 +16,16 @@ import {
 } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
   Users,
   UserPlus,
   Mail,
@@ -33,6 +43,7 @@ import { AuditActions } from '@/components/audit/AuditService';
 export default function StaffManagement() {
   const [showInviteForm, setShowInviteForm] = useState(false);
   const [editingUser, setEditingUser] = useState(null);
+  const [userToDelete, setUserToDelete] = useState(null);
   const [inviteData, setInviteData] = useState({
     email: '',
     full_name: '',
@@ -53,6 +64,15 @@ export default function StaffManagement() {
       queryClient.invalidateQueries({ queryKey: ['all-users'] });
       setEditingUser(null);
       toast.success('User updated');
+    },
+  });
+
+  const deleteUserMutation = useMutation({
+    mutationFn: (id) => db.users.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['all-users'] });
+      setUserToDelete(null);
+      toast.success('User deleted successfully');
     },
   });
 
@@ -101,6 +121,13 @@ export default function StaffManagement() {
     });
     if (targetUser.is_active !== false) {
       AuditActions.userDeactivated(targetUser.id, targetUser.full_name);
+    }
+  };
+
+  const handleDeleteUser = () => {
+    if (userToDelete) {
+      deleteUserMutation.mutate(userToDelete.id);
+      AuditActions.userDeleted(userToDelete.id, userToDelete.full_name);
     }
   };
 
@@ -249,6 +276,15 @@ export default function StaffManagement() {
                               <XCircle className="w-4 h-4 text-rose-600" />
                             )}
                           </Button>
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="text-rose-600 hover:text-rose-700 hover:bg-rose-50"
+                            onClick={() => setUserToDelete(user)}
+                            title="Delete User"
+                          >
+                            <Trash2 className="w-4 h-4" />
+                          </Button>
                         </>
                       )}
                     </div>
@@ -336,6 +372,28 @@ export default function StaffManagement() {
           </div>
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!userToDelete} onOpenChange={() => setUserToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the user account for "
+              {userToDelete?.full_name}" and remove their access to the system.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteUser}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

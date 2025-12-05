@@ -38,6 +38,7 @@ import {
   History,
   Receipt,
   Mail,
+  HelpCircle,
 } from 'lucide-react';
 import { format } from 'date-fns';
 import { toast } from 'sonner';
@@ -79,6 +80,8 @@ const PO_STATUS_CONFIG = {
   received: { label: 'Received', color: 'bg-emerald-100 text-emerald-800', icon: PackageCheck },
   cancelled: { label: 'Cancelled', color: 'bg-rose-100 text-rose-800', icon: AlertTriangle },
 };
+
+import { startTour } from '@/components/common/TourGuide';
 
 export default function Procurement() {
   const [activeTab, setActiveTab] = useState('orders');
@@ -378,11 +381,16 @@ export default function Procurement() {
     <div className="min-h-screen bg-slate-50 p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4" id="procurement-header">
           <div>
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900">
-              Procurement Portal
-            </h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900">
+                Procurement Portal
+              </h1>
+              <Button variant="ghost" size="icon" onClick={() => startTour('procurement')} className="text-slate-400 hover:text-blue-600" title="Take a Tour">
+                <HelpCircle className="w-5 h-5" />
+              </Button>
+            </div>
             <p className="text-sm text-slate-500 mt-1">Manage vendors, orders, and payments</p>
           </div>
           <div className="flex flex-wrap gap-2 sm:gap-3">
@@ -647,7 +655,7 @@ export default function Procurement() {
                   <Plus className="w-4 h-4 mr-2" /> Add Vendor
                 </Button>
               </CardHeader>
-              <CardContent>
+              <CardContent id="vendor-list">
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                   {vendors.map((vendor) => (
                     <Card

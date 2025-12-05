@@ -31,6 +31,7 @@ import {
   Clock,
   XCircle,
   Send,
+  HelpCircle,
 } from 'lucide-react';
 import { format, parseISO, isWithinInterval, subDays } from 'date-fns';
 import { toast } from 'sonner';
@@ -53,6 +54,8 @@ const TYPE_CONFIG = {
     icon: ShoppingBag,
   },
 };
+
+import { startTour } from '@/components/common/TourGuide';
 
 export default function Invoices() {
   const [searchQuery, setSearchQuery] = useState('');
@@ -147,9 +150,14 @@ export default function Invoices() {
     <div className="min-h-screen bg-slate-50 p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4" id="invoices-header">
           <div>
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900">Invoices</h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900">Invoices</h1>
+              <Button variant="ghost" size="icon" onClick={() => startTour('invoices')} className="text-slate-400 hover:text-blue-600" title="Take a Tour">
+                <HelpCircle className="w-5 h-5" />
+              </Button>
+            </div>
             <p className="text-sm text-slate-500 mt-1">
               Manage customer invoices for shipments and shopping orders
             </p>
@@ -157,7 +165,7 @@ export default function Invoices() {
         </div>
 
         {/* Stats Cards */}
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4" id="invoice-stats">
           <Card className="border-0 shadow-sm bg-gradient-to-br from-blue-50 to-blue-100">
             <CardContent className="p-3 sm:p-4">
               <div className="flex items-center gap-2 sm:gap-3">
@@ -302,7 +310,7 @@ export default function Invoices() {
               ))}
           </div>
         ) : filteredInvoices.length > 0 ? (
-          <div className="space-y-3">
+          <div className="space-y-3" id="invoice-list">
             {filteredInvoices.map((invoice) => {
               const statusConfig = STATUS_CONFIG[invoice.status] || STATUS_CONFIG.issued;
               const typeConfig = TYPE_CONFIG[invoice.invoice_type] || TYPE_CONFIG.shipment;

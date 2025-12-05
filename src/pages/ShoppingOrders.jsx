@@ -57,6 +57,7 @@ import {
   Scale,
   FileText,
   Receipt,
+  HelpCircle,
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { format } from 'date-fns';
@@ -83,6 +84,8 @@ const PAYMENT_CONFIG = {
   deposit_paid: { label: 'Deposit Paid', color: 'bg-amber-100 text-amber-800' },
   paid: { label: 'Paid', color: 'bg-emerald-100 text-emerald-800' },
 };
+
+import { startTour } from '@/components/common/TourGuide';
 
 export default function ShoppingOrders() {
   const [showForm, setShowForm] = useState(false);
@@ -514,12 +517,18 @@ export default function ShoppingOrders() {
     <div className="min-h-screen bg-slate-50 p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4" id="orders-header">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-slate-900">Shopping Orders</h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl md:text-3xl font-bold text-slate-900">Shopping Orders</h1>
+              <Button variant="ghost" size="icon" onClick={() => startTour('shoppingOrders')} className="text-slate-400 hover:text-blue-600" title="Take a Tour">
+                <HelpCircle className="w-5 h-5" />
+              </Button>
+            </div>
             <p className="text-slate-500 mt-1">Personal shopping service with cargo delivery</p>
           </div>
           <Button
+            id="new-order-btn"
             onClick={() => {
               resetForm();
               setShowForm(true);

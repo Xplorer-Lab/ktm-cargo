@@ -17,6 +17,16 @@ import {
 } from '@/components/ui/select';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
+import {
   Plus,
   Pencil,
   Trash2,
@@ -44,6 +54,8 @@ export default function PricingManager() {
   const [showSurchargeForm, setShowSurchargeForm] = useState(false);
   const [editingPricing, setEditingPricing] = useState(null);
   const [editingSurcharge, setEditingSurcharge] = useState(null);
+  const [pricingToDelete, setPricingToDelete] = useState(null);
+  const [surchargeToDelete, setSurchargeToDelete] = useState(null);
 
   const queryClient = useQueryClient();
 
@@ -80,6 +92,7 @@ export default function PricingManager() {
     mutationFn: (id) => db.servicePricing.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['service-pricing'] });
+      setPricingToDelete(null);
       toast.success('Pricing deleted');
     },
   });
@@ -107,6 +120,7 @@ export default function PricingManager() {
     mutationFn: (id) => db.surcharges.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['surcharges'] });
+      setSurchargeToDelete(null);
       toast.success('Surcharge deleted');
     },
   });
@@ -121,6 +135,18 @@ export default function PricingManager() {
   }));
 
   const totalActiveSurcharges = surcharges.filter((s) => s.is_active).length;
+
+  const handleDeletePricing = () => {
+    if (pricingToDelete) {
+      deletePricingMutation.mutate(pricingToDelete.id);
+    }
+  };
+
+  const handleDeleteSurcharge = () => {
+    if (surchargeToDelete) {
+      deleteSurchargeMutation.mutate(surchargeToDelete.id);
+    }
+  };
 
   return (
     <div className="space-y-6">
@@ -267,7 +293,7 @@ export default function PricingManager() {
                             size="sm"
                             variant="ghost"
                             className="text-rose-600 hover:text-rose-700 hover:bg-rose-50"
-                            onClick={() => deletePricingMutation.mutate(pricing.id)}
+                            onClick={() => setPricingToDelete(pricing)}
                           >
                             <Trash2 className="w-4 h-4" />
                           </Button>
@@ -363,7 +389,7 @@ export default function PricingManager() {
                           size="sm"
                           variant="ghost"
                           className="text-rose-600 hover:text-rose-700 hover:bg-rose-50"
-                          onClick={() => deleteSurchargeMutation.mutate(surcharge.id)}
+                          onClick={() => setSurchargeToDelete(surcharge)}
                         >
                           <Trash2 className="w-4 h-4" />
                         </Button>
@@ -444,6 +470,51 @@ export default function PricingManager() {
           />
         </DialogContent>
       </Dialog>
+
+      {/* Delete Pricing Confirmation Dialog */}
+      <AlertDialog open={!!pricingToDelete} onOpenChange={() => setPricingToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the pricing for "
+              {pricingToDelete?.display_name || pricingToDelete?.service_type}" and remove it from
+              our servers.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeletePricing}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
+
+      {/* Delete Surcharge Confirmation Dialog */}
+      <AlertDialog open={!!surchargeToDelete} onOpenChange={() => setSurchargeToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the surcharge "
+              {surchargeToDelete?.name}" and remove it from our servers.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteSurcharge}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

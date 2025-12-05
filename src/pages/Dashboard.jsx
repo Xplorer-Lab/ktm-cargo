@@ -32,6 +32,8 @@ import {
 } from '@/components/customers/CustomerSegmentationEngine';
 import { checkSegmentHealth } from '@/components/notifications/NotificationService';
 
+import { startTour } from '@/components/common/TourGuide';
+
 export default function Dashboard() {
   const { data: shipments = [], isLoading: shipmentsLoading } = useQuery({
     queryKey: ['shipments'],
@@ -106,9 +108,14 @@ export default function Dashboard() {
     <div className="min-h-screen bg-slate-50 p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-8">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4" id="dashboard-header">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-slate-900">Dashboard</h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-2xl md:text-3xl font-bold text-slate-900">Dashboard</h1>
+              <Button variant="ghost" size="icon" onClick={() => startTour('dashboard')} className="text-slate-400 hover:text-blue-600" title="Take a Tour">
+                <Sparkles className="w-5 h-5" />
+              </Button>
+            </div>
             <p className="text-slate-500 mt-1">Bangkok-Yangon Cargo & Shopping Services</p>
           </div>
           <div className="flex gap-3">
@@ -128,7 +135,7 @@ export default function Dashboard() {
         </div>
 
         {/* Stats Grid */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4" id="kpi-cards">
           {isLoading ? (
             Array(4)
               .fill(0)
@@ -316,7 +323,7 @@ export default function Dashboard() {
         {/* Recent Shipments */}
         <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
           <div className="lg:col-span-2">
-            <Card className="border-0 shadow-sm">
+            <Card className="border-0 shadow-sm" id="recent-activity">
               <CardHeader className="flex flex-row items-center justify-between">
                 <CardTitle className="text-lg">Recent Shipments</CardTitle>
                 <Link to={createPageUrl('Shipments')}>

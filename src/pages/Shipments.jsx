@@ -26,8 +26,21 @@ import {
   CheckCircle,
   AlertCircle,
   Star,
+  HelpCircle,
+  Trash2,
 } from 'lucide-react';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from '@/components/ui/alert-dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
 import { sendFeedbackRequest } from '@/components/feedback/FeedbackRequestService';
@@ -40,12 +53,15 @@ import {
 import { updateVendorOnDelivery } from '@/components/vendors/VendorPerformanceService';
 import { processShipmentForInvoicing } from '@/components/invoices/InvoiceGenerationService';
 
+import { startTour } from '@/components/common/TourGuide';
+
 export default function Shipments() {
   const [showForm, setShowForm] = useState(false);
   const [editingShipment, setEditingShipment] = useState(null);
   const [selectedShipment, setSelectedShipment] = useState(null);
   const [statusFilter, setStatusFilter] = useState('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [shipmentToDelete, setShipmentToDelete] = useState(null);
 
   const queryClient = useQueryClient();
 
@@ -112,6 +128,16 @@ export default function Shipments() {
     },
   });
 
+  const deleteMutation = useMutation({
+    mutationFn: (id) => db.shipments.delete(id),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['shipments'] });
+      setSelectedShipment(null);
+      setShipmentToDelete(null);
+      toast.success('Shipment deleted successfully');
+    },
+  });
+
   const handleSubmit = (data) => {
     if (editingShipment) {
       updateMutation.mutate({ id: editingShipment.id, data });
@@ -124,6 +150,12 @@ export default function Shipments() {
     setEditingShipment(shipment);
     setShowForm(true);
     setSelectedShipment(null);
+  };
+
+  const handleDelete = () => {
+    if (shipmentToDelete) {
+      deleteMutation.mutate(shipmentToDelete.id);
+    }
   };
 
   const handleStatusChange = async (shipment, newStatus) => {
@@ -228,12 +260,18 @@ export default function Shipments() {
     <div className="min-h-screen bg-slate-50 p-4 md:p-8">
       <div className="max-w-7xl mx-auto space-y-6">
         {/* Header */}
-        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+        <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4" id="shipments-header">
           <div>
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900">Shipments</h1>
+            <div className="flex items-center gap-3">
+              <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900">Shipments</h1>
+              <Button variant="ghost" size="icon" onClick={() => startTour('shipments')} className="text-slate-400 hover:text-blue-600" title="Take a Tour">
+                <HelpCircle className="w-5 h-5" />
+              </Button>
+            </div>
             <p className="text-sm text-slate-500 mt-1">Manage cargo shipments to Yangon</p>
           </div>
           <Button
+            id="create-shipment-btn"
             onClick={() => {
               setEditingShipment(null);
               setShowForm(true);
@@ -247,7 +285,7 @@ export default function Shipments() {
 
         {/* Filters */}
         <Card className="border-0 shadow-sm">
-          <CardContent className="p-4">
+          <CardContent className="p-4" id="shipment-filters">
             <div className="flex flex-col md:flex-row gap-4">
               <div className="relative flex-1">
                 <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-slate-400" />
@@ -329,6 +367,12 @@ export default function Shipments() {
         {/* New/Edit Form Dialog */}
         <Dialog open={showForm} onOpenChange={setShowForm}>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-0 bg-transparent border-0 shadow-none">
+            <DialogTitle className="sr-only">
+              {editingShipment ? 'Edit Shipment' : 'New Shipment'}
+            </DialogTitle>
+            <DialogDescription className="sr-only">
+              Form to create or edit a shipment details
+            </DialogDescription>
             <ShipmentForm
               shipment={editingShipment}
               onSubmit={handleSubmit}
@@ -338,6 +382,7 @@ export default function Shipments() {
               }}
               purchaseOrders={purchaseOrders}
               vendors={vendors}
+              customers={customers}
             />
           </DialogContent>
         </Dialog>
@@ -345,6 +390,10 @@ export default function Shipments() {
         {/* Shipment Details Dialog */}
         <Dialog open={!!selectedShipment} onOpenChange={() => setSelectedShipment(null)}>
           <DialogContent className="max-w-lg">
+            <DialogTitle className="sr-only">Shipment Details</DialogTitle>
+            <DialogDescription className="sr-only">
+              Detailed view of shipment {selectedShipment?.tracking_number}
+            </DialogDescription>
             {selectedShipment && (
               <div className="space-y-6">
                 <div className="flex items-start justify-between">
@@ -501,6 +550,13 @@ export default function Shipments() {
 
                 <div className="flex gap-3 pt-4">
                   <Button
+                    variant="destructive"
+                    onClick={() => setShipmentToDelete(selectedShipment)}
+                    className="px-3"
+                  >
+                    <Trash2 className="w-4 h-4" />
+                  </Button>
+                  <Button
                     variant="outline"
                     onClick={() => setSelectedShipment(null)}
                     className="flex-1"
@@ -515,7 +571,30 @@ export default function Shipments() {
             )}
           </DialogContent>
         </Dialog>
+
+        {/* Delete Confirmation Dialog */}
+        <AlertDialog open={!!shipmentToDelete} onOpenChange={() => setShipmentToDelete(null)}>
+          <AlertDialogContent>
+            <AlertDialogHeader>
+              <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+              <AlertDialogDescription>
+                This action cannot be undone. This will permanently delete the shipment
+                "{shipmentToDelete?.tracking_number}" and remove it from our servers.
+              </AlertDialogDescription>
+            </AlertDialogHeader>
+            <AlertDialogFooter>
+              <AlertDialogCancel>Cancel</AlertDialogCancel>
+              <AlertDialogAction
+                onClick={handleDelete}
+                className="bg-red-600 hover:bg-red-700"
+              >
+                Delete
+              </AlertDialogAction>
+            </AlertDialogFooter>
+          </AlertDialogContent>
+        </AlertDialog>
       </div>
     </div>
   );
 }
+

@@ -16,6 +16,16 @@ import {
 } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from '@/components/ui/alert-dialog';
 import { db } from '@/api/db';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import {
@@ -88,6 +98,7 @@ const PLACEHOLDERS = [
 export default function NotificationTemplateManager() {
   const [showForm, setShowForm] = useState(false);
   const [editingTemplate, setEditingTemplate] = useState(null);
+  const [templateToDelete, setTemplateToDelete] = useState(null);
   const [showPreview, setShowPreview] = useState(false);
   const [previewData, setPreviewData] = useState(null);
   const [formData, setFormData] = useState({
@@ -129,6 +140,7 @@ export default function NotificationTemplateManager() {
     mutationFn: (id) => db.notificationTemplates.delete(id),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['notification-templates'] });
+      setTemplateToDelete(null);
       toast.success('Template deleted');
     },
   });
@@ -177,6 +189,12 @@ export default function NotificationTemplateManager() {
       updateMutation.mutate({ id: editingTemplate.id, data: formData });
     } else {
       createMutation.mutate(formData);
+    }
+  };
+
+  const handleDeleteTemplate = () => {
+    if (templateToDelete) {
+      deleteMutation.mutate(templateToDelete.id);
     }
   };
 
@@ -256,7 +274,7 @@ export default function NotificationTemplateManager() {
                         size="sm"
                         variant="ghost"
                         className="text-rose-600 hover:bg-rose-50"
-                        onClick={() => deleteMutation.mutate(template.id)}
+                        onClick={() => setTemplateToDelete(template)}
                       >
                         <Trash2 className="w-4 h-4" />
                       </Button>
@@ -439,6 +457,28 @@ export default function NotificationTemplateManager() {
           )}
         </DialogContent>
       </Dialog>
+
+      {/* Delete Confirmation Dialog */}
+      <AlertDialog open={!!templateToDelete} onOpenChange={() => setTemplateToDelete(null)}>
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This action cannot be undone. This will permanently delete the notification template "
+              {templateToDelete?.name}" and remove it from our servers.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleDeleteTemplate}
+              className="bg-red-600 hover:bg-red-700"
+            >
+              Delete
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

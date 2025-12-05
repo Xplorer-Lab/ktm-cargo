@@ -114,6 +114,10 @@ export default function ClientPortal() {
       const currentUser = await auth.me();
       setUser(currentUser);
 
+      if (!currentUser) {
+        throw new Error('User not found');
+      }
+
       // Admin users should not have customer records created - they use the admin dashboard
       if (currentUser.role === 'admin') {
         navigate('/Dashboard');
