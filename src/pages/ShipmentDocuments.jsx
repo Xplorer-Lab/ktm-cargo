@@ -82,6 +82,8 @@ const DOCUMENT_TYPES = [
   },
 ];
 
+import { useErrorHandler } from '@/hooks/useErrorHandler';
+
 export default function ShipmentDocuments() {
   const [selectedShipmentId, setSelectedShipmentId] = useState(null);
   const [activeDoc, setActiveDoc] = useState('commercial_invoice');
@@ -90,9 +92,12 @@ export default function ShipmentDocuments() {
   const [selectedShipments, setSelectedShipments] = useState([]);
   const [generatedDocs, setGeneratedDocs] = useState({});
 
+  const { handleError } = useErrorHandler();
+
   const { data: shipments = [], isLoading } = useQuery({
     queryKey: ['shipments'],
     queryFn: () => db.shipments.list('-created_date', 200),
+    onError: (err) => handleError(err, 'Failed to fetch shipments'),
   });
 
   const { data: companySettings } = useQuery({
@@ -101,6 +106,7 @@ export default function ShipmentDocuments() {
       const list = await db.companySettings.list();
       return list[0] || null;
     },
+    onError: (err) => handleError(err, 'Failed to fetch company settings'),
   });
 
   // Filter eligible shipments

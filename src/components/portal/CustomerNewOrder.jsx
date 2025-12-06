@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { db } from '@/api/db';
+import { shipmentSchema } from '@/lib/schemas';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -76,7 +77,7 @@ export default function CustomerNewOrder({ customer, user, onOrderCreated }) {
       const trackingNumber = 'TRK' + Date.now().toString(36).toUpperCase();
       const estimatedDelivery = addDays(new Date(), selectedService?.value === 'express' ? 2 : 5);
 
-      const shipment = await db.shipments.create({
+      const dataToValidate = {
         ...data,
         customer_id: customer?.id || '',
         customer_name: customer?.name || user?.full_name || 'Customer',
@@ -90,7 +91,11 @@ export default function CustomerNewOrder({ customer, user, onOrderCreated }) {
         status: 'pending',
         payment_status: 'unpaid',
         estimated_delivery: estimatedDelivery.toISOString().split('T')[0],
-      });
+      };
+
+      const validatedData = shipmentSchema.parse(dataToValidate);
+
+      const shipment = await db.shipments.create(validatedData);
 
       // Update customer stats if customer exists
       if (customer?.id) {
@@ -167,8 +172,8 @@ export default function CustomerNewOrder({ customer, user, onOrderCreated }) {
                     key={service.value}
                     onClick={() => updateForm('service_type', service.value)}
                     className={`p-4 rounded-xl border-2 text-left transition-all ${isSelected
-                        ? 'border-blue-500 bg-blue-50'
-                        : 'border-slate-200 hover:border-blue-200'
+                      ? 'border-blue-500 bg-blue-50'
+                      : 'border-slate-200 hover:border-blue-200'
                       }`}
                   >
                     <div className="flex items-center gap-3">

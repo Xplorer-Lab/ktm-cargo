@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { db } from '@/api/db';
+import { customerSchema } from '@/lib/schemas';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -57,6 +58,8 @@ import {
 } from '@/components/customers/CustomerSegmentationEngine';
 import CustomerSegmentBadges from '@/components/customers/CustomerSegmentBadges';
 
+import { useErrorHandler } from '@/hooks/useErrorHandler';
+
 export default function Customers() {
   const [showForm, setShowForm] = useState(false);
   const [editingCustomer, setEditingCustomer] = useState(null);
@@ -68,6 +71,7 @@ export default function Customers() {
   const [customerToDelete, setCustomerToDelete] = useState(null);
 
   const queryClient = useQueryClient();
+  const { handleError } = useErrorHandler();
 
   const [segmentFilter, setSegmentFilter] = useState('all');
 
@@ -75,11 +79,13 @@ export default function Customers() {
     queryKey: ['customers'],
     queryFn: () => db.customers.list('-created_date'),
     refetchInterval: 5000, // Auto-refresh every 5 seconds
+    onError: (err) => handleError(err, 'Failed to fetch customers'),
   });
 
   const { data: shipments = [] } = useQuery({
     queryKey: ['shipments'],
     queryFn: () => db.shipments.list('-created_date', 500),
+    onError: (err) => handleError(err, 'Failed to fetch shipments'),
   });
 
   // AI-powered customer segmentation
@@ -97,7 +103,9 @@ export default function Customers() {
         ...data,
         referral_code: data.referral_code || `REF${Date.now().toString(36).toUpperCase()}`,
       };
-      const created = await db.customers.create(customerData);
+      // Validate customer data
+      const validatedData = customerSchema.parse(customerData);
+      const created = await db.customers.create(validatedData);
       return { ...customerData, ...created };
     },
     onSuccess: async (createdCustomer) => {
@@ -117,16 +125,21 @@ export default function Customers() {
       // Show onboarding modal for new customers
       setShowOnboarding(true);
     },
+    onError: (err) => handleError(err, 'Failed to create customer'),
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => db.customers.update(id, data),
+    mutationFn: ({ id, data }) => {
+      const validatedData = customerSchema.partial().parse(data);
+      return db.customers.update(id, validatedData);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['customers'] });
       setShowForm(false);
       setEditingCustomer(null);
       toast.success('Customer updated successfully');
     },
+    onError: (err) => handleError(err, 'Failed to update customer'),
   });
 
   const deleteMutation = useMutation({
@@ -138,6 +151,7 @@ export default function Customers() {
       setCustomerToDelete(null);
       toast.success('Customer deleted successfully');
     },
+    onError: (err) => handleError(err, 'Failed to delete customer'),
   });
 
   const [form, setForm] = useState({

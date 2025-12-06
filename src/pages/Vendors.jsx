@@ -1,5 +1,6 @@
 import React, { useState, useMemo } from 'react';
 import { db } from '@/api/db';
+import { vendorSchema } from '@/lib/schemas';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -95,6 +96,8 @@ const typeConfig = {
   warehouse: { label: 'Warehouse', icon: Building2, color: 'bg-rose-100 text-rose-800' },
 };
 
+import { useErrorHandler } from '@/hooks/useErrorHandler';
+
 export default function Vendors() {
   const [showForm, setShowForm] = useState(false);
   const [showOrderForm, setShowOrderForm] = useState(false);
@@ -106,49 +109,63 @@ export default function Vendors() {
   const [vendorToDelete, setVendorToDelete] = useState(null);
 
   const queryClient = useQueryClient();
+  const { handleError } = useErrorHandler();
 
   const { data: vendors = [], isLoading } = useQuery({
     queryKey: ['vendors'],
     queryFn: () => db.vendors.list('-created_date'),
+    onError: (err) => handleError(err, 'Failed to fetch vendors'),
   });
 
   const { data: vendorOrders = [] } = useQuery({
     queryKey: ['vendor-orders'],
     queryFn: () => db.vendorOrders.list('-created_date', 500),
+    onError: (err) => handleError(err, 'Failed to fetch vendor orders'),
   });
 
   const { data: shipments = [] } = useQuery({
     queryKey: ['shipments'],
     queryFn: () => db.shipments.list('-created_date', 100),
+    onError: (err) => handleError(err, 'Failed to fetch shipments'),
   });
 
   const { data: inventoryItems = [] } = useQuery({
     queryKey: ['inventory'],
     queryFn: () => db.inventoryItems.list(),
+    onError: (err) => handleError(err, 'Failed to fetch inventory'),
   });
 
   const { data: vendorPayments = [] } = useQuery({
     queryKey: ['vendor-payments'],
     queryFn: () => db.vendorPayments.list('-created_date'),
+    onError: (err) => handleError(err, 'Failed to fetch payments'),
   });
 
   const createVendorMutation = useMutation({
-    mutationFn: (data) => db.vendors.create(data),
+    mutationFn: (data) => {
+      const validatedData = vendorSchema.parse(data);
+      return db.vendors.create(validatedData);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['vendors'] });
       setShowForm(false);
       toast.success('Vendor added');
     },
+    onError: (err) => handleError(err, 'Failed to create vendor'),
   });
 
   const updateVendorMutation = useMutation({
-    mutationFn: ({ id, data }) => db.vendors.update(id, data),
+    mutationFn: ({ id, data }) => {
+      const validatedData = vendorSchema.partial().parse(data);
+      return db.vendors.update(id, validatedData);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['vendors'] });
       setShowForm(false);
       setEditingVendor(null);
       toast.success('Vendor updated');
     },
+    onError: (err) => handleError(err, 'Failed to update vendor'),
   });
 
   const deleteVendorMutation = useMutation({
@@ -158,6 +175,7 @@ export default function Vendors() {
       setVendorToDelete(null);
       toast.success('Vendor deleted successfully');
     },
+    onError: (err) => handleError(err, 'Failed to delete vendor'),
   });
 
   const createOrderMutation = useMutation({

@@ -1,5 +1,6 @@
 import React, { useState } from 'react';
 import { db } from '@/api/db';
+import { shipmentSchema } from '@/lib/schemas';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import ShipmentCard from '@/components/shipments/ShipmentCard';
 import ShipmentForm from '@/components/shipments/ShipmentForm';
@@ -55,6 +56,8 @@ import { processShipmentForInvoicing } from '@/components/invoices/InvoiceGenera
 
 import { startTour } from '@/components/common/TourGuide';
 
+import { useErrorHandler } from '@/hooks/useErrorHandler';
+
 export default function Shipments() {
   const [showForm, setShowForm] = useState(false);
   const [editingShipment, setEditingShipment] = useState(null);
@@ -64,35 +67,43 @@ export default function Shipments() {
   const [shipmentToDelete, setShipmentToDelete] = useState(null);
 
   const queryClient = useQueryClient();
+  const { handleError } = useErrorHandler();
 
   const { data: shipments = [], isLoading } = useQuery({
     queryKey: ['shipments'],
     queryFn: () => db.shipments.list('-created_date'),
+    onError: (err) => handleError(err, 'Failed to fetch shipments'),
   });
 
   const { data: customers = [] } = useQuery({
     queryKey: ['customers'],
     queryFn: () => db.customers.list(),
+    onError: (err) => handleError(err, 'Failed to fetch customers'),
   });
 
   const { data: vendors = [] } = useQuery({
     queryKey: ['vendors'],
     queryFn: () => db.vendors.list(),
+    onError: (err) => handleError(err, 'Failed to fetch vendors'),
   });
 
   const { data: vendorOrders = [] } = useQuery({
     queryKey: ['vendor-orders'],
     queryFn: () => db.vendorOrders.list(),
+    onError: (err) => handleError(err, 'Failed to fetch vendor orders'),
   });
 
   const { data: purchaseOrders = [] } = useQuery({
     queryKey: ['purchase-orders'],
     queryFn: () => db.purchaseOrders.list('-created_date'),
+    onError: (err) => handleError(err, 'Failed to fetch purchase orders'),
   });
 
   const createMutation = useMutation({
     mutationFn: async (data) => {
-      const shipment = await db.shipments.create(data);
+      // Validate data before creating
+      const validatedData = shipmentSchema.parse(data);
+      const shipment = await db.shipments.create(validatedData);
 
       // Update PO allocated weight if linked to a PO
       if (data.vendor_po_id && data.weight_kg) {
@@ -115,10 +126,18 @@ export default function Shipments() {
       // Trigger notification for new shipment
       triggerShipmentCreatedAlert(newShipment).catch(console.error);
     },
+    onError: (err) => handleError(err, 'Failed to create shipment'),
   });
 
   const updateMutation = useMutation({
-    mutationFn: ({ id, data }) => db.shipments.update(id, data),
+    mutationFn: ({ id, data }) => {
+      // Validate partial updates (using partial() for flexibility on updates if needed, 
+      // but traditionally one might validate the whole object or just the fields being updated as per schema)
+      // Since we are updating specific fields often, let's use partial validation for updates or just safe parse if we want to be strict.
+      // However, standard pattern is usually:
+      const validatedData = shipmentSchema.partial().parse(data);
+      return db.shipments.update(id, validatedData);
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['shipments'] });
       queryClient.invalidateQueries({ queryKey: ['customer-invoices'] });
@@ -126,6 +145,7 @@ export default function Shipments() {
       setEditingShipment(null);
       setSelectedShipment(null);
     },
+    onError: (err) => handleError(err, 'Failed to update shipment'),
   });
 
   const deleteMutation = useMutation({
@@ -136,6 +156,7 @@ export default function Shipments() {
       setShipmentToDelete(null);
       toast.success('Shipment deleted successfully');
     },
+    onError: (err) => handleError(err, 'Failed to delete shipment'),
   });
 
   const handleSubmit = (data) => {
