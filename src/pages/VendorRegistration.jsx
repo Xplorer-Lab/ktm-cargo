@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { db } from '@/api/db';
-import { sendEmail } from '@/api/integrations';
+import { sendMessengerNotification } from '@/api/integrations';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -170,20 +170,10 @@ export default function VendorRegistration() {
 
       // Notify admin
       try {
-        await sendEmail({
+        await sendMessengerNotification({
           to: invitation.invited_by,
-          subject: `New Vendor Registration: ${form.name}`,
-          body: `
-            <h2>New Vendor Registered</h2>
-            <p>A new vendor has completed their registration:</p>
-            <ul>
-              <li><strong>Company:</strong> ${form.name}</li>
-              <li><strong>Contact:</strong> ${form.contact_name}</li>
-              <li><strong>Email:</strong> ${form.email}</li>
-              <li><strong>Type:</strong> ${form.vendor_type}</li>
-            </ul>
-            <p>Please review and activate the vendor in the procurement portal.</p>
-          `,
+          message: `New Vendor Registration: ${form.name}\n\nVendor ${form.name} (${form.vendor_type}) has completed registration.\nContact: ${form.contact_name} (${form.email})`,
+          platform: 'Telegram'
         });
       } catch (e) {
         console.error('Failed to notify admin', e);
@@ -268,13 +258,12 @@ export default function VendorRegistration() {
               <div key={s.id} className="flex items-center">
                 <div className={`flex items-center gap-2 ${idx > 0 ? 'ml-4' : ''}`}>
                   <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
-                      isComplete
+                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${isComplete
                         ? 'bg-emerald-500 text-white'
                         : isActive
                           ? 'bg-blue-600 text-white'
                           : 'bg-slate-200 text-slate-400'
-                    }`}
+                      }`}
                   >
                     {isComplete ? (
                       <CheckCircle className="w-5 h-5" />

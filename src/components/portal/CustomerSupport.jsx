@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { db } from '@/api/db';
-import { sendEmail } from '@/api/integrations';
+import { sendMessengerNotification } from '@/api/integrations';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -76,17 +76,10 @@ export default function CustomerSupport({ customer, user }) {
 
       // Send notification email
       try {
-        await sendEmail({
+        await sendMessengerNotification({
           to: customer?.email || user?.email,
-          subject: `Support Ticket Created: ${ticketNumber}`,
-          body: `
-            <h2>Support Request Received</h2>
-            <p>Thank you for contacting us. We have received your support request.</p>
-            <p><strong>Ticket Number:</strong> ${ticketNumber}</p>
-            <p><strong>Issue Type:</strong> ${ISSUE_TYPES.find((t) => t.value === issueType)?.label}</p>
-            <p><strong>Subject:</strong> ${subject}</p>
-            <p>Our team will respond within 24 hours.</p>
-          `,
+          message: `Support Ticket Created: ${ticketNumber}\n\nWe received your request.\nIssue: ${ISSUE_TYPES.find((t) => t.value === issueType)?.label}\nSubject: ${subject}\n\nWe will respond within 24 hours.`,
+          platform: 'line'
         });
       } catch (e) {
         console.error('Failed to send confirmation email', e);

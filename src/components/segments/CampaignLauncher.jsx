@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { db } from '@/api/db';
-import { sendEmail } from '@/api/integrations';
+import { sendMessengerNotification } from '@/api/integrations';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -70,41 +70,10 @@ export default function CampaignLauncher({ targetCustomers, segment, onClose, on
             .replace('{code}', form.discount_code)
             .replace('{discount}', form.discount_percentage);
 
-          await sendEmail({
+          await sendMessengerNotification({
             to: customer.email,
-            subject: form.name,
-            body: `
-              <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-                <div style="background: linear-gradient(135deg, #3b82f6, #8b5cf6); padding: 30px; border-radius: 12px 12px 0 0; text-align: center;">
-                  <h1 style="color: white; margin: 0;">BKK-YGN Cargo</h1>
-                  <p style="color: rgba(255,255,255,0.9); margin-top: 8px;">Special Offer Just For You!</p>
-                </div>
-                <div style="background: #f8fafc; padding: 30px; border: 1px solid #e2e8f0;">
-                  <p style="font-size: 16px; color: #334155; line-height: 1.6;">
-                    Dear ${customer.name || 'Valued Customer'},
-                  </p>
-                  <p style="font-size: 16px; color: #334155; line-height: 1.6;">
-                    ${personalizedMessage}
-                  </p>
-                  ${
-                    form.discount_code
-                      ? `
-                    <div style="background: #dbeafe; padding: 20px; border-radius: 8px; text-align: center; margin: 20px 0;">
-                      <p style="color: #1e40af; margin: 0 0 8px 0;">Your exclusive code:</p>
-                      <p style="font-size: 24px; font-weight: bold; color: #1e40af; margin: 0; letter-spacing: 2px;">${form.discount_code}</p>
-                      ${form.discount_percentage > 0 ? `<p style="color: #3b82f6; margin: 8px 0 0 0;">${form.discount_percentage}% OFF</p>` : ''}
-                    </div>
-                  `
-                      : ''
-                  }
-                </div>
-                <div style="background: #f1f5f9; padding: 20px; border-radius: 0 0 12px 12px; text-align: center;">
-                  <p style="color: #64748b; margin: 0; font-size: 12px;">
-                    BKK-YGN Cargo & Shopping Services
-                  </p>
-                </div>
-              </div>
-            `,
+            message: `${form.name}\n\n${personalizedMessage} ${form.discount_code ? `\n\nCode: ${form.discount_code} (${form.discount_percentage}% OFF)` : ''}`,
+            platform: 'line'
           });
           sent++;
           setSentCount(sent);

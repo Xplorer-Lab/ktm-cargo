@@ -1,6 +1,6 @@
 import { db } from '@/api/db';
 import { auth } from '@/api/auth';
-import { sendEmail } from '@/api/integrations';
+import { sendMessengerNotification } from '@/api/integrations';
 import { AuditActions } from '@/components/audit/AuditService';
 
 /**
@@ -122,20 +122,10 @@ export async function submitPOForApproval(purchaseOrder, rules, vendors) {
 
     // Send email notification
     try {
-      await sendEmail({
+      await sendMessengerNotification({
         to: approverRule.approver_email,
-        subject: `[Approval Required] PO ${purchaseOrder.po_number} - ฿${purchaseOrder.total_amount?.toLocaleString()}`,
-        body: `
-          <h2>Purchase Order Approval Request</h2>
-          <p>A new purchase order requires your approval:</p>
-          <ul>
-            <li><strong>PO Number:</strong> ${purchaseOrder.po_number}</li>
-            <li><strong>Vendor:</strong> ${purchaseOrder.vendor_name}</li>
-            <li><strong>Amount:</strong> ฿${purchaseOrder.total_amount?.toLocaleString()}</li>
-            <li><strong>Rule:</strong> ${approverRule.name}</li>
-          </ul>
-          <p>Please log in to the system to review and approve this order.</p>
-        `,
+        message: `[Approval Required] PO ${purchaseOrder.po_number} - ฿${purchaseOrder.total_amount?.toLocaleString()}\n\nA new purchase order requires your approval.\nVendor: ${purchaseOrder.vendor_name}\nRule: ${approverRule.name}\n\nPlease log in to review.`,
+        platform: 'Telegram'
       });
     } catch (e) {
       console.error('Failed to send approval email:', e);

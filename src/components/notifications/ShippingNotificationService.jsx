@@ -1,5 +1,5 @@
 import { db } from '@/api/db';
-import { sendEmail } from '@/api/integrations';
+import { sendMessengerNotification } from '@/api/integrations';
 
 /**
  * Shipping Notification Service
@@ -162,10 +162,10 @@ export async function sendShoppingOrderNotification(order, newStatus, customerEm
   const body = processTemplate(template.body, data);
 
   try {
-    await sendEmail({
+    await sendMessengerNotification({
       to: customerEmail,
-      subject,
-      body,
+      message: `${subject}\n\n${body.replace(/<[^>]*>/g, '')}`, // Strip HTML for messenger
+      platform: 'line',
     });
 
     // Log notification
@@ -223,10 +223,10 @@ export async function sendShipmentNotification(shipment, newStatus, customerEmai
   const body = processTemplate(template.body, data);
 
   try {
-    await sendEmail({
+    await sendMessengerNotification({
       to: customerEmail,
-      subject,
-      body,
+      message: `${subject}\n\n${body.replace(/<[^>]*>/g, '')}`, // Strip HTML for messenger
+      platform: 'line',
     });
 
     await db.notifications.create({

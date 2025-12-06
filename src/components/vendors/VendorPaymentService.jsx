@@ -163,7 +163,7 @@ async function triggerPaymentDueAlert(payment, vendor, daysUntilDue = 0) {
     referenceType: 'vendor',
     referenceId: payment.vendor_id,
     recipientEmail: adminEmail,
-    sendEmail: daysUntilDue <= 1,
+    sendNotification: daysUntilDue <= 1,
   });
 }
 
@@ -181,7 +181,7 @@ async function triggerPaymentOverdueAlert(payment) {
     referenceType: 'vendor',
     referenceId: payment.vendor_id,
     recipientEmail: adminEmail,
-    sendEmail: true,
+    sendNotification: true,
   });
 }
 

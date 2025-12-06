@@ -1,5 +1,5 @@
 import { db } from '@/api/db';
-import { sendEmail } from '@/api/integrations';
+import { sendMessengerNotification } from '@/api/integrations';
 
 /**
  * Centralized Notification Service
@@ -14,7 +14,7 @@ export async function createNotification({
   referenceType,
   referenceId,
   recipientEmail,
-  sendEmail = false,
+  sendNotification = false,
 }) {
   // Create in-app notification
   const notification = await db.notifications.create({
@@ -29,17 +29,17 @@ export async function createNotification({
     email_sent: false,
   });
 
-  // Send email if requested
-  if (sendEmail && recipientEmail) {
+  // Send external notification if requested
+  if (sendNotification && recipientEmail) {
     try {
-      await sendEmail({
+      await sendMessengerNotification({
         to: recipientEmail,
-        subject: `[${priority.toUpperCase()}] ${title}`,
-        body: generateEmailBody(type, title, message, priority),
+        message: `[${priority.toUpperCase()}] ${title}\n\n${message}`,
+        platform: 'line'
       });
       await db.notifications.update(notification.id, { email_sent: true });
     } catch (error) {
-      console.error('Failed to send notification email:', error);
+      console.error('Failed to send external notification:', error);
     }
   }
 
@@ -90,7 +90,7 @@ export async function triggerLowStockAlert(item, adminEmail) {
     referenceType: 'inventory',
     referenceId: item.id,
     recipientEmail: adminEmail,
-    sendEmail: true,
+    sendNotification: true,
   });
 }
 
@@ -107,7 +107,7 @@ export async function triggerDeliveryFeedbackAlert(shipment, customer) {
     referenceType: 'shipment',
     referenceId: shipment.id,
     recipientEmail: customer.email,
-    sendEmail: false, // Handled by FeedbackRequestService
+    sendNotification: false, // Handled by FeedbackRequestService
   });
 }
 
@@ -125,7 +125,7 @@ export async function triggerTaskAssignedAlert(task, assigneeEmail) {
     referenceType: 'task',
     referenceId: task.id,
     recipientEmail: assigneeEmail,
-    sendEmail: true,
+    sendNotification: true,
   });
 }
 
@@ -154,7 +154,7 @@ export async function triggerSegmentAlert(segmentType, count, adminEmail) {
     priority: alert.priority,
     referenceType: 'customer',
     recipientEmail: adminEmail,
-    sendEmail: true,
+    sendNotification: true,
   });
 }
 
@@ -201,7 +201,7 @@ export async function triggerShipmentCreatedAlert(shipment, recipientEmail) {
     referenceType: 'shipment',
     referenceId: shipment.id,
     recipientEmail,
-    sendEmail: false,
+    sendNotification: false,
   });
 }
 
@@ -230,7 +230,7 @@ export async function triggerShipmentStatusAlert(shipment, oldStatus, newStatus,
     referenceType: 'shipment',
     referenceId: shipment.id,
     recipientEmail,
-    sendEmail: newStatus === 'delivered',
+    sendNotification: newStatus === 'delivered',
   });
 }
 
@@ -247,7 +247,7 @@ export async function triggerPaymentReceivedAlert(shipment, recipientEmail) {
     referenceType: 'payment',
     referenceId: shipment.id,
     recipientEmail,
-    sendEmail: false,
+    sendNotification: false,
   });
 }
 
@@ -264,7 +264,7 @@ export async function triggerInvoiceGeneratedAlert(invoice, recipientEmail) {
     referenceType: 'invoice',
     referenceId: invoice.id,
     recipientEmail,
-    sendEmail: false,
+    sendNotification: false,
   });
 }
 
@@ -281,6 +281,6 @@ export async function triggerVendorPayoutAlert(payout, recipientEmail) {
     referenceType: 'vendor',
     referenceId: payout.id,
     recipientEmail,
-    sendEmail: false,
+    sendNotification: false,
   });
 }

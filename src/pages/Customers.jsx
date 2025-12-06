@@ -48,7 +48,7 @@ import {
 } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import { toast } from 'sonner';
-import { sendWelcomeEmailSeries } from '@/components/onboarding/WelcomeEmailService';
+import { sendMessengerNotification } from '@/api/integrations';
 import CustomerOnboarding from '@/components/onboarding/CustomerOnboarding';
 import {
   segmentCustomers,
@@ -67,7 +67,7 @@ export default function Customers() {
   const [typeFilter, setTypeFilter] = useState('all');
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [newCustomer, setNewCustomer] = useState(null);
-  const [sendWelcomeEmail, setSendWelcomeEmail] = useState(true);
+  const [sendWelcomeMessage, setSendWelcomeMessage] = useState(true);
   const [customerToDelete, setCustomerToDelete] = useState(null);
 
   const queryClient = useQueryClient();
@@ -113,13 +113,20 @@ export default function Customers() {
       setShowForm(false);
       setNewCustomer(createdCustomer);
 
-      // Send welcome email series if email provided and option selected
-      if (createdCustomer.email && sendWelcomeEmail) {
-        toast.promise(sendWelcomeEmailSeries(createdCustomer), {
-          loading: 'Sending welcome email...',
-          success: 'Welcome email sent!',
-          error: 'Failed to send welcome email',
-        });
+      // Send welcome message if option selected
+      if (createdCustomer.email && sendWelcomeMessage) {
+        toast.promise(
+          sendMessengerNotification({
+            to: createdCustomer.email, // Using email as identifier for now, or phone if available
+            message: `Welcome to BKK-YGN Cargo, ${createdCustomer.name}! Your account has been created.`,
+            platform: 'line',
+          }),
+          {
+            loading: 'Sending welcome message...',
+            success: 'Welcome message sent!',
+            error: 'Failed to send welcome message',
+          }
+        );
       }
 
       // Show onboarding modal for new customers
@@ -565,23 +572,23 @@ export default function Customers() {
                 </div>
               </div>
 
-              {/* Welcome Email Option - only for new customers */}
+              {/* Welcome Message Option - only for new customers */}
               {!editingCustomer && (
                 <div className="flex items-center gap-3 p-3 bg-blue-50 rounded-lg border border-blue-100">
                   <Checkbox
                     id="sendWelcome"
-                    checked={sendWelcomeEmail}
-                    onCheckedChange={setSendWelcomeEmail}
+                    checked={sendWelcomeMessage}
+                    onCheckedChange={setSendWelcomeMessage}
                   />
                   <div className="flex-1">
                     <label
                       htmlFor="sendWelcome"
                       className="text-sm font-medium text-blue-900 cursor-pointer"
                     >
-                      Send welcome email series
+                      Send welcome message
                     </label>
                     <p className="text-xs text-blue-600">
-                      Automatically send onboarding emails introducing your services
+                      Automatically send a welcome message via Messenger
                     </p>
                   </div>
                   <Sparkles className="w-5 h-5 text-blue-500" />

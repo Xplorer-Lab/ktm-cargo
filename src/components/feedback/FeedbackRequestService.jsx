@@ -1,35 +1,18 @@
 import { db } from '@/api/db';
-import { sendEmail } from '@/api/integrations';
+import { sendMessengerNotification } from '@/api/integrations';
 
 export async function sendFeedbackRequest(shipment, customer) {
   if (!customer?.email) return false;
 
   const feedbackLink = `${window.location.origin}/Feedback?shipment=${shipment.id}`;
 
-  const emailBody = `
-Dear ${customer.name || shipment.customer_name},
-
-Your shipment has been delivered! 🎉
-
-Tracking Number: ${shipment.tracking_number}
-Delivered: ${new Date().toLocaleDateString()}
-
-We'd love to hear about your experience. Your feedback helps us improve our service.
-
-Please take a moment to rate your experience:
-${feedbackLink}
-
-Thank you for choosing BKK-YGN Cargo & Shopping Services!
-
-Best regards,
-The BKK-YGN Team
-  `;
+  const message = `Dear ${customer.name || shipment.customer_name},\n\nYour shipment ${shipment.tracking_number} has been delivered! 🎉\n\nRate your experience here: ${feedbackLink}`;
 
   try {
-    await sendEmail({
+    await sendMessengerNotification({
       to: customer.email,
-      subject: `How was your delivery? Rate your experience - ${shipment.tracking_number}`,
-      body: emailBody,
+      message: message,
+      platform: 'line'
     });
 
     // Create pending feedback record

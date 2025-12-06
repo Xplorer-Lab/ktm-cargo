@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { db } from '@/api/db';
-import { sendEmail } from '@/api/integrations';
+import { sendMessengerNotification } from '@/api/integrations';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
@@ -84,16 +84,10 @@ export default function StaffManagement() {
 
     try {
       // Send invitation email
-      await sendEmail({
+      await sendMessengerNotification({
         to: inviteData.email,
-        subject: 'You have been invited to BKK-YGN Cargo Portal',
-        body: `
-          <h2>Welcome to BKK-YGN Cargo & Shopping Services</h2>
-          <p>Hello ${inviteData.full_name},</p>
-          <p>You have been invited to join the BKK-YGN Cargo Portal as a <strong>${ROLE_LABELS[inviteData.staff_role]}</strong>.</p>
-          <p>Please contact your administrator to complete your account setup.</p>
-          <p>Best regards,<br/>BKK-YGN Cargo Team</p>
-        `,
+        message: `Welcome to BKK-YGN Cargo Portal\n\nHello ${inviteData.full_name},\nYou have been invited to join as ${ROLE_LABELS[inviteData.staff_role]}.\nPlease contact admin to setup account.`,
+        platform: 'Telegram'
       });
 
       // Audit log

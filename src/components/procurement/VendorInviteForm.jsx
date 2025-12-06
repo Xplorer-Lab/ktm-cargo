@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { db } from '@/api/db';
 import { auth } from '@/api/auth';
-import { sendEmail } from '@/api/integrations';
+import { sendMessengerNotification } from '@/api/integrations';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -69,29 +69,11 @@ export default function VendorInviteForm({ open, onOpenChange, onInviteSent }) {
       const link = `${baseUrl}/VendorRegistration?token=${token}`;
       setInviteLink(link);
 
-      // Send invitation email
-      await sendEmail({
+      // Send invitation message
+      await sendMessengerNotification({
         to: data.email,
-        subject: 'You have been invited to register as a vendor',
-        body: `
-          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto;">
-            <div style="background: linear-gradient(135deg, #3b82f6, #1e40af); padding: 24px; border-radius: 8px 8px 0 0;">
-              <h1 style="color: white; margin: 0;">Vendor Registration Invitation</h1>
-            </div>
-            <div style="background: #f8fafc; padding: 24px; border: 1px solid #e2e8f0;">
-              <p style="color: #475569;">Hello${data.companyName ? ` ${data.companyName}` : ''},</p>
-              <p style="color: #475569;">You have been invited to register as a vendor on our procurement portal.</p>
-              <p style="color: #475569;">Please click the button below to complete your registration:</p>
-              <div style="text-align: center; margin: 24px 0;">
-                <a href="${link}" style="background: #3b82f6; color: white; padding: 12px 24px; border-radius: 6px; text-decoration: none; display: inline-block;">
-                  Complete Registration
-                </a>
-              </div>
-              <p style="color: #94a3b8; font-size: 14px;">This invitation expires on ${format(expiresAt, 'MMMM d, yyyy')}.</p>
-              <p style="color: #94a3b8; font-size: 14px;">If you did not expect this invitation, please ignore this email.</p>
-            </div>
-          </div>
-        `,
+        message: `Hello${data.companyName ? ` ${data.companyName}` : ''},\n\nYou have been invited to register as a vendor on our procurement portal.\n\nPlease click the link below to complete your registration:\n${link}\n\nThis invitation expires on ${format(expiresAt, 'MMMM d, yyyy')}.`,
+        platform: 'Telegram'
       });
 
       toast.success('Invitation sent successfully!');
