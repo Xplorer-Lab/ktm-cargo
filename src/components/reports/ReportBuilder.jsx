@@ -3,7 +3,6 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import {
   Select,
   SelectContent,
@@ -11,18 +10,15 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { Checkbox } from '@/components/ui/checkbox';
 import {
   Plus,
   Trash2,
   FileSpreadsheet,
   Filter,
   SortAsc,
-  SortDesc,
   Mail,
-  Calendar,
+  Loader2,
 } from 'lucide-react';
 
 const REPORT_TYPES = {
@@ -131,37 +127,33 @@ const FILTER_OPTIONS = {
 
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { reportSchema } from '@/lib/schemas';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 
 export default function ReportBuilder({ report, onSubmit, onCancel }) {
-  const { handleError } = useErrorHandler();
-  const [form, setForm] = useState({
-    name: '',
-    report_type: 'shipments',
-    schedule: 'none',
-    schedule_day: 1,
-    recipients: '',
-    format: 'csv',
-    sort_by: 'created_date',
-    sort_order: 'desc',
-    is_active: true,
+  const { handleError, handleValidationError } = useErrorHandler();
+
+  const form = useForm({
+    resolver: zodResolver(reportSchema.partial()),
+    defaultValues: {
+      name: report?.name || '',
+      report_type: report?.report_type || 'shipments',
+      schedule: report?.schedule || 'none',
+      schedule_day: report?.schedule_day || 1,
+      recipients: report?.recipients || '',
+      format: report?.format || 'csv',
+      sort_by: report?.sort_by || 'created_date',
+      sort_order: report?.sort_order || 'desc',
+      is_active: report?.is_active !== false,
+    }
   });
+
   const [selectedColumns, setSelectedColumns] = useState([]);
   const [filters, setFilters] = useState([]);
+  const currentReportType = form.watch('report_type');
 
   useEffect(() => {
     if (report) {
-      setForm({
-        name: report.name || '',
-        report_type: report.report_type || 'shipments',
-        schedule: report.schedule || 'none',
-        schedule_day: report.schedule_day || 1,
-        recipients: report.recipients || '',
-        format: report.format || 'csv',
-        sort_by: report.sort_by || 'created_date',
-        sort_order: report.sort_order || 'desc',
-        is_active: report.is_active !== false,
-      });
       if (report.columns) {
         try {
           setSelectedColumns(JSON.parse(report.columns));
@@ -182,7 +174,7 @@ export default function ReportBuilder({ report, onSubmit, onCancel }) {
   }, [report]);
 
   const handleReportTypeChange = (type) => {
-    setForm({ ...form, report_type: type });
+    form.setValue('report_type', type);
     setSelectedColumns(REPORT_TYPES[type].columns.slice(0, 5));
     setFilters([]);
   };
@@ -196,7 +188,7 @@ export default function ReportBuilder({ report, onSubmit, onCancel }) {
   };
 
   const addFilter = () => {
-    const availableFilters = REPORT_TYPES[form.report_type].filters;
+    const availableFilters = REPORT_TYPES[currentReportType].filters;
     if (availableFilters.length > 0) {
       setFilters([...filters, { field: availableFilters[0], operator: 'eq', value: '' }]);
     }
@@ -212,30 +204,29 @@ export default function ReportBuilder({ report, onSubmit, onCancel }) {
     setFilters(filters.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleFormSubmit = async (data) => {
     try {
-      if (!form.name || !form.report_type) {
-        handleError(new Error('Report name and type are required'), 'Validation failed', {
+      const finalData = {
+        ...data,
+        columns: JSON.stringify(selectedColumns),
+        filters: JSON.stringify(filters),
+      };
+
+      await onSubmit(finalData);
+    } catch (error) {
+      if (error.name === 'ZodError') {
+        handleValidationError(error, 'Report');
+      } else {
+        handleError(error, 'Failed to save report', {
           component: 'ReportBuilder',
           action: 'submit',
         });
-        return;
       }
-      await onSubmit({
-        ...form,
-        columns: JSON.stringify(selectedColumns),
-        filters: JSON.stringify(filters),
-      });
-    } catch (error) {
-      handleError(error, 'Failed to save report', {
-        component: 'ReportBuilder',
-        action: 'submit',
-      });
     }
   };
 
-  const reportConfig = REPORT_TYPES[form.report_type];
+  const reportConfig = REPORT_TYPES[currentReportType];
+  const watchedSchedule = form.watch('schedule');
 
   return (
     <Card className="border-0 shadow-lg">
@@ -246,21 +237,25 @@ export default function ReportBuilder({ report, onSubmit, onCancel }) {
         </CardTitle>
       </CardHeader>
       <CardContent>
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
           {/* Basic Info */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Report Name *</Label>
               <Input
-                value={form.name}
-                onChange={(e) => setForm({ ...form, name: e.target.value })}
+                {...form.register('name')}
                 placeholder="e.g. Weekly Shipment Summary"
-                required
               />
+              {form.formState.errors.name && (
+                <p className="text-xs text-rose-600 mt-1">{form.formState.errors.name.message}</p>
+              )}
             </div>
             <div className="space-y-2">
               <Label>Report Type</Label>
-              <Select value={form.report_type} onValueChange={handleReportTypeChange}>
+              <Select
+                value={form.watch('report_type')}
+                onValueChange={handleReportTypeChange}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -388,7 +383,10 @@ export default function ReportBuilder({ report, onSubmit, onCancel }) {
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Sort By</Label>
-              <Select value={form.sort_by} onValueChange={(v) => setForm({ ...form, sort_by: v })}>
+              <Select
+                value={form.watch('sort_by')}
+                onValueChange={(v) => form.setValue('sort_by', v)}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -404,8 +402,8 @@ export default function ReportBuilder({ report, onSubmit, onCancel }) {
             <div className="space-y-2">
               <Label>Order</Label>
               <Select
-                value={form.sort_order}
-                onValueChange={(v) => setForm({ ...form, sort_order: v })}
+                value={form.watch('sort_order')}
+                onValueChange={(v) => form.setValue('sort_order', v)}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -425,8 +423,8 @@ export default function ReportBuilder({ report, onSubmit, onCancel }) {
             </Label>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <Select
-                value={form.schedule}
-                onValueChange={(v) => setForm({ ...form, schedule: v })}
+                value={watchedSchedule}
+                onValueChange={(v) => form.setValue('schedule', v)}
               >
                 <SelectTrigger>
                   <SelectValue />
@@ -439,10 +437,10 @@ export default function ReportBuilder({ report, onSubmit, onCancel }) {
                 </SelectContent>
               </Select>
 
-              {form.schedule === 'weekly' && (
+              {watchedSchedule === 'weekly' && (
                 <Select
-                  value={String(form.schedule_day)}
-                  onValueChange={(v) => setForm({ ...form, schedule_day: parseInt(v) })}
+                  value={String(form.watch('schedule_day'))}
+                  onValueChange={(v) => form.setValue('schedule_day', parseInt(v))}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -459,10 +457,10 @@ export default function ReportBuilder({ report, onSubmit, onCancel }) {
                 </Select>
               )}
 
-              {form.schedule === 'monthly' && (
+              {watchedSchedule === 'monthly' && (
                 <Select
-                  value={String(form.schedule_day)}
-                  onValueChange={(v) => setForm({ ...form, schedule_day: parseInt(v) })}
+                  value={String(form.watch('schedule_day'))}
+                  onValueChange={(v) => form.setValue('schedule_day', parseInt(v))}
                 >
                   <SelectTrigger>
                     <SelectValue />
@@ -477,7 +475,10 @@ export default function ReportBuilder({ report, onSubmit, onCancel }) {
                 </Select>
               )}
 
-              <Select value={form.format} onValueChange={(v) => setForm({ ...form, format: v })}>
+              <Select
+                value={form.watch('format')}
+                onValueChange={(v) => form.setValue('format', v)}
+              >
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -488,12 +489,11 @@ export default function ReportBuilder({ report, onSubmit, onCancel }) {
               </Select>
             </div>
 
-            {form.schedule !== 'none' && (
+            {watchedSchedule !== 'none' && (
               <div className="space-y-2">
                 <Label>Recipients (comma-separated emails)</Label>
                 <Input
-                  value={form.recipients}
-                  onChange={(e) => setForm({ ...form, recipients: e.target.value })}
+                  {...form.register('recipients')}
                   placeholder="email1@example.com, email2@example.com"
                 />
               </div>
@@ -505,7 +505,12 @@ export default function ReportBuilder({ report, onSubmit, onCancel }) {
             <Button type="button" variant="outline" onClick={onCancel} className="flex-1">
               Cancel
             </Button>
-            <Button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-700">
+            <Button
+              type="submit"
+              className="flex-1 bg-blue-600 hover:bg-blue-700"
+              disabled={form.formState.isSubmitting}
+            >
+              {form.formState.isSubmitting ? <Loader2 className="w-4 h-4 animate-spin" /> : null}
               {report ? 'Update Report' : 'Create Report'}
             </Button>
           </div>

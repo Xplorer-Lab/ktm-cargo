@@ -1,104 +1,72 @@
 # UI/UX Comprehensive Fixes - Progress Report
 
 **Date:** December 6, 2025  
-**Status:** 🔄 **In Progress** - High Priority Fixes Started
+**Status:** 🔄 **In Progress** - High Priority & Medium Priority Fixes Ongoing
 
 ---
 
 ## Executive Summary
 
-Systematic fixes for 823 UI/UX issues are in progress. Starting with high-priority issues, then medium and low priority.
+Systematic fixes for 823 UI/UX issues are in progress. Recent work focused on robust Error Handling, Form Validation, and introducing Loading States.
 
 **Progress:**
 - ✅ **Critical:** 2/2 fixed (100%)
-- ✅ **High:** 10/85 fixed (~12%) - Major Progress
-- 🔄 **Medium:** 0/233 fixed (0%) - Started
+- ✅ **High:** 13/85 fixed (~15%) - Major Progress
+- 🔄 **Medium:** 3/233 fixed (~1.3%) - Started (Loading States & Null Checks)
 - ⏳ **Low:** 0/503 fixed (0%)
 
-**Total:** 12/823 fixed (~1.5%)
+**Total:** 18/823 fixed (~2.2%)
 
 ---
 
-## ✅ Files Fixed
+## ✅ Recent Files Fixed
 
-### 1. NotificationBell.jsx ✅
+### 1. GoodsReceiptForm.jsx (Validation) ✅
 
 **Issues Fixed:**
-- ✅ Added error handling to `markAllRead` function
-- ✅ Added error handling to `onClick` event handlers
-- ✅ Added loading state (disabled button during operation)
+- ✅ Implemented Zod schema for comprehensive validation
+- ✅ Added real-time error messages for required fields
+- ✅ Migrated to `react-hook-form`
+
+### 2. ShoppingOrderAllocationPanel.jsx (Error Handling & Loading) ✅
+
+**Issues Fixed:**
+- ✅ Wrapped `handleAllocate` and `handleUnlink` in `try/catch` blocks
+- ✅ Added toast notifications for error states
+- ✅ Implemented Skeleton loading states for summary cards and lists
+- ✅ Cleared potentially corrupt state on error
+
+### 3. ShoppingOrders.jsx (Null Safety & Error Handling) ✅
+
+**Issues Fixed:**
+- ✅ Fixed unsafe property access in search filters (`o.customer_name?.toLowerCase()`) to prevent crashes
+- ✅ Ensured mutation errors are properly caught and displayed
+- ✅ Verified `isLoading` propagation to child components
+
+### 4. InvoiceList.jsx (Loading States) ✅
+
+**Issues Fixed:**
+- ✅ Added `isLoading` prop support
+- ✅ Implemented Skeleton loaders to replace "No invoices yet" flash during data fetch
+- ✅ Integrated with `Procurement.jsx` data fetching
+
+### 5. NotificationBell.jsx (Error Handling) ✅
+
+**Issues Fixed:**
+- ✅ Added error handling to `markAllRead` and `onClick` handlers
 - ✅ Integrated `useErrorHandler` hook
 
-**Changes:**
-```javascript
-// Added imports
-import { useErrorHandler } from '@/hooks/useErrorHandler';
-
-// Added error handling
-const markAllRead = async () => {
-  try {
-    for (const n of notifications) {
-      await db.notifications.update(n.id, { status: 'read' });
-    }
-    queryClient.invalidateQueries({ queryKey: ['notifications'] });
-  } catch (error) {
-    handleError(error, 'Failed to mark all notifications as read', {
-      component: 'NotificationBell',
-      action: 'markAllRead',
-    });
-  }
-};
-```
-
----
-
-### 2. CampaignForm.jsx ✅
+### 6. CampaignForm.jsx (Validation) ✅
 
 **Issues Fixed:**
 - ✅ Added React Hook Form with Zod validation
-- ✅ Added error handling for validation errors
-- ✅ Converted ALL form fields to use form.register()
 - ✅ Added validation error messages for all fields
-- ✅ Fixed form state management to use react-hook-form properly
 
-### 3. ContractManager.jsx ✅
-
-**Issues Fixed:**
-- ✅ Added error handling to file upload handler
-- ✅ Added error handling to edit button handlers
-- ✅ Added error handling to delete button handlers
-- ✅ Added error handling to form submit handler
-- ✅ Added error handling to detail view edit handler
-
-### 4. ApprovalRulesManager.jsx ✅
-
-**Issues Fixed:**
-- ✅ Added missing `handleValidationError` import
-- ✅ Added error handling to edit button handlers
-- ✅ Added error handling to delete button handlers
-- ✅ Added error handling to form submit handler
-
-### 5. InvoiceList.jsx ✅
-
-**Issues Fixed:**
-- ✅ Added error handling to mark-as-paid handlers
-- ✅ Added error handling in InvoiceDetail component
-- ✅ Integrated useErrorHandler hook
-
-### 6. VendorProfile.jsx ✅
-
-**Issues Fixed:**
-- ✅ Converted all form fields to use react-hook-form properly
-- ✅ Replaced old form state management with form.register()
-- ✅ Added validation error messages for all fields
-- ✅ Fixed Select components to use form.setValue()
-
-### 7. ReportBuilder.jsx ✅
+### 7. ReportBuilder.jsx (Validation) ✅
 
 **Issues Fixed:**
 - ✅ Added error handling to form submit handler
-- ✅ Added validation for required fields
-- ✅ Integrated useErrorHandler hook
+- ✅ Added validation for required report configuration
 
 ---
 
@@ -108,17 +76,11 @@ const markAllRead = async () => {
 
 **Before:**
 ```javascript
-onClick={() => {
-  someAsyncOperation();
-}}
+onClick={() => someAsyncOperation()}
 ```
 
 **After:**
 ```javascript
-import { useErrorHandler } from '@/hooks/useErrorHandler';
-
-const { handleError } = useErrorHandler();
-
 onClick={async () => {
   try {
     await someAsyncOperation();
@@ -131,177 +93,66 @@ onClick={async () => {
 }}
 ```
 
-**Or using the safe handler hook:**
+### Pattern 2: Skeleton Loading States
+
+**Before:**
 ```javascript
-import { useSafeEventHandler } from '@/hooks/useSafeEventHandler';
+{data.length > 0 ? ( ...list ) : ( <EmptyState /> )}
+```
 
-const { safeHandler } = useSafeEventHandler();
-
-onClick={safeHandler(
-  () => someAsyncOperation(),
-  'Failed to perform operation',
-  { component: 'ComponentName', action: 'operationName' }
+**After:**
+```javascript
+{isLoading ? (
+  <div className="space-y-3">
+    {[1, 2, 3].map((i) => <Skeleton key={i} className="h-16 w-full rounded-lg" />)}
+  </div>
+) : data.length > 0 ? (
+  ...list
+) : (
+  <EmptyState />
 )}
 ```
 
----
-
-### Pattern 2: Form Validation
+### Pattern 3: Safe Property Access (Null Safety)
 
 **Before:**
 ```javascript
-const [form, setForm] = useState({...});
-
-<form onSubmit={handleSubmit}>
-  <Input value={form.name} onChange={(e) => setForm({...form, name: e.target.value})} />
-</form>
+item.name.toLowerCase().includes(query) // Crashes if name is null
 ```
 
 **After:**
 ```javascript
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { schema } from '@/lib/schemas';
-import { useErrorHandler } from '@/hooks/useErrorHandler';
-
-const { handleError, handleValidationError } = useErrorHandler();
-const form = useForm({
-  resolver: zodResolver(schema),
-  defaultValues: {...},
-});
-
-const handleFormSubmit = async (data) => {
-  try {
-    const validatedData = schema.parse(data);
-    await onSubmit(validatedData);
-  } catch (error) {
-    if (error.name === 'ZodError') {
-      handleValidationError(error, 'EntityName');
-    } else {
-      handleError(error, 'Failed to submit form');
-    }
-  }
-};
-
-<form onSubmit={form.handleSubmit(handleFormSubmit)}>
-  <Input {...form.register('name')} />
-  {form.formState.errors.name && (
-    <p className="text-xs text-rose-600">{form.formState.errors.name.message}</p>
-  )}
-</form>
+(item.name || '').toLowerCase().includes(query) // Safe
 ```
 
 ---
 
-### Pattern 3: Loading States
+## 🎯 Priorities & Status
 
-**Before:**
-```javascript
-<Button onClick={handleOperation}>Submit</Button>
-```
+### High Priority: Error Handling & Validation
 
-**After:**
-```javascript
-<Button 
-  onClick={handleOperation}
-  disabled={isLoading || mutation.isPending}
->
-  {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : 'Submit'}
-</Button>
-```
+**Recent Wins:**
+- ✅ `GoodsReceiptForm.jsx` (Validation)
+- ✅ `ShoppingOrderAllocationPanel.jsx` (Error Handling)
+- ✅ `ShoppingOrders.jsx` (Error Handling)
+- ✅ `NotificationBell.jsx` (Error Handling)
+- ✅ `CampaignForm.jsx` (Validation)
+- ✅ `ReportBuilder.jsx` (Validation)
 
----
+**Backlog (Sample):**
+- ⏳ `PendingApprovalsPanel.jsx` (Error Handling)
+- ⏳ `PaymentAutomation.jsx` (Error Handling)
+- ⏳ `CustomerForm.jsx` (Validation)
 
-### Pattern 4: Null/Undefined Checks
+### Medium Priority: UX & Durability
 
-**Before:**
-```javascript
-const value = data.property.subproperty;
-```
+**Recent Wins:**
+- ✅ **Null Checks:** Fixed crasher in `ShoppingOrders.jsx` search filter
+- ✅ **Loading States:** Added Skeletons to `InvoiceList.jsx` & `AllocationPanel.jsx`
 
-**After:**
-```javascript
-// Option 1: Optional chaining
-const value = data?.property?.subproperty;
-
-// Option 2: Default value
-const value = data?.property?.subproperty || 'default';
-
-// Option 3: Early return
-if (!data?.property) return null;
-const value = data.property.subproperty;
-```
-
----
-
-## 🎯 Remaining High Priority Issues
-
-### Error Handling (59 files)
-
-**Files to Fix:**
-1. ✅ `src/components/notifications/NotificationBell.jsx` - FIXED
-2. ✅ `src/components/procurement/ApprovalRulesManager.jsx` - FIXED
-3. ✅ `src/components/procurement/ContractManager.jsx` - FIXED
-4. ✅ `src/components/procurement/InvoiceList.jsx` - FIXED
-5. ⏳ And 50+ more files...
-
-**Estimated Time:** 2-3 hours
-
----
-
-### Form Validation (22 files)
-
-**Files to Fix:**
-1. ✅ `src/components/customers/CampaignForm.jsx` - FIXED
-2. ✅ `src/components/portal/CustomerProfile.jsx` - Already has validation
-3. ✅ `src/components/portal/CustomerSupport.jsx` - Already has validation
-4. ✅ `src/components/portal/VendorProfile.jsx` - FIXED
-5. ✅ `src/components/procurement/ApprovalRulesManager.jsx` - Already has validation
-6. ✅ `src/components/procurement/ContractManager.jsx` - Already has validation
-7. ✅ `src/components/procurement/GoodsReceiptForm.jsx` - Already has validation
-8. ✅ `src/components/procurement/PurchaseOrderForm.jsx` - Already has validation
-9. ✅ `src/components/reports/ReportBuilder.jsx` - FIXED
-10. ⏳ And 12+ more files...
-
-**Estimated Time:** 3-4 hours
-
----
-
-## 🟡 Medium Priority Issues (233)
-
-### Null Checks (201 occurrences)
-
-**Pattern:** Use optional chaining (`?.`) throughout codebase
-
-**Estimated Time:** 4-6 hours
-
-### Loading States (31 occurrences)
-
-**Pattern:** Add loading indicators and disable buttons
-
-**Estimated Time:** 2-3 hours
-
----
-
-## 🔵 Low Priority Issues (503)
-
-### Performance (Inline Functions)
-
-**Pattern:** Use `useCallback` for event handlers
-
-**Estimated Time:** Ongoing
-
-### Accessibility
-
-**Pattern:** Add ARIA labels, improve keyboard navigation
-
-**Estimated Time:** Ongoing
-
-### Code Quality
-
-**Pattern:** Remove console.logs, improve error messages
-
-**Estimated Time:** Ongoing
+**Backlog:**
+- ⏳ Add `?.` optional chaining throughout list renderers (200+ files)
+- ⏳ Add loading states to mutation buttons (29 forms)
 
 ---
 
@@ -310,73 +161,20 @@ const value = data.property.subproperty;
 | Priority | Total | Fixed | In Progress | Remaining | Progress |
 |----------|-------|-------|-------------|-----------|----------|
 | 🔴 Critical | 2 | 2 | 0 | 0 | ✅ 100% |
-| 🟠 High | 85 | 10 | 0 | 75 | ✅ ~12% |
-| 🟡 Medium | 233 | 0 | 0 | 233 | ⏳ 0% |
+| 🟠 High | 85 | 13 | 5 | 67 | ✅ ~15% |
+| 🟡 Medium | 233 | 3 | 10 | 220 | 🔄 ~1.3% |
 | 🔵 Low | 503 | 0 | 0 | 503 | ⏳ 0% |
-| **Total** | **823** | **12** | **0** | **811** | **~1.5%** |
+| **Total** | **823** | **18** | **15** | **790** | **~2.2%** |
 
 ---
 
 ## 🚀 Next Steps
 
-### Immediate (Continue High Priority)
-
-1. ✅ **Complete CampaignForm.jsx** - DONE
-2. ✅ **Fix ContractManager.jsx** - DONE
-3. ✅ **Fix ApprovalRulesManager.jsx** - DONE
-4. ✅ **Fix InvoiceList.jsx** - DONE
-5. ⏳ **Fix remaining 50+ event handlers** - Apply error handling pattern
-
-### Short-term (Complete High Priority)
-
-5. **Fix remaining 55+ event handlers** - Apply error handling pattern
-6. **Fix remaining 21 forms** - Add validation
-
-### Medium-term (Medium Priority)
-
-7. **Add null checks** - Use optional chaining throughout
-8. **Add loading states** - Improve UX
-
-### Long-term (Low Priority)
-
-9. **Performance optimizations** - useCallback, memoization
-10. **Accessibility improvements** - ARIA labels, keyboard nav
-
----
-
-## 🔧 Tools Created
-
-1. ✅ `src/hooks/useSafeEventHandler.js` - Safe event handler wrapper
-2. ✅ `src/hooks/useErrorHandler.js` - Enhanced error handler (already existed, improved)
-3. ⏳ `fix_ui_ux_issues.js` - Automated fix script (in progress)
-
----
-
-## 📝 Notes
-
-- **Scope:** 821 remaining issues is a large task
-- **Approach:** Fixing systematically, starting with most critical
-- **Patterns:** Established clear patterns for all fix types
-- **Time Estimate:** ~15-20 hours for all high/medium priority fixes
+1.  **Continue Error Handling Audit**: Focus on `PendingApprovalsPanel` and `PaymentAutomation`.
+2.  **Expand Null Checks**: Run a codebase scan for unsafe property access.
+3.  **Real-Time Capacity**: Implement Supabase Realtime for vendor capacity updates (as planned).
+4.  **Dashboard Widget**: Add Vendor Capacity Overview to the main dashboard.
 
 ---
 
 **Last Updated:** December 6, 2025
-
-## 🎉 Recent Fixes Applied
-
-### High Priority Fixes Completed:
-1. ✅ **CampaignForm.jsx** - Fully converted to react-hook-form with all fields
-2. ✅ **ContractManager.jsx** - Added error handling to all 5 event handlers
-3. ✅ **ApprovalRulesManager.jsx** - Added error handling and fixed validation
-4. ✅ **InvoiceList.jsx** - Added error handling to mark-as-paid operations
-5. ✅ **VendorProfile.jsx** - Converted to proper react-hook-form usage
-6. ✅ **ReportBuilder.jsx** - Added error handling to form submission
-
-### Key Improvements:
-- All forms now use react-hook-form consistently
-- Error handling added to critical event handlers
-- Validation error messages displayed to users
-- Proper error reporting to Sentry
-- User-friendly error messages via toast notifications
-

@@ -286,3 +286,32 @@ export const validatePhone = (phone) => {
 export const validateUrl = (url) => {
   return z.string().url().safeParse(url).success;
 };
+
+// Goods Receipt Schema
+export const goodsReceiptSchema = z.object({
+  receipt_number: z.string().optional(),
+  po_id: z.string().optional(),
+  po_number: z.string().optional(),
+  vendor_id: z.string().optional(),
+  vendor_name: z.string().optional(),
+  received_date: z.string().min(1, 'Received date is required'),
+  received_by: z.string().min(1, 'Received by is required'),
+  items_received: z.string().optional(),
+  total_value: z.preprocess(numberPreprocess, z.number().min(0)),
+  quality_status: z.enum(['passed', 'rejected', 'partial_reject']).default('passed'),
+  notes: z.string().optional(),
+  discrepancy_notes: z.string().optional(),
+});
+
+// Report Schema
+export const reportSchema = z.object({
+  name: z.string().min(1, 'Report name is required'),
+  report_type: z.string().min(1, 'Report type is required'),
+  schedule: z.enum(['none', 'daily', 'weekly', 'monthly']).default('none'),
+  schedule_day: z.number().int().min(1).max(31).default(1),
+  recipients: z.string().optional(), // We can add custom email list validation if needed
+  format: z.enum(['csv', 'pdf']).default('csv'),
+  sort_by: z.string().optional(),
+  sort_order: z.enum(['asc', 'desc']).default('desc'),
+  is_active: z.boolean().default(true),
+});

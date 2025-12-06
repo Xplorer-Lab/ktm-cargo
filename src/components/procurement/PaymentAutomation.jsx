@@ -112,28 +112,34 @@ export default function PaymentAutomation({
   const handleConfirmPayment = async () => {
     setProcessingPayment('batch');
 
-    const selectedReceiptData = pendingReceipts.filter((r) => selectedReceipts.includes(r.id));
-    const totalAmount = selectedReceiptData.reduce((sum, r) => sum + (r.total_value || 0), 0);
-    const vendorId = selectedReceiptData[0]?.vendor_id;
-    const vendorName = selectedReceiptData[0]?.vendor_name;
+    try {
+      const selectedReceiptData = pendingReceipts.filter((r) => selectedReceipts.includes(r.id));
+      const totalAmount = selectedReceiptData.reduce((sum, r) => sum + (r.total_value || 0), 0);
+      const vendorId = selectedReceiptData[0]?.vendor_id;
+      const vendorName = selectedReceiptData[0]?.vendor_name;
 
-    await onCreatePayment?.({
-      vendor_id: vendorId,
-      vendor_name: vendorName,
-      order_ids: selectedReceipts.join(','),
-      total_amount: totalAmount,
-      payment_terms: vendors.find((v) => v.id === vendorId)?.payment_terms || 'net_30',
-      due_date: format(calculateDueDate(selectedReceiptData[0]), 'yyyy-MM-dd'),
-      status: 'paid',
-      payment_method: paymentDetails.payment_method,
-      payment_date: new Date().toISOString().split('T')[0],
-      reference_number: paymentDetails.reference_number,
-    });
+      await onCreatePayment?.({
+        vendor_id: vendorId,
+        vendor_name: vendorName,
+        order_ids: selectedReceipts.join(','),
+        total_amount: totalAmount,
+        payment_terms: vendors.find((v) => v.id === vendorId)?.payment_terms || 'net_30',
+        due_date: format(calculateDueDate(selectedReceiptData[0]), 'yyyy-MM-dd'),
+        status: 'paid',
+        payment_method: paymentDetails.payment_method,
+        payment_date: new Date().toISOString().split('T')[0],
+        reference_number: paymentDetails.reference_number,
+      });
 
-    setProcessingPayment(null);
-    setShowPaymentDialog(false);
-    setSelectedReceipts([]);
-    toast.success('Payment processed successfully');
+      setShowPaymentDialog(false);
+      setSelectedReceipts([]);
+      toast.success('Payment processed successfully');
+    } catch (error) {
+      console.error('Failed to process payment:', error);
+      toast.error('Failed to process payment. Please try again.');
+    } finally {
+      setProcessingPayment(null);
+    }
   };
 
   const overdueCount = pendingReceipts.filter(
@@ -221,11 +227,10 @@ export default function PaymentAutomation({
                 return (
                   <div
                     key={receipt.id}
-                    className={`flex items-center justify-between p-4 rounded-lg border ${
-                      selectedReceipts.includes(receipt.id)
+                    className={`flex items-center justify-between p-4 rounded-lg border ${selectedReceipts.includes(receipt.id)
                         ? 'border-blue-300 bg-blue-50'
                         : 'border-slate-200 bg-slate-50'
-                    } hover:border-blue-200 transition-colors`}
+                      } hover:border-blue-200 transition-colors`}
                   >
                     <div className="flex items-center gap-4">
                       <Checkbox

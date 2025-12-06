@@ -84,7 +84,7 @@ Code: {code}`,
 
 export default function CampaignForm({ campaign, targetCount, onSubmit, onCancel }) {
   const { handleError, handleValidationError } = useErrorHandler();
-  
+
   const form = useForm({
     resolver: zodResolver(campaignSchema),
     defaultValues: {
@@ -176,17 +176,19 @@ export default function CampaignForm({ campaign, targetCount, onSubmit, onCancel
                   key={segment.value}
                   type="button"
                   onClick={() => form.setValue('target_segment', segment.value)}
-                  className={`p-3 rounded-xl border-2 text-left transition-all ${
-                    watchedValues.target_segment === segment.value
-                      ? 'border-blue-500 bg-blue-50'
-                      : 'border-slate-200 hover:border-blue-200'
-                  }`}
+                  className={`p-3 rounded-xl border-2 text-left transition-all ${watchedValues.target_segment === segment.value
+                    ? 'border-blue-500 bg-blue-50'
+                    : 'border-slate-200 hover:border-blue-200'
+                    }`}
                 >
                   <p className="font-medium text-sm">{segment.label}</p>
                   <p className="text-xs text-slate-500">{segment.description}</p>
                 </button>
               ))}
             </div>
+            {form.formState.errors.target_segment && (
+              <p className="text-xs text-rose-600 mt-1">{form.formState.errors.target_segment.message}</p>
+            )}
             {targetCount > 0 && (
               <div className="flex items-center gap-2 p-3 bg-blue-50 rounded-lg">
                 <Users className="w-4 h-4 text-blue-600" />
@@ -208,11 +210,10 @@ export default function CampaignForm({ campaign, targetCount, onSubmit, onCancel
                     key={type.value}
                     type="button"
                     onClick={() => handleTypeChange(type.value)}
-                    className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all ${
-                      watchedValues.campaign_type === type.value
-                        ? 'border-blue-500 bg-blue-50 text-blue-700'
-                        : 'border-slate-200 hover:border-blue-200'
-                    }`}
+                    className={`flex items-center gap-2 px-4 py-2 rounded-lg border-2 transition-all ${watchedValues.campaign_type === type.value
+                      ? 'border-blue-500 bg-blue-50 text-blue-700'
+                      : 'border-slate-200 hover:border-blue-200'
+                      }`}
                   >
                     <Icon className="w-4 h-4" />
                     {type.label}
@@ -220,6 +221,9 @@ export default function CampaignForm({ campaign, targetCount, onSubmit, onCancel
                 );
               })}
             </div>
+            {form.formState.errors.campaign_type && (
+              <p className="text-xs text-rose-600 mt-1">{form.formState.errors.campaign_type.message}</p>
+            )}
           </div>
 
           {/* Discount Settings */}
@@ -265,8 +269,8 @@ export default function CampaignForm({ campaign, targetCount, onSubmit, onCancel
           {/* Channel */}
           <div className="space-y-2">
             <Label>Distribution Channel</Label>
-            <Select 
-              value={watchedValues.channel || 'all'} 
+            <Select
+              value={watchedValues.channel || 'all'}
               onValueChange={(v) => form.setValue('channel', v)}
             >
               <SelectTrigger>

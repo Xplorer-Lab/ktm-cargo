@@ -173,35 +173,59 @@ export default function Settings() {
   // Quick action handlers
   const handleRunInventoryCheck = async () => {
     setActionLoading('inventory');
-    const lowStockItems = inventoryItems.filter((i) => i.current_stock <= i.reorder_point);
-    await new Promise((r) => setTimeout(r, 1000));
-    toast.success(`Inventory check complete. ${lowStockItems.length} items need attention.`);
-    setActionLoading(null);
+    try {
+      const lowStockItems = inventoryItems.filter((i) => i.current_stock <= i.reorder_point);
+      await new Promise((r) => setTimeout(r, 1000));
+      toast.success(`Inventory check complete. ${lowStockItems.length} items need attention.`);
+    } catch (error) {
+      console.error('Inventory check failed:', error);
+      toast.error('Failed to run inventory check');
+    } finally {
+      setActionLoading(null);
+    }
   };
 
   const handleProcessPayments = async () => {
     setActionLoading('payments');
-    const pending = vendorPayments.filter((p) => p.status === 'pending');
-    await new Promise((r) => setTimeout(r, 1000));
-    toast.success(`Found ${pending.length} pending payments to process.`);
-    setActionLoading(null);
+    try {
+      const pending = vendorPayments.filter((p) => p.status === 'pending');
+      await new Promise((r) => setTimeout(r, 1000));
+      toast.success(`Found ${pending.length} pending payments to process.`);
+    } catch (error) {
+      console.error('Payment processing failed:', error);
+      toast.error('Failed to process payments');
+    } finally {
+      setActionLoading(null);
+    }
   };
 
   const handleClearNotifications = async () => {
     setActionLoading('notifications');
-    for (const n of notificationsList) {
-      await db.notifications.update(n.id, { status: 'dismissed' });
+    try {
+      for (const n of notificationsList) {
+        await db.notifications.update(n.id, { status: 'dismissed' });
+      }
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      toast.success('All notifications cleared');
+    } catch (error) {
+      console.error('Failed to clear notifications:', error);
+      toast.error('Failed to clear notifications');
+    } finally {
+      setActionLoading(null);
     }
-    queryClient.invalidateQueries({ queryKey: ['notifications'] });
-    toast.success('All notifications cleared');
-    setActionLoading(null);
   };
 
   const handleSendWeeklyReport = async () => {
     setActionLoading('report');
-    await new Promise((r) => setTimeout(r, 1500));
-    toast.success('Weekly report generation started');
-    setActionLoading(null);
+    try {
+      await new Promise((r) => setTimeout(r, 1500));
+      toast.success('Weekly report generation started');
+    } catch (error) {
+      console.error('Failed to send weekly report:', error);
+      toast.error('Failed to generate report');
+    } finally {
+      setActionLoading(null);
+    }
   };
 
   // Stats calculations

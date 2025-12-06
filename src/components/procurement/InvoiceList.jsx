@@ -37,7 +37,11 @@ const STATUS_CONFIG = {
   cancelled: { label: 'Cancelled', color: 'bg-slate-100 text-slate-600', icon: FileText },
 };
 
-export default function InvoiceList({ invoices = [], onMarkPaid }) {
+import { Skeleton } from '@/components/ui/skeleton';
+
+// ... other imports ...
+
+export default function InvoiceList({ invoices = [], onMarkPaid, isLoading }) {
   const { handleError } = useErrorHandler();
   const [search, setSearch] = useState('');
   const [selectedInvoice, setSelectedInvoice] = useState(null);
@@ -63,6 +67,8 @@ export default function InvoiceList({ invoices = [], onMarkPaid }) {
     <div className="space-y-6">
       {/* Summary Cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+        {/* ... (Summary cards logic remains, maybe add skeletons there too? For now focusing on list) ... */}
+        {/* Actually, summary stats depend on data. If loading, they will be 0. It's better to show skeletons or just let them be 0 for now as they are less intrusive than "No invoices yet" */}
         <Card className="border-0 shadow-sm">
           <CardContent className="p-4">
             <div className="flex items-center gap-3">
@@ -70,7 +76,7 @@ export default function InvoiceList({ invoices = [], onMarkPaid }) {
                 <FileText className="w-5 h-5 text-blue-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">{invoices.length}</p>
+                {isLoading ? <Skeleton className="h-8 w-16" /> : <p className="text-2xl font-bold">{invoices.length}</p>}
                 <p className="text-xs text-slate-500">Total Invoices</p>
               </div>
             </div>
@@ -83,7 +89,7 @@ export default function InvoiceList({ invoices = [], onMarkPaid }) {
                 <Clock className="w-5 h-5 text-amber-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">฿{totalPending.toLocaleString()}</p>
+                {isLoading ? <Skeleton className="h-8 w-24" /> : <p className="text-2xl font-bold">฿{totalPending.toLocaleString()}</p>}
                 <p className="text-xs text-slate-500">Pending</p>
               </div>
             </div>
@@ -96,8 +102,8 @@ export default function InvoiceList({ invoices = [], onMarkPaid }) {
                 <AlertTriangle className="w-5 h-5 text-rose-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">฿{totalOverdue.toLocaleString()}</p>
-                <p className="text-xs text-slate-500">{overdueCount} Overdue</p>
+                {isLoading ? <Skeleton className="h-8 w-24" /> : <p className="text-2xl font-bold">฿{totalOverdue.toLocaleString()}</p>}
+                <p className="text-xs text-slate-500">{isLoading ? '' : `${overdueCount} Overdue`}</p>
               </div>
             </div>
           </CardContent>
@@ -109,9 +115,7 @@ export default function InvoiceList({ invoices = [], onMarkPaid }) {
                 <CheckCircle className="w-5 h-5 text-emerald-600" />
               </div>
               <div>
-                <p className="text-2xl font-bold">
-                  {invoices.filter((i) => i.status === 'paid').length}
-                </p>
+                {isLoading ? <Skeleton className="h-8 w-16" /> : <p className="text-2xl font-bold">{invoices.filter((i) => i.status === 'paid').length}</p>}
                 <p className="text-xs text-slate-500">Paid</p>
               </div>
             </div>
@@ -139,7 +143,25 @@ export default function InvoiceList({ invoices = [], onMarkPaid }) {
           </div>
         </CardHeader>
         <CardContent>
-          {filteredInvoices.length > 0 ? (
+          {isLoading ? (
+            <div className="space-y-3">
+              {Array(3).fill(0).map((_, i) => (
+                <div key={i} className="flex items-center justify-between p-4 border rounded-lg">
+                  <div className="flex items-center gap-4">
+                    <Skeleton className="h-10 w-10 rounded-lg" />
+                    <div className="space-y-2">
+                      <Skeleton className="h-4 w-32" />
+                      <Skeleton className="h-3 w-48" />
+                    </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Skeleton className="h-6 w-24" />
+                    <Skeleton className="h-3 w-16" />
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : filteredInvoices.length > 0 ? (
             <div className="space-y-3">
               {filteredInvoices.map((invoice) => {
                 const config = STATUS_CONFIG[invoice.status] || STATUS_CONFIG.pending;

@@ -18,6 +18,7 @@ import {
   ChevronRight,
 } from 'lucide-react';
 import { format } from 'date-fns';
+import { toast } from 'sonner';
 
 const TRACKING_STEPS = [
   { status: 'pending', label: 'Order Placed', icon: Clock },
@@ -58,18 +59,30 @@ export default function CustomerShipmentTracker({ customer }) {
   const handleSearch = async () => {
     if (!searchQuery.trim()) return;
 
-    // Search by tracking number
-    const results = await db.shipments.filter({ tracking_number: searchQuery.trim() });
-    if (results.length > 0) {
-      setSelectedShipment(results[0]);
-    } else {
-      // Try partial match in existing shipments
-      const found = shipments.find(
-        (s) =>
-          s.tracking_number?.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          s.id?.includes(searchQuery)
-      );
-      setSelectedShipment(found || null);
+    try {
+      // Search by tracking number
+      const results = await db.shipments.filter({ tracking_number: searchQuery.trim() });
+      if (results.length > 0) {
+        setSelectedShipment(results[0]);
+        toast.success('Shipment found');
+      } else {
+        // Try partial match in existing shipments
+        const found = shipments.find(
+          (s) =>
+            s.tracking_number?.toLowerCase().includes(searchQuery.toLowerCase()) ||
+            s.id?.includes(searchQuery)
+        );
+        if (found) {
+          setSelectedShipment(found);
+          toast.success('Shipment found');
+        } else {
+          setSelectedShipment(null);
+          toast.error('No shipment found with that tracking number');
+        }
+      }
+    } catch (error) {
+      console.error('Failed to search shipment:', error);
+      toast.error('Failed to search. Please try again.');
     }
   };
 
@@ -137,9 +150,8 @@ export default function CustomerShipmentTracker({ customer }) {
                   return (
                     <div key={step.status} className="flex flex-col items-center relative z-10">
                       <div
-                        className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
-                          isComplete ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-400'
-                        } ${isCurrent ? 'ring-4 ring-blue-200' : ''}`}
+                        className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${isComplete ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-400'
+                          } ${isCurrent ? 'ring-4 ring-blue-200' : ''}`}
                       >
                         <StepIcon className="w-5 h-5" />
                       </div>
@@ -256,11 +268,10 @@ export default function CustomerShipmentTracker({ customer }) {
                 <button
                   key={shipment.id}
                   onClick={() => setSelectedShipment(shipment)}
-                  className={`w-full flex items-center justify-between p-4 rounded-xl border-2 transition-all text-left ${
-                    selectedShipment?.id === shipment.id
+                  className={`w-full flex items-center justify-between p-4 rounded-xl border-2 transition-all text-left ${selectedShipment?.id === shipment.id
                       ? 'border-blue-500 bg-blue-50'
                       : 'border-slate-200 hover:border-blue-200'
-                  }`}
+                    }`}
                 >
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-blue-100 rounded-lg">

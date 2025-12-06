@@ -316,9 +316,9 @@ export default function ShoppingOrders() {
       if (searchQuery) {
         const query = searchQuery.toLowerCase();
         return (
-          o.customer_name?.toLowerCase().includes(query) ||
-          o.order_number?.toLowerCase().includes(query) ||
-          o.product_details?.toLowerCase().includes(query)
+          (o.customer_name || '').toLowerCase().includes(query) ||
+          (o.order_number || '').toLowerCase().includes(query) ||
+          (o.product_details || '').toLowerCase().includes(query)
         );
       }
       return true;
@@ -508,6 +508,7 @@ export default function ShoppingOrders() {
               purchaseOrders={purchaseOrders}
               onUpdateOrder={handleUpdateOrderForAllocation}
               onUpdatePO={handleUpdatePO}
+              isLoading={isLoading}
             />
           </TabsContent>
 

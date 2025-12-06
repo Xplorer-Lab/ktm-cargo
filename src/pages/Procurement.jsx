@@ -134,7 +134,7 @@ export default function Procurement() {
     queryFn: () => db.approvalHistory.list('-created_at'),
   });
 
-  const { data: invoices = [] } = useQuery({
+  const { data: invoices = [], isLoading: isLoadingInvoices } = useQuery({
     queryKey: ['invoices'],
     queryFn: () => db.invoices.list('-created_at'),
   });
@@ -738,11 +738,14 @@ export default function Procurement() {
             />
           </TabsContent>
 
+
+
           {/* Invoices Tab */}
           <TabsContent value="invoices" className="mt-6">
             <InvoiceList
               invoices={invoices}
               onMarkPaid={(id) => markInvoicePaidMutation.mutate(id)}
+              isLoading={isLoadingInvoices}
             />
           </TabsContent>
 

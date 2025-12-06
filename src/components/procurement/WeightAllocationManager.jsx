@@ -119,86 +119,96 @@ export default function WeightAllocationManager({
 
     const vendorCost = weight * (selectedPO.cost_per_kg || 0);
 
-    if (allocationType === 'shipment') {
-      const shipment = shipments.find((s) => s.id === selectedOrderId);
-      if (shipment && onUpdateShipment) {
-        await onUpdateShipment(shipment.id, {
-          vendor_po_id: selectedPO.id,
-          vendor_po_number: selectedPO.po_number,
-          vendor_id: selectedPO.vendor_id,
-          vendor_name: selectedPO.vendor_name,
-          vendor_cost_per_kg: selectedPO.cost_per_kg,
-          vendor_total_cost: vendorCost,
+    try {
+      if (allocationType === 'shipment') {
+        const shipment = shipments.find((s) => s.id === selectedOrderId);
+        if (shipment && onUpdateShipment) {
+          await onUpdateShipment(shipment.id, {
+            vendor_po_id: selectedPO.id,
+            vendor_po_number: selectedPO.po_number,
+            vendor_id: selectedPO.vendor_id,
+            vendor_name: selectedPO.vendor_name,
+            vendor_cost_per_kg: selectedPO.cost_per_kg,
+            vendor_total_cost: vendorCost,
+          });
+        }
+      } else {
+        const order = shoppingOrders.find((s) => s.id === selectedOrderId);
+        if (order && onUpdateShoppingOrder) {
+          await onUpdateShoppingOrder(order.id, {
+            vendor_po_id: selectedPO.id,
+            vendor_po_number: selectedPO.po_number,
+            vendor_id: selectedPO.vendor_id,
+            vendor_name: selectedPO.vendor_name,
+            vendor_cost_per_kg: selectedPO.cost_per_kg,
+            vendor_cost: vendorCost,
+          });
+        }
+      }
+
+      // Update PO allocation
+      if (onUpdatePO) {
+        const newAllocated = (selectedPO.allocated_weight_kg || 0) + weight;
+        const newRemaining = (selectedPO.total_weight_kg || 0) - newAllocated;
+        await onUpdatePO(selectedPO.id, {
+          allocated_weight_kg: newAllocated,
+          remaining_weight_kg: newRemaining,
         });
       }
-    } else {
-      const order = shoppingOrders.find((s) => s.id === selectedOrderId);
-      if (order && onUpdateShoppingOrder) {
-        await onUpdateShoppingOrder(order.id, {
-          vendor_po_id: selectedPO.id,
-          vendor_po_number: selectedPO.po_number,
-          vendor_id: selectedPO.vendor_id,
-          vendor_name: selectedPO.vendor_name,
-          vendor_cost_per_kg: selectedPO.cost_per_kg,
-          vendor_cost: vendorCost,
-        });
-      }
-    }
 
-    // Update PO allocation
-    if (onUpdatePO) {
-      const newAllocated = (selectedPO.allocated_weight_kg || 0) + weight;
-      const newRemaining = (selectedPO.total_weight_kg || 0) - newAllocated;
-      await onUpdatePO(selectedPO.id, {
-        allocated_weight_kg: newAllocated,
-        remaining_weight_kg: newRemaining,
-      });
+      toast.success('Weight allocated successfully');
+      setShowAllocateDialog(false);
+      setSelectedOrderId('');
+      setAllocateWeight('');
+    } catch (error) {
+      console.error('Failed to allocate weight:', error);
+      toast.error('Failed to allocate weight. Please try again.');
     }
-
-    toast.success('Weight allocated successfully');
-    setShowAllocateDialog(false);
-    setSelectedOrderId('');
-    setAllocateWeight('');
   };
 
   // Handle unlink
   const handleUnlink = async (type, order) => {
-    const weight =
-      type === 'shipment' ? order.weight_kg : order.actual_weight || order.estimated_weight;
-    const poId = order.vendor_po_id;
-    const po = purchaseOrders.find((p) => p.id === poId);
+    try {
+      const weight =
+        type === 'shipment' ? order.weight_kg : order.actual_weight || order.estimated_weight;
+      const poId = order.vendor_po_id;
+      const po = purchaseOrders.find((p) => p.id === poId);
 
-    if (type === 'shipment' && onUpdateShipment) {
-      await onUpdateShipment(order.id, {
-        vendor_po_id: '',
-        vendor_po_number: '',
-        vendor_id: '',
-        vendor_name: '',
-        vendor_cost_per_kg: 0,
-        vendor_total_cost: 0,
-      });
-    } else if (onUpdateShoppingOrder) {
-      await onUpdateShoppingOrder(order.id, {
-        vendor_po_id: '',
-        vendor_po_number: '',
-        vendor_id: '',
-        vendor_name: '',
-        vendor_cost_per_kg: 0,
-        vendor_cost: 0,
-      });
+      if (type === 'shipment' && onUpdateShipment) {
+        await onUpdateShipment(order.id, {
+          vendor_po_id: '',
+          vendor_po_number: '',
+          vendor_id: '',
+          vendor_name: '',
+          vendor_cost_per_kg: 0,
+          vendor_total_cost: 0,
+        });
+      } else if (onUpdateShoppingOrder) {
+        await onUpdateShoppingOrder(order.id, {
+          vendor_po_id: '',
+          vendor_po_number: '',
+          vendor_id: '',
+          vendor_name: '',
+          vendor_cost_per_kg: 0,
+          vendor_cost: 0,
+        });
+      }
+
+      // Update PO allocation
+      if (po && onUpdatePO) {
+        const newAllocated = Math.max(0, (po.allocated_weight_kg || 0) - weight);
+        const newRemaining = (po.total_weight_kg || 0) - newAllocated;
+        await onUpdatePO(po.id, {
+          allocated_weight_kg: newAllocated,
+          remaining_weight_kg: newRemaining,
+        });
+      }
+
+      toast.success('Order unlinked from PO');
+    } catch (error) {
+      console.error('Failed to unlink order:', error);
+      toast.error('Failed to unlink order. Please try again.');
     }
-
-    // Update PO allocation
-    if (po && onUpdatePO) {
-      const newAllocated = Math.max(0, (po.allocated_weight_kg || 0) - weight);
-      const newRemaining = (po.total_weight_kg || 0) - newAllocated;
-      await onUpdatePO(po.id, {
-        allocated_weight_kg: newAllocated,
-        remaining_weight_kg: newRemaining,
-      });
-    }
-
-    toast.success('Order unlinked from PO');
   };
 
   const openAllocateDialog = (po) => {
@@ -604,43 +614,43 @@ export default function WeightAllocationManager({
               {/* Profit Summary */}
               {(getLinkedShipments(selectedPO.id).length > 0 ||
                 getLinkedShoppingOrders(selectedPO.id).length > 0) && (
-                <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
-                  <h4 className="font-medium text-emerald-800 mb-2">Profit Summary for this PO</h4>
-                  {(() => {
-                    const profitData = calculatePOProfit(selectedPO);
-                    const margin =
-                      profitData.revenue > 0
-                        ? ((profitData.profit / profitData.revenue) * 100).toFixed(1)
-                        : 0;
-                    return (
-                      <div className="grid grid-cols-4 gap-4 text-sm">
-                        <div>
-                          <p className="text-emerald-600">Total Revenue</p>
-                          <p className="font-bold text-emerald-900">
-                            ฿{profitData.revenue.toLocaleString()}
-                          </p>
+                  <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
+                    <h4 className="font-medium text-emerald-800 mb-2">Profit Summary for this PO</h4>
+                    {(() => {
+                      const profitData = calculatePOProfit(selectedPO);
+                      const margin =
+                        profitData.revenue > 0
+                          ? ((profitData.profit / profitData.revenue) * 100).toFixed(1)
+                          : 0;
+                      return (
+                        <div className="grid grid-cols-4 gap-4 text-sm">
+                          <div>
+                            <p className="text-emerald-600">Total Revenue</p>
+                            <p className="font-bold text-emerald-900">
+                              ฿{profitData.revenue.toLocaleString()}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-emerald-600">Vendor Cost</p>
+                            <p className="font-bold text-rose-600">
+                              ฿{profitData.cost.toLocaleString()}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-emerald-600">Net Profit</p>
+                            <p className="font-bold text-emerald-900">
+                              ฿{profitData.profit.toLocaleString()}
+                            </p>
+                          </div>
+                          <div>
+                            <p className="text-emerald-600">Margin</p>
+                            <p className="font-bold text-emerald-900">{margin}%</p>
+                          </div>
                         </div>
-                        <div>
-                          <p className="text-emerald-600">Vendor Cost</p>
-                          <p className="font-bold text-rose-600">
-                            ฿{profitData.cost.toLocaleString()}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-emerald-600">Net Profit</p>
-                          <p className="font-bold text-emerald-900">
-                            ฿{profitData.profit.toLocaleString()}
-                          </p>
-                        </div>
-                        <div>
-                          <p className="text-emerald-600">Margin</p>
-                          <p className="font-bold text-emerald-900">{margin}%</p>
-                        </div>
-                      </div>
-                    );
-                  })()}
-                </div>
-              )}
+                      );
+                    })()}
+                  </div>
+                )}
 
               <div className="flex gap-3">
                 <Button variant="outline" onClick={() => setSelectedPO(null)} className="flex-1">
@@ -740,16 +750,16 @@ export default function WeightAllocationManager({
                     <SelectContent>
                       {allocationType === 'shipment'
                         ? unallocatedShipments.map((s) => (
-                            <SelectItem key={s.id} value={s.id}>
-                              {s.tracking_number} - {s.customer_name} ({s.weight_kg} kg)
-                            </SelectItem>
-                          ))
+                          <SelectItem key={s.id} value={s.id}>
+                            {s.tracking_number} - {s.customer_name} ({s.weight_kg} kg)
+                          </SelectItem>
+                        ))
                         : unallocatedShoppingOrders.map((s) => (
-                            <SelectItem key={s.id} value={s.id}>
-                              {s.order_number} - {s.customer_name} (
-                              {s.actual_weight || s.estimated_weight} kg)
-                            </SelectItem>
-                          ))}
+                          <SelectItem key={s.id} value={s.id}>
+                            {s.order_number} - {s.customer_name} (
+                            {s.actual_weight || s.estimated_weight} kg)
+                          </SelectItem>
+                        ))}
                     </SelectContent>
                   </Select>
                 )}

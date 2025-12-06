@@ -1,42 +1,19 @@
-import React, { useState, useMemo } from 'react';
-import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
-import { Progress } from '@/components/ui/progress';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import {
-  Scale,
-  Package,
-  Link,
-  Unlink,
-  AlertTriangle,
-  CheckCircle,
-  TrendingUp,
-  Save,
-  ChevronRight,
-} from 'lucide-react';
-import { toast } from 'sonner';
+import { Skeleton } from '@/components/ui/skeleton';
+// ... existing imports ...
 
 export default function ShoppingOrderAllocationPanel({
   orders = [],
   purchaseOrders = [],
   onUpdateOrder,
   onUpdatePO,
+  isLoading,
 }) {
   const [showAllocateDialog, setShowAllocateDialog] = useState(false);
   const [selectedOrder, setSelectedOrder] = useState(null);
   const [selectedPOId, setSelectedPOId] = useState('');
 
-  // Get active POs with available weight
+  // ... (existing logic for availablePOs, unallocatedOrders, stats) ...
+
   const availablePOs = useMemo(() => {
     return purchaseOrders.filter(
       (po) =>
@@ -45,7 +22,6 @@ export default function ShoppingOrderAllocationPanel({
     );
   }, [purchaseOrders]);
 
-  // Unallocated orders
   const unallocatedOrders = useMemo(() => {
     return orders.filter(
       (o) =>
@@ -55,7 +31,6 @@ export default function ShoppingOrderAllocationPanel({
     );
   }, [orders]);
 
-  // Summary stats
   const stats = useMemo(() => {
     const totalOrders = orders.filter((o) => !['cancelled'].includes(o.status)).length;
     const allocatedOrders = orders.filter((o) => o.vendor_po_id).length;
@@ -71,6 +46,8 @@ export default function ShoppingOrderAllocationPanel({
     return { totalOrders, allocatedOrders, totalWeight, allocatedWeight, totalVendorCost };
   }, [orders]);
 
+  // ... (handlers) ...
+
   const openAllocateDialog = (order) => {
     setSelectedOrder(order);
     setSelectedPOId('');
@@ -78,6 +55,7 @@ export default function ShoppingOrderAllocationPanel({
   };
 
   const handleAllocate = async () => {
+    // ... (same as before) ...
     if (!selectedOrder || !selectedPOId) {
       toast.error('Please select a Purchase Order');
       return;
@@ -95,57 +73,68 @@ export default function ShoppingOrderAllocationPanel({
 
     const vendorCost = weight * (po.cost_per_kg || 0);
 
-    // Update order with PO allocation
-    await onUpdateOrder(selectedOrder.id, {
-      vendor_po_id: po.id,
-      vendor_po_number: po.po_number,
-      vendor_id: po.vendor_id,
-      vendor_name: po.vendor_name,
-      vendor_cost_per_kg: po.cost_per_kg,
-      vendor_cost: vendorCost,
-    });
-
-    // Update PO weight
-    if (onUpdatePO) {
-      const newAllocated = (po.allocated_weight_kg || 0) + weight;
-      const newRemaining = (po.total_weight_kg || 0) - newAllocated;
-      await onUpdatePO(po.id, {
-        allocated_weight_kg: newAllocated,
-        remaining_weight_kg: newRemaining,
+    try {
+      // Update order with PO allocation
+      await onUpdateOrder(selectedOrder.id, {
+        vendor_po_id: po.id,
+        vendor_po_number: po.po_number,
+        vendor_id: po.vendor_id,
+        vendor_name: po.vendor_name,
+        vendor_cost_per_kg: po.cost_per_kg,
+        vendor_cost: vendorCost,
       });
-    }
 
-    toast.success('Weight allocated successfully');
-    setShowAllocateDialog(false);
-    setSelectedOrder(null);
-    setSelectedPOId('');
+      // Update PO weight
+      if (onUpdatePO) {
+        const newAllocated = (po.allocated_weight_kg || 0) + weight;
+        const newRemaining = (po.total_weight_kg || 0) - newAllocated;
+        await onUpdatePO(po.id, {
+          allocated_weight_kg: newAllocated,
+          remaining_weight_kg: newRemaining,
+        });
+      }
+
+      toast.success('Weight allocated successfully');
+      setShowAllocateDialog(false);
+      setSelectedOrder(null);
+      setSelectedPOId('');
+    } catch (error) {
+      console.error('Failed to allocate weight:', error);
+    }
   };
 
   const handleUnlink = async (order) => {
-    const weight = order.actual_weight || order.estimated_weight || 0;
-    const po = purchaseOrders.find((p) => p.id === order.vendor_po_id);
+    // ... (same as before) ...
+    try {
+      const weight = order.actual_weight || order.estimated_weight || 0;
+      const po = purchaseOrders.find((p) => p.id === order.vendor_po_id);
 
-    await onUpdateOrder(order.id, {
-      vendor_po_id: '',
-      vendor_po_number: '',
-      vendor_id: '',
-      vendor_name: '',
-      vendor_cost_per_kg: 0,
-      vendor_cost: 0,
-    });
-
-    // Update PO weight
-    if (po && onUpdatePO) {
-      const newAllocated = Math.max(0, (po.allocated_weight_kg || 0) - weight);
-      const newRemaining = (po.total_weight_kg || 0) - newAllocated;
-      await onUpdatePO(po.id, {
-        allocated_weight_kg: newAllocated,
-        remaining_weight_kg: newRemaining,
+      await onUpdateOrder(order.id, {
+        vendor_po_id: '',
+        vendor_po_number: '',
+        vendor_po_ref: null,
+        vendor_id: '',
+        vendor_name: '',
+        vendor_cost_per_kg: 0,
+        vendor_cost: 0,
       });
-    }
 
-    toast.success('Order unlinked from PO');
+      // Update PO weight
+      if (po && onUpdatePO) {
+        const newAllocated = Math.max(0, (po.allocated_weight_kg || 0) - weight);
+        const newRemaining = (po.total_weight_kg || 0) - newAllocated;
+        await onUpdatePO(po.id, {
+          allocated_weight_kg: newAllocated,
+          remaining_weight_kg: newRemaining,
+        });
+      }
+
+      toast.success('Order unlinked from PO');
+    } catch (error) {
+      console.error('Failed to unlink order:', error);
+    }
   };
+
 
   return (
     <div className="space-y-6">
@@ -159,7 +148,7 @@ export default function ShoppingOrderAllocationPanel({
               </div>
               <div>
                 <p className="text-xs text-blue-600 font-medium">Total Weight</p>
-                <p className="text-xl font-bold text-blue-900">{stats.totalWeight.toFixed(1)} kg</p>
+                {isLoading ? <Skeleton className="h-7 w-20" /> : <p className="text-xl font-bold text-blue-900">{stats.totalWeight.toFixed(1)} kg</p>}
               </div>
             </div>
           </CardContent>
@@ -173,9 +162,9 @@ export default function ShoppingOrderAllocationPanel({
               </div>
               <div>
                 <p className="text-xs text-emerald-600 font-medium">Allocated</p>
-                <p className="text-xl font-bold text-emerald-900">
+                {isLoading ? <Skeleton className="h-7 w-12" /> : <p className="text-xl font-bold text-emerald-900">
                   {stats.allocatedOrders}/{stats.totalOrders}
-                </p>
+                </p>}
               </div>
             </div>
           </CardContent>
@@ -189,7 +178,7 @@ export default function ShoppingOrderAllocationPanel({
               </div>
               <div>
                 <p className="text-xs text-amber-600 font-medium">Unallocated</p>
-                <p className="text-xl font-bold text-amber-900">{unallocatedOrders.length}</p>
+                {isLoading ? <Skeleton className="h-7 w-8" /> : <p className="text-xl font-bold text-amber-900">{unallocatedOrders.length}</p>}
               </div>
             </div>
           </CardContent>
@@ -203,9 +192,9 @@ export default function ShoppingOrderAllocationPanel({
               </div>
               <div>
                 <p className="text-xs text-rose-600 font-medium">Vendor Cost</p>
-                <p className="text-xl font-bold text-rose-900">
+                {isLoading ? <Skeleton className="h-7 w-24" /> : <p className="text-xl font-bold text-rose-900">
                   ฿{stats.totalVendorCost.toLocaleString()}
-                </p>
+                </p>}
               </div>
             </div>
           </CardContent>
@@ -213,7 +202,7 @@ export default function ShoppingOrderAllocationPanel({
       </div>
 
       {/* Unallocated Orders Alert */}
-      {unallocatedOrders.length > 0 && (
+      {unallocatedOrders.length > 0 && !isLoading && (
         <Card className="border-0 shadow-sm border-l-4 border-l-amber-500 bg-amber-50">
           <CardContent className="p-4">
             <div className="flex items-center justify-between">
@@ -248,7 +237,13 @@ export default function ShoppingOrderAllocationPanel({
           <CardDescription>Assign shopping orders to vendor Purchase Orders</CardDescription>
         </CardHeader>
         <CardContent>
-          {unallocatedOrders.length > 0 ? (
+          {isLoading ? (
+            <div className="space-y-3">
+              {[1, 2, 3].map((i) => (
+                <Skeleton key={i} className="h-16 w-full rounded-lg" />
+              ))}
+            </div>
+          ) : unallocatedOrders.length > 0 ? (
             <div className="space-y-3">
               {unallocatedOrders.map((order) => (
                 <div
@@ -303,7 +298,15 @@ export default function ShoppingOrderAllocationPanel({
         </CardHeader>
         <CardContent>
           <div className="space-y-3">
-            {orders.filter((o) => o.vendor_po_id).length > 0 ? (
+            {isLoading ? (
+              <div className="space-y-3">
+                {[1, 2, 3].map((i) => (
+                  <Skeleton key={i} className="h-16 w-full rounded-lg" />
+                ))}
+              </div>
+            ) : orders.filter((o) => o.vendor_po_id).length > 0 ? (
+              // ... existing map logic ...
+
               orders
                 .filter((o) => o.vendor_po_id)
                 .slice(0, 10)

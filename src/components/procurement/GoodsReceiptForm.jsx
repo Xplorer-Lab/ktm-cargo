@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -12,32 +12,43 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import { PackageCheck, X, AlertTriangle, CheckCircle } from 'lucide-react';
+import { PackageCheck, X, AlertTriangle, CheckCircle, Loader2 } from 'lucide-react';
+import { toast } from 'sonner';
 
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { goodsReceiptSchema } from '@/lib/schemas';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 
 export default function GoodsReceiptForm({ purchaseOrder, onSubmit, onCancel }) {
   const { handleError, handleValidationError } = useErrorHandler();
-  const [receivedBy, setReceivedBy] = useState('');
-  const [notes, setNotes] = useState('');
-  const [discrepancyNotes, setDiscrepancyNotes] = useState('');
+
+  const form = useForm({
+    resolver: zodResolver(goodsReceiptSchema.partial()),
+    defaultValues: {
+      received_by: '',
+      notes: '',
+      discrepancy_notes: '',
+      quality_status: 'passed',
+      items_received: '[]',
+    }
+  });
+
+  // Local state for items array management (easier than field array for this complex logic)
   const [items, setItems] = useState([]);
 
   useEffect(() => {
     if (purchaseOrder?.items) {
       try {
         const poItems = JSON.parse(purchaseOrder.items);
-        setItems(
-          poItems.map((item) => ({
-            item_name: item.name,
-            ordered_qty: item.quantity,
-            received_qty: item.quantity,
-            condition: 'good',
-            unit_price: item.unit_price,
-          }))
-        );
+        const initialItems = poItems.map((item) => ({
+          item_name: item.name,
+          ordered_qty: item.quantity,
+          received_qty: item.quantity,
+          condition: 'good',
+          unit_price: item.unit_price,
+        }));
+        setItems(initialItems);
       } catch {
         setItems([]);
       }
@@ -59,14 +70,8 @@ export default function GoodsReceiptForm({ purchaseOrder, onSubmit, onCancel }) 
     (item) => item.received_qty !== item.ordered_qty || item.condition !== 'good'
   );
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const handleFormSubmit = async (formData) => {
     try {
-      if (!receivedBy) {
-        toast.error('Please enter who received the goods');
-        return;
-      }
-
       const receiptNumber = `GR-${Date.now().toString(36).toUpperCase()}`;
       const qualityStatus = items.every((i) => i.condition === 'good')
         ? 'passed'
@@ -74,27 +79,31 @@ export default function GoodsReceiptForm({ purchaseOrder, onSubmit, onCancel }) 
           ? 'rejected'
           : 'partial_reject';
 
-      const data = {
+      // Manually construct the final payload
+      const finalData = {
+        ...formData,
         receipt_number: receiptNumber,
         po_id: purchaseOrder.id,
         po_number: purchaseOrder.po_number,
         vendor_id: purchaseOrder.vendor_id,
         vendor_name: purchaseOrder.vendor_name,
         received_date: new Date().toISOString().split('T')[0],
-        received_by: receivedBy,
         items_received: JSON.stringify(items),
         total_value: totalValue,
         quality_status: qualityStatus,
-        notes,
-        discrepancy_notes: hasDiscrepancy ? discrepancyNotes : '',
+        discrepancy_notes: hasDiscrepancy ? formData.discrepancy_notes : '',
       };
 
-      await onSubmit(data);
+      await onSubmit(finalData);
     } catch (error) {
-      handleError(error, 'Failed to submit goods receipt', {
-        component: 'GoodsReceiptForm',
-        action: 'submit',
-      });
+      if (error.name === 'ZodError') {
+        handleValidationError(error, 'Goods Receipt');
+      } else {
+        handleError(error, 'Failed to submit goods receipt', {
+          component: 'GoodsReceiptForm',
+          action: 'submit',
+        });
+      }
     }
   };
 
@@ -109,7 +118,7 @@ export default function GoodsReceiptForm({ purchaseOrder, onSubmit, onCancel }) 
             Receive Goods
           </CardTitle>
           <p className="text-sm text-slate-500 mt-1">
-            PO: {purchaseOrder.po_number} • {purchaseOrder.vendor_name}
+            PO: {purchaseOrder.po_number || 'N/A'} • {purchaseOrder.vendor_name}
           </p>
         </div>
         <Button variant="ghost" size="icon" onClick={onCancel}>
@@ -118,18 +127,19 @@ export default function GoodsReceiptForm({ purchaseOrder, onSubmit, onCancel }) 
       </CardHeader>
 
       <CardContent className="p-6">
-        <form onSubmit={handleSubmit} className="space-y-6">
+        <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
           <div className="space-y-2">
-            <Label>Received By</Label>
+            <Label>Received By *</Label>
             <Input
-              value={receivedBy}
-              onChange={(e) => setReceivedBy(e.target.value)}
+              {...form.register('received_by')}
               placeholder="Your name"
-              required
             />
+            {form.formState.errors.received_by && (
+              <p className="text-xs text-rose-600 mt-1">{form.formState.errors.received_by.message}</p>
+            )}
           </div>
 
-          {/* Items Table */}
+          {/* Items Table - Managed via local state for UI responsiveness */}
           <div className="border rounded-lg overflow-hidden">
             <table className="w-full">
               <thead className="bg-slate-50">
@@ -197,20 +207,21 @@ export default function GoodsReceiptForm({ purchaseOrder, onSubmit, onCancel }) 
                 <span className="font-medium">Discrepancy Detected</span>
               </div>
               <Textarea
-                value={discrepancyNotes}
-                onChange={(e) => setDiscrepancyNotes(e.target.value)}
+                {...form.register('discrepancy_notes')}
                 placeholder="Please describe any discrepancies..."
                 rows={2}
                 className="bg-white"
               />
+              {form.formState.errors.discrepancy_notes && (
+                <p className="text-xs text-rose-600 mt-1">{form.formState.errors.discrepancy_notes.message}</p>
+              )}
             </div>
           )}
 
           <div className="space-y-2">
             <Label>Notes</Label>
             <Textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
+              {...form.register('notes')}
               placeholder="Additional notes about this receipt..."
               rows={2}
             />
@@ -227,8 +238,16 @@ export default function GoodsReceiptForm({ purchaseOrder, onSubmit, onCancel }) 
               <Button type="button" variant="outline" onClick={onCancel}>
                 Cancel
               </Button>
-              <Button type="submit" className="bg-emerald-600 hover:bg-emerald-700">
-                <PackageCheck className="w-4 h-4 mr-2" />
+              <Button
+                type="submit"
+                className="bg-emerald-600 hover:bg-emerald-700"
+                disabled={form.formState.isSubmitting}
+              >
+                {form.formState.isSubmitting ? (
+                  <Loader2 className="w-4 h-4 mr-2 animate-spin" />
+                ) : (
+                  <PackageCheck className="w-4 h-4 mr-2" />
+                )}
                 Confirm Receipt
               </Button>
             </div>
