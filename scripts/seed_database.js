@@ -9,7 +9,7 @@ const __dirname = path.dirname(__filename);
 // Simple .env parser
 function loadEnv() {
   try {
-    const envPath = path.resolve(__dirname, '.env');
+    const envPath = path.resolve(__dirname, '../.env');
     if (!fs.existsSync(envPath)) {
       console.warn('.env file not found, checking process.env');
       return;

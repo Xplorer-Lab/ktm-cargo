@@ -58,7 +58,7 @@ export default function CampaignLauncher({ targetCustomers, segment, onClose, on
         discount_code: form.discount_code,
         message_template: form.message_template,
         channel: form.channel,
-        status: 'active',
+        // Note: status field doesn't exist in database
       };
       const validatedData = campaignSchema.parse(campaignData);
       const campaign = await db.campaigns.create(validatedData);
@@ -83,8 +83,7 @@ export default function CampaignLauncher({ targetCustomers, segment, onClose, on
         }
       }
 
-      // Update campaign with sent count
-      await db.campaigns.update(campaign.id, { sent_count: sent });
+      // Note: sent_count field doesn't exist in database, track locally instead
 
       toast.success(`Campaign sent to ${sent} customers!`);
       onSuccess?.();

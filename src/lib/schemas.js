@@ -48,57 +48,54 @@ export const shipmentSchema = z.object({
   vendor_name: z.string().optional(),
   vendor_po_number: z.string().optional(),
   vendor_cost_per_kg: z.preprocess(numberPreprocess, z.number().optional()),
-  vendor_total_cost: z.preprocess(numberPreprocess, z.number().optional()),
-  origin: z.string().optional(),
-  destination: z.string().optional(),
+  margin_percentage: z.preprocess(numberPreprocess, z.number().optional()),
 });
 
 export const shoppingOrderSchema = z.object({
   customer_id: z.string().optional(),
-  customer_name: z.string().min(1, 'Customer name is required'),
-  customer_phone: z.string().min(1, 'Customer phone is required'),
-  product_links: z.string().optional(),
-  product_details: z.string().min(1, 'Product details are required'),
-  estimated_product_cost: z.preprocess(numberPreprocess, z.number().min(0).optional()),
-  actual_product_cost: z.preprocess(numberPreprocess, z.number().min(0).optional()),
-  estimated_weight: z.preprocess(numberPreprocess, z.number().min(0).optional()),
-  actual_weight: z.preprocess(numberPreprocess, z.number().min(0).optional()),
-  commission_rate: z.preprocess(numberPreprocess, z.number().min(0).default(10)),
-  commission_amount: z.preprocess(numberPreprocess, z.number().optional()),
-  shipping_cost: z.preprocess(numberPreprocess, z.number().optional()),
-  total_amount: z.preprocess(numberPreprocess, z.number().optional()),
-  delivery_address: z.string().optional(),
+  customer_name: z.string().optional(),
+  product_name: z.string().optional(),
+  product_link: z.string().optional(),
+  product_details: z.string().min(1, 'Product details required').optional(),
+  quantity: z.preprocess(numberPreprocess, z.number().int().min(1).optional()),
+  unit_price: z.preprocess(numberPreprocess, z.number().min(0).optional()),
+  estimated_product_cost: z.preprocess(numberPreprocess, z.number().min(0)),
+  commission_rate: z.preprocess(numberPreprocess, z.number().min(0).max(100)),
+  commission_amount: z.preprocess(numberPreprocess, z.number().min(0)),
+  total_amount: z.preprocess(numberPreprocess, z.number().min(0)),
+  status: z.string().optional().default('pending'),
+  payment_status: z.string().optional().default('unpaid'),
+  order_number: z.string().optional(),
+  vendor_purchase_order_link: z.string().optional(),
   notes: z.string().optional(),
-  status: z.enum(['pending', 'purchasing', 'purchased', 'received', 'shipping', 'delivered', 'cancelled']).default('pending'),
-  payment_status: z.enum(['unpaid', 'deposit_paid', 'paid']).default('unpaid'),
-
-  // Vendor allocation
-  vendor_po_id: z.string().optional(),
-  vendor_po_number: z.string().optional(),
-  vendor_id: z.string().optional(),
-  vendor_name: z.string().optional(),
-  vendor_cost_per_kg: z.preprocess(numberPreprocess, z.number().optional()),
-  vendor_cost: z.preprocess(numberPreprocess, z.number().optional()),
 });
 
 export const vendorSchema = z.object({
-  name: z.string().min(1, 'Vendor name is required'),
-  vendor_type: z.string().min(1, 'Vendor type is required'),
-  contact_name: z.string().optional(),
-  phone: z.string().optional(),
-  email: z.string().email('Invalid email').optional().or(z.literal('')),
-  address: z.string().optional(),
-  cost_per_kg: z.preprocess(numberPreprocess, z.number().min(0).optional()),
-  cost_per_kg_bulk: z.preprocess(numberPreprocess, z.number().min(0).optional()),
-  monthly_capacity_kg: z.preprocess(numberPreprocess, z.number().min(0).optional()),
-  is_preferred: z.boolean().optional(),
-  status: z.enum(['active', 'inactive', 'blacklisted']).optional(),
+  name: z.string().min(1, '
+
+Vendor name is required'),
+  vendor_type: z.enum(['supplier', 'cargo', 'supplier_cargo', 'packaging', 'customs_broker', 'warehouse']).default('supplier'),
+    contact_name: z.string().min(1, 'Contact name is required'),
+    phone: z.string().min(1, 'Phone number is required'),
+    email: z.string().email('Invalid email').optional().or(z.literal('')),
+    address: z.string().optional(),
+    payment_terms: z.string().optional(),
+    bank_details: z.string().optional(),
+    services: z.string().optional(),
+    notes: z.string().optional(),
+    status: z.enum(['active', 'inactive', 'pending']).default('active'),
+    contract_start: z.string().optional(),
+    contract_end: z.string().optional(),
+    onboarding_source: z.string().optional(),
+    cargo_capacity_per_month: z.preprocess(numberPreprocess, z.number().optional()),
 });
 
 export const campaignSchema = z.object({
   name: z.string().min(1, 'Campaign name is required'),
+  campaign_type: z.enum(['discount', 'referral', 'promotion', 'announcement', 'loyalty']).optional().nullable(),
+
+  // Optional fields for frontend use (not in database currently)
   description: z.string().optional(),
-  campaign_type: z.enum(['discount', 'referral', 'promotion', 'announcement', 'loyalty']).optional(),
   target_segment: z.string().optional(),
   discount_percentage: z.preprocess(numberPreprocess, z.number().min(0).max(100).optional()),
   discount_code: z.string().optional(),
@@ -107,172 +104,40 @@ export const campaignSchema = z.object({
   start_date: z.string().optional(),
   end_date: z.string().optional(),
   budget: z.preprocess(numberPreprocess, z.number().min(0).optional()),
-  status: z.enum(['draft', 'active', 'completed', 'cancelled']).default('draft'),
-  sent_count: z.preprocess(numberPreprocess, z.number().min(0).optional()),
+  // Note: 'status' and 'sent_count' fields don't exist in database
+  // status: z.enum(['draft', 'active', 'completed', 'cancelled']).default('draft'),
+  // sent_count: z.preprocess(numberPreprocess, z.number().min(0).optional()),
 });
 
 // Purchase Order Schema
 export const purchaseOrderSchema = z.object({
-  po_number: z.string().optional(),
   vendor_id: z.string().min(1, 'Vendor is required'),
   vendor_name: z.string().min(1, 'Vendor name is required'),
-  total_weight_kg: z.preprocess(numberPreprocess, z.number().min(0.1, 'Weight must be at least 0.1kg')),
-  allocated_weight_kg: z.preprocess(numberPreprocess, z.number().min(0).optional()),
-  remaining_weight_kg: z.preprocess(numberPreprocess, z.number().min(0).optional()),
-  cost_per_kg: z.preprocess(numberPreprocess, z.number().min(0)),
-  total_amount: z.preprocess(numberPreprocess, z.number().min(0)),
-  status: z.enum(['draft', 'pending_approval', 'approved', 'sent', 'partial_received', 'received', 'cancelled']).default('draft'),
-  expected_delivery_date: z.string().optional(),
-  notes: z.string().optional(),
-});
-
-// Invoice Schema
-export const invoiceSchema = z.object({
-  invoice_number: z.string().optional(),
-  vendor_id: z.string().optional(),
-  vendor_name: z.string().optional(),
   po_number: z.string().optional(),
-  po_id: z.string().optional(),
+  order_date: z.string().min(1, 'Order date is required'),
+  expected_delivery: z.string().optional(),
+  items: z.string().optional(),
+  total_weight: z.preprocess(numberPreprocess, z.number().min(0)),
+  price_per_kg: z.preprocess(numberPreprocess, z.number().min(0)),
   total_amount: z.preprocess(numberPreprocess, z.number().min(0)),
-  tax_amount: z.preprocess(numberPreprocess, z.number().min(0).optional()),
-  status: z.enum(['draft', 'sent', 'paid', 'overdue', 'cancelled']).default('draft'),
-  due_date: z.string().optional(),
-  paid_date: z.string().optional(),
-  payment_method: z.string().optional(),
+  payment_terms: z.string().optional(),
+  status: z.enum(['draft', 'pending_approval', 'approved', 'sent_to_vendor', 'partially_received', 'fully_received', 'cancelled']).default('draft'),
+  approval_status: z.enum(['pending', 'approved', 'rejected']).default('pending'),
   notes: z.string().optional(),
+  submitter_email: z.string().optional(),
+  approved_by: z.string().optional(),
+  approved_date: z.string().optional(),
 });
 
-// Customer Invoice Schema
-export const customerInvoiceSchema = z.object({
-  invoice_number: z.string().optional(),
-  customer_id: z.string().optional(),
-  customer_name: z.string().min(1, 'Customer name is required'),
-  shipment_id: z.string().optional(),
-  total_amount: z.preprocess(numberPreprocess, z.number().min(0)),
-  tax_amount: z.preprocess(numberPreprocess, z.number().min(0).optional()),
-  status: z.enum(['draft', 'sent', 'paid', 'overdue', 'cancelled']).default('draft'),
-  due_date: z.string().optional(),
-  paid_date: z.string().optional(),
-  payment_method: z.string().optional(),
-  notes: z.string().optional(),
+// Customer Support Schema
+export const customerSupportSchema = z.object({
+  name: z.string().min(1, 'Name is required'),
+  email: z.string().email('Invalid email address'),
+  subject: z.string().min(1, 'Subject is required'),
+  message: z.string().min(10, 'Message must be at least 10 characters'),
+  priority: z.enum(['low', 'medium', 'high']).default('medium'),
 });
 
-// Task Schema
-export const taskSchema = z.object({
-  title: z.string().min(1, 'Task title is required'),
-  description: z.string().optional(),
-  assigned_to: z.string().optional(),
-  priority: z.enum(['low', 'medium', 'high', 'urgent']).default('medium'),
-  status: z.enum(['pending', 'in_progress', 'completed', 'cancelled']).default('pending'),
-  due_date: z.string().optional(),
-  related_entity_type: z.string().optional(),
-  related_entity_id: z.string().optional(),
-});
-
-// Feedback Schema
-export const feedbackSchema = z.object({
-  customer_id: z.string().optional(),
-  customer_name: z.string().optional(),
-  shipment_id: z.string().optional(),
-  rating: z.preprocess(numberPreprocess, z.number().min(1).max(5).optional()),
-  comment: z.string().optional(),
-  category: z.enum(['service', 'delivery', 'packaging', 'pricing', 'other']).optional(),
-  status: z.enum(['pending', 'reviewed', 'resolved']).default('pending'),
-});
-
-// Notification Schema
-export const notificationSchema = z.object({
-  user_id: z.string().optional(),
-  user_email: z.string().email().optional(),
-  title: z.string().min(1, 'Notification title is required'),
-  message: z.string().min(1, 'Notification message is required'),
-  type: z.enum(['info', 'success', 'warning', 'error']).default('info'),
-  status: z.enum(['unread', 'read', 'dismissed']).default('unread'),
-  action_url: z.string().optional(),
-  related_entity_type: z.string().optional(),
-  related_entity_id: z.string().optional(),
-});
-
-// Inventory Item Schema
-export const inventoryItemSchema = z.object({
-  name: z.string().min(1, 'Item name is required'),
-  sku: z.string().optional(),
-  description: z.string().optional(),
-  current_stock: z.preprocess(numberPreprocess, z.number().min(0).default(0)),
-  reorder_point: z.preprocess(numberPreprocess, z.number().min(0).optional()),
-  unit: z.string().default('pcs'),
-  cost_per_unit: z.preprocess(numberPreprocess, z.number().min(0).optional()),
-  category: z.string().optional(),
-});
-
-// Stock Movement Schema
-export const stockMovementSchema = z.object({
-  inventory_item_id: z.string().min(1, 'Inventory item is required'),
-  movement_type: z.enum(['in', 'out', 'adjustment']),
-  quantity: z.preprocess(numberPreprocess, z.number().min(0.01)),
-  reason: z.string().optional(),
-  reference_number: z.string().optional(),
-  notes: z.string().optional(),
-});
-
-// Company Settings Schema
-export const companySettingsSchema = z.object({
-  company_name: z.string().min(1, 'Company name is required'),
-  logo_url: z.string().url().optional().or(z.literal('')),
-  tagline: z.string().optional(),
-  contact_email: z.string().email().optional().or(z.literal('')),
-  contact_phone: z.string().optional(),
-  address: z.string().optional(),
-  tax_id: z.string().optional(),
-  bank_name: z.string().optional(),
-  bank_account: z.string().optional(),
-  bank_account_name: z.string().optional(),
-  primary_color: z.string().optional(),
-  currency: z.string().default('THB'),
-});
-
-// Vendor Contract Schema
-export const vendorContractSchema = z.object({
-  contract_number: z.string().optional(),
-  vendor_id: z.string().min(1, 'Vendor is required'),
-  vendor_name: z.string().min(1, 'Vendor name is required'),
-  agreed_rate_per_kg: z.preprocess(numberPreprocess, z.number().min(0)),
-  volume_commitment_kg: z.preprocess(numberPreprocess, z.number().min(0).optional()),
-  start_date: z.string().optional(),
-  end_date: z.string().optional(),
-  status: z.enum(['draft', 'active', 'expired', 'cancelled']).default('draft'),
-  document_url: z.string().url().optional().or(z.literal('')),
-  sla_on_time_target: z.preprocess(numberPreprocess, z.number().min(0).max(100).optional()),
-  sla_quality_target: z.preprocess(numberPreprocess, z.number().min(0).max(100).optional()),
-  total_value: z.preprocess(numberPreprocess, z.number().min(0).optional()),
-});
-
-// Approval Rule Schema
-export const approvalRuleSchema = z.object({
-  name: z.string().min(1, 'Rule name is required'),
-  rule_type: z.enum(['amount', 'weight', 'vendor', 'category']),
-  condition: z.string().min(1, 'Condition is required'),
-  threshold_value: z.preprocess(numberPreprocess, z.number().optional()),
-  approver_role: z.string().optional(),
-  auto_approve: z.boolean().default(false),
-  is_active: z.boolean().default(true),
-});
-
-// Audit Log Schema (read-only, but for validation)
-export const auditLogSchema = z.object({
-  action: z.string().min(1),
-  entity_type: z.string().optional(),
-  entity_id: z.string().optional(),
-  entity_reference: z.string().optional(),
-  user_email: z.string().email().optional(),
-  user_name: z.string().optional(),
-  user_role: z.string().optional(),
-  details: z.string().optional(),
-  previous_value: z.string().optional(),
-  new_value: z.string().optional(),
-});
-
-// Common validation helpers
 export const validateEmail = (email) => {
   return z.string().email().safeParse(email).success;
 };
@@ -314,4 +179,70 @@ export const reportSchema = z.object({
   sort_by: z.string().optional(),
   sort_order: z.enum(['asc', 'desc']).default('desc'),
   is_active: z.boolean().default(true),
+});
+
+// ============================================
+// NEW SCHEMAS FOR PHASE 2 VALIDATION
+// ============================================
+
+// Feedback Schema
+export const feedbackSchema = z.object({
+  shipment_id: z.string().min(1, 'Shipment ID is required'),
+  customer_name: z.string().min(1, 'Customer name is required'),
+  rating: z.number().int().min(1, 'Overall rating is required').max(5, 'Rating cannot exceed 5'),
+  service_rating: z.number().int().min(1).max(5).optional(),
+  delivery_rating: z.number().int().min(1).max(5).optional(),
+  communication_rating: z.number().int().min(1).max(5).optional(),
+  comment: z.string().optional(),
+  service_type: z.string().optional(),
+  would_recommend: z.boolean().default(true),
+  status: z.enum(['submitted', 'reviewed', 'archived']).default('submitted'),
+});
+
+// Audit Log Schema
+export const auditLogSchema = z.object({
+  user_email: z.string().email('Invalid email address'),
+  action: z.string().min(1, 'Action is required'),
+  entity_type: z.string().min(1, 'Entity type is required'),
+  entity_id: z.string().optional(),
+  changes: z.string().optional(),
+  ip_address: z.string().optional(),
+  user_agent: z.string().optional(),
+});
+
+// Notification Schema
+export const notificationSchema = z.object({
+  user_id: z.string().optional(),
+  user_email: z.string().email('Invalid email').optional(),
+  type: z.enum(['info', 'success', 'warning', 'error']),
+  title: z.string().min(1, 'Title is required'),
+  message: z.string().min(1, 'Message is required'),
+  status: z.enum(['unread', 'read', 'dismissed']).default('unread'),
+  link: z.string().optional(),
+  metadata: z.string().optional(), // JSON string
+});
+
+// Approval Schema (for workflow approvals)
+export const approvalSchema = z.object({
+  entity_type: z.enum(['purchase_order', 'shipment', 'payment', 'vendor', 'contract']),
+  entity_id: z.string().min(1, 'Entity ID is required'),
+  approver_email: z.string().email('Invalid email address'),
+  status: z.enum(['pending', 'approved', 'rejected']).default('pending'),
+  comments: z.string().optional(),
+  approved_date: z.string().optional(),
+});
+
+// Payment Schema
+export const paymentSchema = z.object({
+  vendor_id: z.string().min(1, 'Vendor ID is required'),
+  vendor_name: z.string().min(1, 'Vendor name is required'),
+  po_id: z.string().optional(),
+  po_number: z.string().optional(),
+  amount: z.preprocess(numberPreprocess, z.number().min(0.01, 'Amount must be greater than 0')),
+  payment_method: z.enum(['bank_transfer', 'cheque', 'cash', 'mobile_payment']).default('bank_transfer'),
+  payment_date: z.string().min(1, 'Payment date is required'),
+  due_date: z.string().optional(),
+  status: z.enum(['pending', 'paid', 'overdue', 'cancelled']).default('pending'),
+  reference_number: z.string().optional(),
+  notes: z.string().optional(),
 });

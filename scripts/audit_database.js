@@ -8,7 +8,7 @@ const __dirname = path.dirname(__filename);
 
 function loadEnv() {
   try {
-    const envPath = path.resolve(__dirname, '.env');
+    const envPath = path.resolve(__dirname, '../.env');
     if (fs.existsSync(envPath)) {
       const envConfig = fs.readFileSync(envPath, 'utf8');
       envConfig.split('\n').forEach((line) => {
