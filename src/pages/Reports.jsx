@@ -1253,11 +1253,10 @@ export default function Reports() {
                       {recommendations.map((rec, i) => (
                         <div
                           key={i}
-                          className={`p-3 rounded-lg ${
-                            rec.priority === 'high'
+                          className={`p-3 rounded-lg ${rec.priority === 'high'
                               ? 'bg-rose-50 border border-rose-100'
                               : 'bg-blue-50 border border-blue-100'
-                          }`}
+                            }`}
                         >
                           <div className="flex items-start justify-between">
                             <div>
@@ -1353,8 +1352,8 @@ export default function Reports() {
                         ฿
                         {customers.length > 0
                           ? Math.round(
-                              segmentSummary.totals.totalRevenue / customers.length
-                            ).toLocaleString()
+                            segmentSummary.totals.totalRevenue / customers.length
+                          ).toLocaleString()
                           : 0}
                       </span>
                     </div>
@@ -1518,7 +1517,6 @@ export default function Reports() {
               <Button
                 onClick={() => {
                   setEditingReport(null);
-import { useErrorHandler } from '@/hooks/useErrorHandler';
                   setShowReportBuilder(true);
                 }}
                 className="bg-blue-600 hover:bg-blue-700"

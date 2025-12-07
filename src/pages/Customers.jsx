@@ -624,8 +624,6 @@ export default function Customers() {
                   variant="outline"
                   onClick={() => {
                     setShowForm(false);
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
                     resetForm();
                   }}
                   className="flex-1"

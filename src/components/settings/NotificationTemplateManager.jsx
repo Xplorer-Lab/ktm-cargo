@@ -47,8 +47,6 @@ import {
   processTemplate,
 } from '@/components/notifications/ShippingNotificationService';
 
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
 const TEMPLATE_TYPES = [
   {
     value: 'shopping_shipping',
@@ -449,7 +447,7 @@ export default function NotificationTemplateManager() {
                 <p className="text-xs text-slate-500 mb-2">Body:</p>
                 <div
                   className="prose prose-sm max-w-none"
-                  dangerouslySetInnerHTML={{ 
+                  dangerouslySetInnerHTML={{
                     __html: (() => {
                       try {
                         return DOMPurify.sanitize(previewData.body || '');

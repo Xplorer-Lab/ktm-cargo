@@ -1,0 +1,1630 @@
+Customer:
+
+{
+  "name": "Customer",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Customer full name"
+    },
+    "phone": {
+      "type": "string",
+      "description": "Phone number"
+    },
+    "email": {
+      "type": "string",
+      "description": "Email address"
+    },
+    "user_id": {
+      "type": "string",
+      "description": "Link to User entity for registered clients"
+    },
+    "customer_type": {
+      "type": "string",
+      "enum": [
+        "individual",
+        "online_shopper",
+        "sme_importer",
+        "business"
+      ],
+      "default": "individual",
+      "description": "Customer profile type"
+    },
+    "company_name": {
+      "type": "string",
+      "description": "Company name for business customers"
+    },
+    "tax_id": {
+      "type": "string",
+      "description": "Tax ID for business invoicing"
+    },
+    "address_bangkok": {
+      "type": "string",
+      "description": "Bangkok pickup address"
+    },
+    "address_yangon": {
+      "type": "string",
+      "description": "Yangon delivery address"
+    },
+    "preferred_contact": {
+      "type": "string",
+      "enum": [
+        "phone",
+        "email",
+        "line",
+        "whatsapp"
+      ],
+      "default": "phone",
+      "description": "Preferred contact method"
+    },
+    "line_id": {
+      "type": "string",
+      "description": "LINE messenger ID"
+    },
+    "whatsapp": {
+      "type": "string",
+      "description": "WhatsApp number"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Additional notes"
+    },
+    "referral_code": {
+      "type": "string",
+      "description": "Customer's referral code"
+    },
+    "referred_by": {
+      "type": "string",
+      "description": "Referrer's code if applicable"
+    },
+    "total_shipments": {
+      "type": "number",
+      "default": 0
+    },
+    "total_spent": {
+      "type": "number",
+      "default": 0
+    },
+    "is_verified": {
+      "type": "boolean",
+      "default": false,
+      "description": "Whether customer identity is verified"
+    },
+    "registration_source": {
+      "type": "string",
+      "enum": [
+        "web",
+        "manual",
+        "referral",
+        "import"
+      ],
+      "default": "web"
+    }
+  },
+  "required": [
+    "name"
+  ]
+}
+CustomerInteraction:
+
+{
+  "name": "CustomerInteraction",
+  "type": "object",
+  "properties": {
+    "customer_id": {
+      "type": "string",
+      "description": "Reference to customer"
+    },
+    "customer_name": {
+      "type": "string"
+    },
+    "interaction_type": {
+      "type": "string",
+      "enum": [
+        "email",
+        "call",
+        "meeting",
+        "chat",
+        "note"
+      ],
+      "default": "note",
+      "description": "Type of interaction"
+    },
+    "direction": {
+      "type": "string",
+      "enum": [
+        "inbound",
+        "outbound"
+      ],
+      "default": "outbound",
+      "description": "Inbound from customer or outbound to customer"
+    },
+    "subject": {
+      "type": "string",
+      "description": "Subject or title of interaction"
+    },
+    "notes": {
+      "type": "string",
+      "description": "Detailed notes about the interaction"
+    },
+    "outcome": {
+      "type": "string",
+      "enum": [
+        "successful",
+        "follow_up_needed",
+        "no_response",
+        "issue_resolved",
+        "escalated"
+      ],
+      "description": "Outcome of the interaction"
+    },
+    "duration_minutes": {
+      "type": "number",
+      "description": "Duration for calls/meetings"
+    },
+    "next_follow_up": {
+      "type": "string",
+      "format": "date",
+      "description": "Next follow-up date"
+    },
+    "reference_type": {
+      "type": "string",
+      "enum": [
+        "shipment",
+        "invoice",
+        "support_ticket",
+        "campaign",
+        "general"
+      ],
+      "default": "general"
+    },
+    "reference_id": {
+      "type": "string",
+      "description": "ID of related shipment/ticket/etc"
+    },
+    "staff_member": {
+      "type": "string",
+      "description": "Staff who handled the interaction"
+    },
+    "sentiment": {
+      "type": "string",
+      "enum": [
+        "positive",
+        "neutral",
+        "negative"
+      ],
+      "default": "neutral"
+    },
+    "tags": {
+      "type": "string",
+      "description": "Comma-separated tags"
+    }
+  },
+  "required": [
+    "customer_id",
+    "interaction_type",
+    "subject"
+  ]
+}
+CustomerNote:
+
+{
+  "name": "CustomerNote",
+  "type": "object",
+  "properties": {
+    "customer_id": {
+      "type": "string"
+    },
+    "customer_name": {
+      "type": "string"
+    },
+    "note": {
+      "type": "string",
+      "description": "Quick note about customer"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "preference",
+        "complaint",
+        "special_request",
+        "vip_note",
+        "payment_issue",
+        "general"
+      ],
+      "default": "general"
+    },
+    "is_important": {
+      "type": "boolean",
+      "default": false
+    },
+    "staff_member": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "customer_id",
+    "note"
+  ]
+}
+Shipment:
+
+{
+  "name": "Shipment",
+  "type": "object",
+  "properties": {
+    "tracking_number": {
+      "type": "string",
+      "description": "Unique tracking number"
+    },
+    "customer_id": {
+      "type": "string",
+      "description": "Reference to customer"
+    },
+    "customer_name": {
+      "type": "string"
+    },
+    "customer_phone": {
+      "type": "string"
+    },
+    "service_type": {
+      "type": "string",
+      "enum": [
+        "cargo_small",
+        "cargo_medium",
+        "cargo_large",
+        "shopping_small",
+        "shopping_fashion",
+        "shopping_bulk",
+        "express",
+        "standard"
+      ],
+      "description": "Type of service"
+    },
+    "weight_kg": {
+      "type": "number",
+      "description": "Weight in kilograms"
+    },
+    "items_description": {
+      "type": "string",
+      "description": "Description of items"
+    },
+    "pickup_address": {
+      "type": "string"
+    },
+    "delivery_address": {
+      "type": "string"
+    },
+    "vendor_po_id": {
+      "type": "string",
+      "description": "Reference to vendor Purchase Order"
+    },
+    "vendor_po_number": {
+      "type": "string",
+      "description": "Vendor PO number for display"
+    },
+    "vendor_id": {
+      "type": "string",
+      "description": "Reference to vendor"
+    },
+    "vendor_name": {
+      "type": "string"
+    },
+    "vendor_cost_per_kg": {
+      "type": "number",
+      "description": "Actual vendor cost per kg from PO"
+    },
+    "vendor_total_cost": {
+      "type": "number",
+      "description": "Total cost paid to vendor for this shipment"
+    },
+    "cost_basis": {
+      "type": "number",
+      "description": "Cost per kg"
+    },
+    "price_per_kg": {
+      "type": "number",
+      "description": "Price charged per kg"
+    },
+    "total_amount": {
+      "type": "number",
+      "description": "Total amount in THB"
+    },
+    "profit": {
+      "type": "number",
+      "description": "Profit from this shipment"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "confirmed",
+        "picked_up",
+        "in_transit",
+        "customs",
+        "delivered",
+        "cancelled"
+      ],
+      "default": "pending"
+    },
+    "payment_status": {
+      "type": "string",
+      "enum": [
+        "unpaid",
+        "partial",
+        "paid"
+      ],
+      "default": "unpaid"
+    },
+    "payment_method": {
+      "type": "string",
+      "enum": [
+        "promptpay",
+        "bank_transfer",
+        "cash",
+        "cod"
+      ],
+      "default": "promptpay"
+    },
+    "insurance_opted": {
+      "type": "boolean",
+      "default": false
+    },
+    "insurance_amount": {
+      "type": "number",
+      "default": 0
+    },
+    "packaging_fee": {
+      "type": "number",
+      "default": 0
+    },
+    "pickup_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "estimated_delivery": {
+      "type": "string",
+      "format": "date"
+    },
+    "actual_delivery": {
+      "type": "string",
+      "format": "date"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "customer_name",
+    "service_type",
+    "weight_kg"
+  ]
+}
+ShoppingOrder:
+
+{
+  "name": "ShoppingOrder",
+  "type": "object",
+  "properties": {
+    "order_number": {
+      "type": "string"
+    },
+    "customer_id": {
+      "type": "string"
+    },
+    "customer_name": {
+      "type": "string"
+    },
+    "customer_phone": {
+      "type": "string"
+    },
+    "product_links": {
+      "type": "string",
+      "description": "Product URLs or descriptions"
+    },
+    "product_details": {
+      "type": "string",
+      "description": "Size, color, quantity details"
+    },
+    "estimated_product_cost": {
+      "type": "number"
+    },
+    "actual_product_cost": {
+      "type": "number"
+    },
+    "commission_rate": {
+      "type": "number",
+      "default": 10,
+      "description": "Commission percentage"
+    },
+    "commission_amount": {
+      "type": "number"
+    },
+    "estimated_weight": {
+      "type": "number"
+    },
+    "actual_weight": {
+      "type": "number"
+    },
+    "shipping_cost": {
+      "type": "number"
+    },
+    "total_amount": {
+      "type": "number"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "purchasing",
+        "purchased",
+        "received",
+        "shipping",
+        "delivered",
+        "cancelled"
+      ],
+      "default": "pending"
+    },
+    "payment_status": {
+      "type": "string",
+      "enum": [
+        "unpaid",
+        "deposit_paid",
+        "paid"
+      ],
+      "default": "unpaid"
+    },
+    "delivery_address": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "vendor_po_id": {
+      "type": "string",
+      "description": "Reference to vendor Purchase Order"
+    },
+    "vendor_po_number": {
+      "type": "string",
+      "description": "Vendor PO number for display"
+    },
+    "vendor_id": {
+      "type": "string",
+      "description": "Reference to vendor"
+    },
+    "vendor_name": {
+      "type": "string"
+    },
+    "vendor_cost_per_kg": {
+      "type": "number",
+      "description": "Vendor cost per kg from PO"
+    },
+    "vendor_cost": {
+      "type": "number",
+      "description": "Total vendor cost for this order"
+    }
+  },
+  "required": [
+    "customer_name",
+    "product_links"
+  ]
+}
+Task:
+
+{
+  "name": "Task",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "phase": {
+      "type": "string",
+      "enum": [
+        "pre_launch",
+        "registration",
+        "infrastructure",
+        "partnership",
+        "marketing",
+        "operations"
+      ],
+      "default": "pre_launch"
+    },
+    "month": {
+      "type": "number",
+      "description": "Target month (1-12)"
+    },
+    "estimated_cost": {
+      "type": "number",
+      "default": 0
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "in_progress",
+        "completed"
+      ],
+      "default": "pending"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "default": "medium"
+    },
+    "due_date": {
+      "type": "string",
+      "format": "date"
+    }
+  },
+  "required": [
+    "title"
+  ]
+}
+Expense:
+
+{
+  "name": "Expense",
+  "type": "object",
+  "properties": {
+    "title": {
+      "type": "string"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "registration",
+        "legal",
+        "marketing",
+        "operations",
+        "staff",
+        "rent",
+        "technology",
+        "cargo_cost",
+        "supplies",
+        "other"
+      ],
+      "default": "other"
+    },
+    "amount": {
+      "type": "number"
+    },
+    "date": {
+      "type": "string",
+      "format": "date"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "receipt_url": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "title",
+    "amount"
+  ]
+}
+Campaign:
+
+{
+  "name": "Campaign",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Campaign name"
+    },
+    "description": {
+      "type": "string"
+    },
+    "target_segment": {
+      "type": "string",
+      "enum": [
+        "all",
+        "individual",
+        "online_shopper",
+        "sme_importer",
+        "high_value",
+        "inactive",
+        "new_customers"
+      ],
+      "default": "all"
+    },
+    "campaign_type": {
+      "type": "string",
+      "enum": [
+        "discount",
+        "referral",
+        "promotion",
+        "announcement",
+        "loyalty"
+      ],
+      "default": "promotion"
+    },
+    "discount_percentage": {
+      "type": "number",
+      "default": 0
+    },
+    "discount_code": {
+      "type": "string"
+    },
+    "message_template": {
+      "type": "string",
+      "description": "Message to send to customers"
+    },
+    "channel": {
+      "type": "string",
+      "enum": [
+        "email",
+        "line",
+        "facebook",
+        "sms",
+        "all"
+      ],
+      "default": "all"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "scheduled",
+        "active",
+        "completed",
+        "paused"
+      ],
+      "default": "draft"
+    },
+    "start_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "end_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "target_count": {
+      "type": "number",
+      "default": 0
+    },
+    "sent_count": {
+      "type": "number",
+      "default": 0
+    },
+    "conversion_count": {
+      "type": "number",
+      "default": 0
+    },
+    "budget": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "name",
+    "target_segment"
+  ]
+}
+Feedback:
+
+{
+  "name": "Feedback",
+  "type": "object",
+  "properties": {
+    "shipment_id": {
+      "type": "string",
+      "description": "Reference to the shipment"
+    },
+    "customer_id": {
+      "type": "string"
+    },
+    "customer_name": {
+      "type": "string"
+    },
+    "customer_email": {
+      "type": "string"
+    },
+    "rating": {
+      "type": "number",
+      "description": "1-5 star rating"
+    },
+    "service_rating": {
+      "type": "number",
+      "description": "Service quality rating 1-5"
+    },
+    "delivery_rating": {
+      "type": "number",
+      "description": "Delivery speed rating 1-5"
+    },
+    "communication_rating": {
+      "type": "number",
+      "description": "Communication rating 1-5"
+    },
+    "comment": {
+      "type": "string"
+    },
+    "service_type": {
+      "type": "string"
+    },
+    "would_recommend": {
+      "type": "boolean",
+      "default": true
+    },
+    "feedback_type": {
+      "type": "string",
+      "enum": [
+        "rating",
+        "tracking",
+        "delivery",
+        "payment",
+        "damage",
+        "other"
+      ],
+      "default": "rating"
+    },
+    "ticket_number": {
+      "type": "string"
+    },
+    "subject": {
+      "type": "string"
+    },
+    "message": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "submitted",
+        "reviewed",
+        "in_progress",
+        "resolved"
+      ],
+      "default": "pending"
+    }
+  },
+  "required": [
+    "customer_name"
+  ]
+}
+InventoryItem:
+
+{
+  "name": "InventoryItem",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Item name"
+    },
+    "sku": {
+      "type": "string",
+      "description": "Stock keeping unit"
+    },
+    "category": {
+      "type": "string",
+      "enum": [
+        "packaging",
+        "supplies",
+        "equipment",
+        "goods"
+      ],
+      "default": "supplies"
+    },
+    "current_stock": {
+      "type": "number",
+      "default": 0
+    },
+    "unit": {
+      "type": "string",
+      "enum": [
+        "pieces",
+        "boxes",
+        "rolls",
+        "kg",
+        "meters"
+      ],
+      "default": "pieces"
+    },
+    "reorder_point": {
+      "type": "number",
+      "default": 10,
+      "description": "Stock level that triggers reorder alert"
+    },
+    "reorder_quantity": {
+      "type": "number",
+      "default": 50,
+      "description": "Suggested quantity to reorder"
+    },
+    "unit_cost": {
+      "type": "number",
+      "default": 0
+    },
+    "supplier": {
+      "type": "string"
+    },
+    "lead_time_days": {
+      "type": "number",
+      "default": 7,
+      "description": "Days to receive after ordering"
+    },
+    "last_restock_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "in_stock",
+        "low_stock",
+        "out_of_stock"
+      ],
+      "default": "in_stock"
+    }
+  },
+  "required": [
+    "name",
+    "category"
+  ]
+}
+StockMovement:
+
+{
+  "name": "StockMovement",
+  "type": "object",
+  "properties": {
+    "item_id": {
+      "type": "string"
+    },
+    "item_name": {
+      "type": "string"
+    },
+    "movement_type": {
+      "type": "string",
+      "enum": [
+        "in",
+        "out",
+        "adjustment"
+      ],
+      "default": "out"
+    },
+    "quantity": {
+      "type": "number"
+    },
+    "reference_type": {
+      "type": "string",
+      "enum": [
+        "shipment",
+        "order",
+        "restock",
+        "manual"
+      ],
+      "default": "manual"
+    },
+    "reference_id": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "stock_after": {
+      "type": "number"
+    }
+  },
+  "required": [
+    "item_id",
+    "quantity"
+  ]
+}
+Notification:
+
+{
+  "name": "Notification",
+  "type": "object",
+  "properties": {
+    "type": {
+      "type": "string",
+      "enum": [
+        "shipment_created",
+        "shipment_status",
+        "payment_received",
+        "invoice_generated",
+        "low_stock",
+        "delivery_feedback",
+        "task_assigned",
+        "segment_alert",
+        "vendor_payment",
+        "system"
+      ],
+      "default": "system"
+    },
+    "title": {
+      "type": "string"
+    },
+    "message": {
+      "type": "string"
+    },
+    "priority": {
+      "type": "string",
+      "enum": [
+        "low",
+        "medium",
+        "high",
+        "critical"
+      ],
+      "default": "medium"
+    },
+    "reference_type": {
+      "type": "string",
+      "enum": [
+        "inventory",
+        "shipment",
+        "task",
+        "customer",
+        "campaign",
+        "invoice",
+        "payment",
+        "vendor"
+      ],
+      "default": "system"
+    },
+    "reference_id": {
+      "type": "string"
+    },
+    "recipient_email": {
+      "type": "string"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "unread",
+        "read",
+        "dismissed"
+      ],
+      "default": "unread"
+    },
+    "email_sent": {
+      "type": "boolean",
+      "default": false
+    }
+  },
+  "required": [
+    "type",
+    "title",
+    "message"
+  ]
+}
+Vendor:
+
+{
+  "name": "Vendor",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string",
+      "description": "Vendor company name"
+    },
+    "vendor_type": {
+      "type": "string",
+      "enum": [
+        "cargo_carrier",
+        "supplier",
+        "packaging",
+        "customs_broker",
+        "warehouse"
+      ],
+      "default": "supplier"
+    },
+    "contact_name": {
+      "type": "string"
+    },
+    "phone": {
+      "type": "string"
+    },
+    "email": {
+      "type": "string"
+    },
+    "address": {
+      "type": "string"
+    },
+    "tax_id": {
+      "type": "string",
+      "description": "Tax identification number"
+    },
+    "bank_name": {
+      "type": "string"
+    },
+    "bank_account_number": {
+      "type": "string"
+    },
+    "bank_account_name": {
+      "type": "string"
+    },
+    "services": {
+      "type": "string",
+      "description": "Services provided"
+    },
+    "contract_start": {
+      "type": "string",
+      "format": "date"
+    },
+    "contract_end": {
+      "type": "string",
+      "format": "date"
+    },
+    "payment_terms": {
+      "type": "string",
+      "enum": [
+        "immediate",
+        "net_15",
+        "net_30",
+        "net_60"
+      ],
+      "default": "net_30"
+    },
+    "cost_per_kg": {
+      "type": "number",
+      "default": 0,
+      "description": "Standard cost per kg from this vendor"
+    },
+    "cost_per_kg_express": {
+      "type": "number",
+      "default": 0,
+      "description": "Express service cost per kg"
+    },
+    "cost_per_kg_bulk": {
+      "type": "number",
+      "default": 0,
+      "description": "Bulk order cost per kg (discounted)"
+    },
+    "bulk_threshold_kg": {
+      "type": "number",
+      "default": 100,
+      "description": "Minimum kg for bulk pricing"
+    },
+    "monthly_capacity_kg": {
+      "type": "number",
+      "default": 0,
+      "description": "Maximum kg vendor can handle per month"
+    },
+    "current_month_allocated_kg": {
+      "type": "number",
+      "default": 0,
+      "description": "Kg already allocated this month"
+    },
+    "min_order_kg": {
+      "type": "number",
+      "default": 0,
+      "description": "Minimum order weight"
+    },
+    "lead_time_days": {
+      "type": "number",
+      "default": 3,
+      "description": "Average lead time in days"
+    },
+    "is_preferred": {
+      "type": "boolean",
+      "default": false,
+      "description": "Preferred vendor status"
+    },
+    "rating": {
+      "type": "number",
+      "default": 5,
+      "description": "Performance rating 1-5"
+    },
+    "total_orders": {
+      "type": "number",
+      "default": 0
+    },
+    "total_spent": {
+      "type": "number",
+      "default": 0
+    },
+    "on_time_rate": {
+      "type": "number",
+      "default": 100,
+      "description": "Percentage of on-time deliveries"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "active",
+        "inactive",
+        "pending"
+      ],
+      "default": "active"
+    },
+    "onboarding_source": {
+      "type": "string",
+      "enum": [
+        "manual",
+        "invitation"
+      ],
+      "default": "manual"
+    },
+    "invitation_id": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "vendor_type"
+  ]
+}
+VendorOrder:
+
+{
+  "name": "VendorOrder",
+  "type": "object",
+  "properties": {
+    "vendor_id": {
+      "type": "string"
+    },
+    "vendor_name": {
+      "type": "string"
+    },
+    "order_type": {
+      "type": "string",
+      "enum": [
+        "shipment",
+        "restock",
+        "service"
+      ],
+      "default": "shipment"
+    },
+    "reference_id": {
+      "type": "string",
+      "description": "Shipment ID or Inventory Item ID"
+    },
+    "reference_name": {
+      "type": "string"
+    },
+    "amount": {
+      "type": "number",
+      "default": 0
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "confirmed",
+        "in_progress",
+        "completed",
+        "cancelled"
+      ],
+      "default": "pending"
+    },
+    "expected_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "actual_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "quality_rating": {
+      "type": "number",
+      "description": "1-5 rating"
+    },
+    "on_time": {
+      "type": "boolean"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "vendor_id",
+    "order_type"
+  ]
+}
+VendorPayment:
+
+{
+  "name": "VendorPayment",
+  "type": "object",
+  "properties": {
+    "vendor_id": {
+      "type": "string"
+    },
+    "vendor_name": {
+      "type": "string"
+    },
+    "order_ids": {
+      "type": "string",
+      "description": "Comma-separated vendor order IDs"
+    },
+    "total_amount": {
+      "type": "number",
+      "default": 0
+    },
+    "payment_terms": {
+      "type": "string",
+      "enum": [
+        "immediate",
+        "net_15",
+        "net_30",
+        "net_60"
+      ],
+      "default": "net_30"
+    },
+    "due_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "pending",
+        "scheduled",
+        "paid",
+        "overdue",
+        "cancelled"
+      ],
+      "default": "pending"
+    },
+    "payment_method": {
+      "type": "string",
+      "enum": [
+        "bank_transfer",
+        "cash",
+        "check",
+        "other"
+      ],
+      "default": "bank_transfer"
+    },
+    "payment_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "reference_number": {
+      "type": "string"
+    },
+    "notes": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "vendor_id",
+    "total_amount"
+  ]
+}
+ServicePricing:
+
+{
+  "name": "ServicePricing",
+  "type": "object",
+  "properties": {
+    "service_type": {
+      "type": "string",
+      "enum": [
+        "cargo_small",
+        "cargo_medium",
+        "cargo_large",
+        "shopping_small",
+        "shopping_fashion",
+        "shopping_bulk",
+        "express",
+        "standard"
+      ],
+      "description": "Type of service"
+    },
+    "display_name": {
+      "type": "string"
+    },
+    "cost_per_kg": {
+      "type": "number",
+      "default": 0,
+      "description": "Cost basis per kg"
+    },
+    "price_per_kg": {
+      "type": "number",
+      "default": 0,
+      "description": "Price charged per kg"
+    },
+    "min_weight": {
+      "type": "number",
+      "default": 0
+    },
+    "max_weight": {
+      "type": "number"
+    },
+    "insurance_rate": {
+      "type": "number",
+      "default": 2,
+      "description": "Insurance percentage"
+    },
+    "packaging_fee": {
+      "type": "number",
+      "default": 0
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "service_type",
+    "price_per_kg"
+  ]
+}
+Surcharge:
+
+{
+  "name": "Surcharge",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "surcharge_type": {
+      "type": "string",
+      "enum": [
+        "fixed",
+        "percentage"
+      ],
+      "default": "fixed"
+    },
+    "amount": {
+      "type": "number",
+      "default": 0
+    },
+    "applies_to": {
+      "type": "string",
+      "enum": [
+        "all",
+        "cargo",
+        "shopping",
+        "express"
+      ],
+      "default": "all"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "description": {
+      "type": "string"
+    }
+  },
+  "required": [
+    "name",
+    "amount"
+  ]
+}
+CustomSegment:
+
+{
+  "name": "CustomSegment",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "description": {
+      "type": "string"
+    },
+    "criteria": {
+      "type": "string",
+      "description": "JSON string of segment criteria"
+    },
+    "color": {
+      "type": "string",
+      "default": "blue"
+    },
+    "icon": {
+      "type": "string",
+      "default": "users"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    },
+    "auto_refresh": {
+      "type": "boolean",
+      "default": true
+    },
+    "customer_count": {
+      "type": "number",
+      "default": 0
+    }
+  },
+  "required": [
+    "name"
+  ]
+}
+ScheduledReport:
+
+{
+  "name": "ScheduledReport",
+  "type": "object",
+  "properties": {
+    "name": {
+      "type": "string"
+    },
+    "report_type": {
+      "type": "string",
+      "enum": [
+        "shipments",
+        "customers",
+        "revenue",
+        "campaigns",
+        "expenses",
+        "pricing",
+        "custom"
+      ],
+      "default": "shipments"
+    },
+    "filters": {
+      "type": "string",
+      "description": "JSON string of filter criteria"
+    },
+    "columns": {
+      "type": "string",
+      "description": "JSON array of selected columns"
+    },
+    "sort_by": {
+      "type": "string"
+    },
+    "sort_order": {
+      "type": "string",
+      "enum": [
+        "asc",
+        "desc"
+      ],
+      "default": "desc"
+    },
+    "schedule": {
+      "type": "string",
+      "enum": [
+        "daily",
+        "weekly",
+        "monthly",
+        "none"
+      ],
+      "default": "none"
+    },
+    "schedule_day": {
+      "type": "number",
+      "description": "Day of week (1-7) or month (1-31)"
+    },
+    "recipients": {
+      "type": "string",
+      "description": "Comma-separated email addresses"
+    },
+    "format": {
+      "type": "string",
+      "enum": [
+        "csv",
+        "pdf"
+      ],
+      "default": "csv"
+    },
+    "last_sent": {
+      "type": "string",
+      "format": "date-time"
+    },
+    "is_active": {
+      "type": "boolean",
+      "default": true
+    }
+  },
+  "required": [
+    "name",
+    "report_type"
+  ]
+}
+PurchaseOrder:
+
+{
+  "name": "PurchaseOrder",
+  "type": "object",
+  "properties": {
+    "po_number": {
+      "type": "string",
+      "description": "Purchase order number"
+    },
+    "vendor_id": {
+      "type": "string"
+    },
+    "vendor_name": {
+      "type": "string"
+    },
+    "order_date": {
+      "type": "string",
+      "format": "date"
+    },
+    "expected_delivery": {
+      "type": "string",
+      "format": "date"
+    },
+    "items": {
+      "type": "string",
+      "description": "JSON array of items [{name, quantity, unit_price, total}]"
+    },
+    "total_weight_kg": {
+      "type": "number",
+      "default": 0,
+      "description": "Total cargo weight purchased from vendor"
+    },
+    "cost_per_kg": {
+      "type": "number",
+      "default": 0,
+      "description": "Cost per kg from vendor"
+    },
+    "allocated_weight_kg": {
+      "type": "number",
+      "default": 0,
+      "description": "Weight already allocated to customer shipments"
+    },
+    "remaining_weight_kg": {
+      "type": "number",
+      "default": 0,
+      "description": "Weight still available for allocation"
+    },
+    "subtotal": {
+      "type": "number",
+      "default": 0
+    },
+    "tax_amount": {
+      "type": "number",
+      "default": 0
+    },
+    "shipping_cost": {
+      "type": "number",
+      "default": 0
+    },
+    "total_amount": {
+      "type": "number",
+      "default": 0
+    },
+    "status": {
+      "type": "string",
+      "enum": [
+        "draft",
+        "pending_approval",
+        "approved",
+        "sent",
+        "partial_received",
+        "received",
+        "cancelled"
+      ],
+      "default": "draft"
+    },
+    "payment_status": {
+      "type": "string",
+      "enum": [
+        "unpaid",
+        "partial",
+        "paid"
+      ],
+      "default": "unpaid"
+    },
+    "notes": {
+      "type": "string"
+    },
+    "approved_by": {
+      "type": "string"
+    },
+    "approved_date": {
+      "type": "string",
+      "format": "date"
+    }
+  },
+  "required": [
+    "vendor_id",
+    "vendor_name"
+  ]
+}

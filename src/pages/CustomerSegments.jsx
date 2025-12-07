@@ -361,11 +361,10 @@ export default function CustomerSegments() {
             {/* Behavioral Segments */}
             <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
               <Card
-                className={`border-2 cursor-pointer transition-all hover:shadow-md ${
-                  selectedSegment === 'high_value'
+                className={`border-2 cursor-pointer transition-all hover:shadow-md ${selectedSegment === 'high_value'
                     ? 'border-emerald-500 bg-emerald-50'
                     : 'border-transparent'
-                }`}
+                  }`}
                 onClick={() => setSelectedSegment('high_value')}
               >
                 <CardContent className="p-4 flex items-center gap-4">
@@ -382,11 +381,10 @@ export default function CustomerSegments() {
               </Card>
 
               <Card
-                className={`border-2 cursor-pointer transition-all hover:shadow-md ${
-                  selectedSegment === 'loyal'
+                className={`border-2 cursor-pointer transition-all hover:shadow-md ${selectedSegment === 'loyal'
                     ? 'border-amber-500 bg-amber-50'
                     : 'border-transparent'
-                }`}
+                  }`}
                 onClick={() => setSelectedSegment('loyal')}
               >
                 <CardContent className="p-4 flex items-center gap-4">
@@ -401,11 +399,10 @@ export default function CustomerSegments() {
               </Card>
 
               <Card
-                className={`border-2 cursor-pointer transition-all hover:shadow-md ${
-                  selectedSegment === 'at_risk'
+                className={`border-2 cursor-pointer transition-all hover:shadow-md ${selectedSegment === 'at_risk'
                     ? 'border-rose-500 bg-rose-50'
                     : 'border-transparent'
-                }`}
+                  }`}
                 onClick={() => setSelectedSegment('at_risk')}
               >
                 <CardContent className="p-4 flex items-center gap-4">
@@ -422,11 +419,10 @@ export default function CustomerSegments() {
               </Card>
 
               <Card
-                className={`border-2 cursor-pointer transition-all hover:shadow-md ${
-                  selectedSegment === 'new_customers'
+                className={`border-2 cursor-pointer transition-all hover:shadow-md ${selectedSegment === 'new_customers'
                     ? 'border-blue-500 bg-blue-50'
                     : 'border-transparent'
-                }`}
+                  }`}
                 onClick={() => setSelectedSegment('new_customers')}
               >
                 <CardContent className="p-4 flex items-center gap-4">
@@ -458,11 +454,10 @@ export default function CustomerSegments() {
                     .map((segment) => (
                       <Card
                         key={segment.id}
-                        className={`border-2 cursor-pointer transition-all hover:shadow-md ${
-                          selectedSegment === `custom_${segment.id}`
+                        className={`border-2 cursor-pointer transition-all hover:shadow-md ${selectedSegment === `custom_${segment.id}`
                             ? `border-${segment.color || 'blue'}-500 bg-${segment.color || 'blue'}-50`
                             : 'border-transparent'
-                        }`}
+                          }`}
                         onClick={() => setSelectedSegment(`custom_${segment.id}`)}
                       >
                         <CardContent className="p-4">
@@ -484,7 +479,6 @@ export default function CustomerSegments() {
                                 variant="ghost"
                                 onClick={(e) => {
                                   e.stopPropagation();
-import { useErrorHandler } from '@/hooks/useErrorHandler';
                                   setEditingSegment(segment);
                                   setShowSegmentBuilder(true);
                                 }}
@@ -632,22 +626,20 @@ import { useErrorHandler } from '@/hooks/useErrorHandler';
                       <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                         <div className="flex items-start gap-4">
                           <div
-                            className={`p-3 rounded-xl ${
-                              campaign.status === 'active'
+                            className={`p-3 rounded-xl ${campaign.status === 'active'
                                 ? 'bg-emerald-100'
                                 : campaign.status === 'completed'
                                   ? 'bg-slate-100'
                                   : 'bg-blue-100'
-                            }`}
+                              }`}
                           >
                             <Megaphone
-                              className={`w-5 h-5 ${
-                                campaign.status === 'active'
+                              className={`w-5 h-5 ${campaign.status === 'active'
                                   ? 'text-emerald-600'
                                   : campaign.status === 'completed'
                                     ? 'text-slate-600'
                                     : 'text-blue-600'
-                              }`}
+                                }`}
                             />
                           </div>
                           <div>

@@ -71,23 +71,21 @@ export const shoppingOrderSchema = z.object({
 });
 
 export const vendorSchema = z.object({
-  name: z.string().min(1, '
-
-Vendor name is required'),
+  name: z.string().min(1, 'Vendor name is required'),
   vendor_type: z.enum(['supplier', 'cargo', 'supplier_cargo', 'packaging', 'customs_broker', 'warehouse']).default('supplier'),
-    contact_name: z.string().min(1, 'Contact name is required'),
-    phone: z.string().min(1, 'Phone number is required'),
-    email: z.string().email('Invalid email').optional().or(z.literal('')),
-    address: z.string().optional(),
-    payment_terms: z.string().optional(),
-    bank_details: z.string().optional(),
-    services: z.string().optional(),
-    notes: z.string().optional(),
-    status: z.enum(['active', 'inactive', 'pending']).default('active'),
-    contract_start: z.string().optional(),
-    contract_end: z.string().optional(),
-    onboarding_source: z.string().optional(),
-    cargo_capacity_per_month: z.preprocess(numberPreprocess, z.number().optional()),
+  contact_name: z.string().min(1, 'Contact name is required'),
+  phone: z.string().min(1, 'Phone number is required'),
+  email: z.string().email('Invalid email').optional().or(z.literal('')),
+  address: z.string().optional(),
+  payment_terms: z.string().optional(),
+  bank_details: z.string().optional(),
+  services: z.string().optional(),
+  notes: z.string().optional(),
+  status: z.enum(['active', 'inactive', 'pending']).default('active'),
+  contract_start: z.string().optional(),
+  contract_end: z.string().optional(),
+  onboarding_source: z.string().optional(),
+  cargo_capacity_per_month: z.preprocess(numberPreprocess, z.number().optional()),
 });
 
 export const campaignSchema = z.object({
