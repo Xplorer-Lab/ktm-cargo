@@ -151,7 +151,12 @@ export default function Vendors() {
       setShowForm(false);
       toast.success('Vendor added');
     },
-    onError: (err) => handleError(err, 'Failed to create vendor'),
+    onError: (err) => {
+      handleError(err, 'Failed to create vendor', {
+        component: 'Vendors',
+        action: 'createVendor',
+      });
+    },
   });
 
   const updateVendorMutation = useMutation({
@@ -165,7 +170,12 @@ export default function Vendors() {
       setEditingVendor(null);
       toast.success('Vendor updated');
     },
-    onError: (err) => handleError(err, 'Failed to update vendor'),
+    onError: (err) => {
+      handleError(err, 'Failed to update vendor', {
+        component: 'Vendors',
+        action: 'updateVendor',
+      });
+    },
   });
 
   const deleteVendorMutation = useMutation({
@@ -175,7 +185,12 @@ export default function Vendors() {
       setVendorToDelete(null);
       toast.success('Vendor deleted successfully');
     },
-    onError: (err) => handleError(err, 'Failed to delete vendor'),
+    onError: (err) => {
+      handleError(err, 'Failed to delete vendor', {
+        component: 'Vendors',
+        action: 'deleteVendor',
+      });
+    },
   });
 
   const createOrderMutation = useMutation({
@@ -185,12 +200,25 @@ export default function Vendors() {
       setShowOrderForm(false);
       toast.success('Order assigned to vendor');
     },
+    onError: (err) => {
+      handleError(err, 'Failed to create vendor order', {
+        component: 'Vendors',
+        action: 'createOrder',
+      });
+    },
   });
 
   const updateOrderMutation = useMutation({
     mutationFn: ({ id, data }) => db.vendorOrders.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['vendor-orders'] });
+      toast.success('Order updated');
+    },
+    onError: (err) => {
+      handleError(err, 'Failed to update vendor order', {
+        component: 'Vendors',
+        action: 'updateOrder',
+      });
     },
   });
 
@@ -240,9 +268,16 @@ export default function Vendors() {
   };
 
   const handleMarkPaid = async (paymentId, method, reference) => {
-    await markPaymentPaid(paymentId, method, reference);
-    queryClient.invalidateQueries({ queryKey: ['vendor-payments'] });
-    toast.success('Payment recorded');
+    try {
+      await markPaymentPaid(paymentId, method, reference);
+      queryClient.invalidateQueries({ queryKey: ['vendor-payments'] });
+      toast.success('Payment recorded');
+    } catch (error) {
+      handleError(error, 'Failed to mark payment as paid', {
+        component: 'Vendors',
+        action: 'markPaid',
+      });
+    }
   };
 
   const filteredVendors = vendorsWithMetrics.filter((v) => {

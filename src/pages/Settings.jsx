@@ -95,7 +95,15 @@ export default function Settings() {
 
   const { data: auditLogs = [] } = useQuery({
     queryKey: ['audit-logs'],
-    queryFn: () => db.auditLogs.list('-created_date', 100),
+    queryFn: async () => {
+      try {
+        return await db.auditLogs.list('-created_date', 100);
+      } catch (err) {
+        console.warn('Audit logs table may not exist:', err.message);
+        return [];
+      }
+    },
+    retry: false,
   });
 
   const [actionLoading, setActionLoading] = useState(null);

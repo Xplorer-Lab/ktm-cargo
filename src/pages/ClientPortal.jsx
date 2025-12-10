@@ -190,15 +190,41 @@ export default function ClientPortal() {
   const handleSignIn = async (e) => {
     e.preventDefault();
     setIsAuthLoading(true);
+    
+    // Client-side validation
+    if (!email || !email.trim()) {
+      toast.error('Please enter your email address');
+      setIsAuthLoading(false);
+      return;
+    }
+    
+    if (!password) {
+      toast.error('Please enter your password');
+      setIsAuthLoading(false);
+      return;
+    }
+    
     try {
       const { error } = await supabase.auth.signInWithPassword({
-        email,
+        email: email.trim(),
         password,
       });
-      if (error) throw error;
+      
+      if (error) {
+        // Handle specific Supabase auth errors
+        if (error.message.includes('Invalid login credentials')) {
+          throw new Error('Invalid email or password. Please check your credentials and try again.');
+        }
+        if (error.message.includes('Email not confirmed')) {
+          throw new Error('Please confirm your email address before signing in. Check your inbox for a confirmation link.');
+        }
+        throw error;
+      }
+      
       toast.success('Signed in successfully');
     } catch (error) {
-      toast.error(error.message || 'Failed to sign in');
+      console.error('Sign in error:', error);
+      toast.error(error.message || 'Failed to sign in. Please try again.');
     } finally {
       setIsAuthLoading(false);
     }
@@ -207,21 +233,62 @@ export default function ClientPortal() {
   const handleSignUp = async (e) => {
     e.preventDefault();
     setIsAuthLoading(true);
+    
+    // Client-side validation
+    if (!email || !email.trim()) {
+      toast.error('Please enter your email address');
+      setIsAuthLoading(false);
+      return;
+    }
+    
+    if (!password || password.length < 6) {
+      toast.error('Password must be at least 6 characters');
+      setIsAuthLoading(false);
+      return;
+    }
+    
+    if (!fullName || !fullName.trim()) {
+      toast.error('Please enter your full name');
+      setIsAuthLoading(false);
+      return;
+    }
+    
     try {
-      const { error } = await supabase.auth.signUp({
-        email,
+      const { data, error } = await supabase.auth.signUp({
+        email: email.trim(),
         password,
         options: {
           data: {
-            full_name: fullName,
-            phone: phone,
+            full_name: fullName.trim(),
+            phone: phone?.trim() || '',
           },
         },
       });
-      if (error) throw error;
+      
+      if (error) {
+        // Handle specific Supabase auth errors
+        if (error.message.includes('Anonymous sign-ins are disabled')) {
+          throw new Error('Email signup is not enabled. Please contact the administrator to enable email authentication in Supabase.');
+        }
+        if (error.message.includes('already registered') || error.message.includes('already exists')) {
+          throw new Error('This email is already registered. Please sign in instead.');
+        }
+        if (error.message.includes('Password')) {
+          throw new Error('Password must be at least 6 characters long.');
+        }
+        throw error;
+      }
+      
+      // Check if email confirmation is required
+      if (data?.user?.identities?.length === 0) {
+        toast.error('This email is already registered. Please sign in instead.');
+        return;
+      }
+      
       toast.success('Account created! Please check your email to confirm.');
     } catch (error) {
-      toast.error(error.message || 'Failed to create account');
+      console.error('Signup error:', error);
+      toast.error(error.message || 'Failed to create account. Please try again.');
     } finally {
       setIsAuthLoading(false);
     }

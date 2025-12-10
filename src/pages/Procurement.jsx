@@ -85,6 +85,7 @@ import { startTour } from '@/components/common/TourGuide';
 
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 export default function Procurement() {
+  const { handleError } = useErrorHandler();
   const [activeTab, setActiveTab] = useState('orders');
   const [showOnboarding, setShowOnboarding] = useState(false);
   const [showInviteForm, setShowInviteForm] = useState(false);
@@ -135,8 +136,8 @@ export default function Procurement() {
   });
 
   const { data: invoices = [], isLoading: isLoadingInvoices } = useQuery({
-    queryKey: ['invoices'],
-    queryFn: () => db.invoices.list('-created_at'),
+    queryKey: ['customer-invoices'],
+    queryFn: () => db.customerInvoices.list('-created_date'),
   });
 
   const { data: shipments = [] } = useQuery({
@@ -177,6 +178,12 @@ export default function Procurement() {
         toast.success('Purchase order created');
       }
     },
+    onError: (error) => {
+      handleError(error, 'Failed to create purchase order', {
+        component: 'Procurement',
+        action: 'createPO',
+      });
+    },
   });
 
   const updatePOMutation = useMutation({
@@ -187,6 +194,12 @@ export default function Procurement() {
       setEditingPO(null);
       toast.success('Purchase order updated');
     },
+    onError: (error) => {
+      handleError(error, 'Failed to update purchase order', {
+        component: 'Procurement',
+        action: 'updatePO',
+      });
+    },
   });
 
   const deletePOMutation = useMutation({
@@ -194,6 +207,12 @@ export default function Procurement() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['purchase-orders'] });
       toast.success('Purchase order deleted');
+    },
+    onError: (error) => {
+      handleError(error, 'Failed to delete purchase order', {
+        component: 'Procurement',
+        action: 'deletePO',
+      });
     },
   });
 
@@ -227,6 +246,12 @@ export default function Procurement() {
         toast.success('Goods receipt recorded');
       }
     },
+    onError: (error) => {
+      handleError(error, 'Failed to create goods receipt', {
+        component: 'Procurement',
+        action: 'createReceipt',
+      });
+    },
   });
 
   const createContractMutation = useMutation({
@@ -234,6 +259,12 @@ export default function Procurement() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['vendor-contracts'] });
       toast.success('Contract created');
+    },
+    onError: (error) => {
+      handleError(error, 'Failed to create contract', {
+        component: 'Procurement',
+        action: 'createContract',
+      });
     },
   });
 
@@ -243,6 +274,12 @@ export default function Procurement() {
       queryClient.invalidateQueries({ queryKey: ['vendor-contracts'] });
       toast.success('Contract updated');
     },
+    onError: (error) => {
+      handleError(error, 'Failed to update contract', {
+        component: 'Procurement',
+        action: 'updateContract',
+      });
+    },
   });
 
   const deleteContractMutation = useMutation({
@@ -251,6 +288,12 @@ export default function Procurement() {
       queryClient.invalidateQueries({ queryKey: ['vendor-contracts'] });
       toast.success('Contract deleted');
     },
+    onError: (error) => {
+      handleError(error, 'Failed to delete contract', {
+        component: 'Procurement',
+        action: 'deleteContract',
+      });
+    },
   });
 
   const createPaymentMutation = useMutation({
@@ -258,23 +301,57 @@ export default function Procurement() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['vendor-payments'] });
       queryClient.invalidateQueries({ queryKey: ['goods-receipts'] });
+      toast.success('Payment created');
+    },
+    onError: (error) => {
+      handleError(error, 'Failed to create payment', {
+        component: 'Procurement',
+        action: 'createPayment',
+      });
     },
   });
 
   // Approval Rules Mutations
   const createRuleMutation = useMutation({
     mutationFn: (data) => db.approvalRules.create(data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['approval-rules'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['approval-rules'] });
+      toast.success('Approval rule created');
+    },
+    onError: (error) => {
+      handleError(error, 'Failed to create approval rule', {
+        component: 'Procurement',
+        action: 'createRule',
+      });
+    },
   });
 
   const updateRuleMutation = useMutation({
     mutationFn: ({ id, data }) => db.approvalRules.update(id, data),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['approval-rules'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['approval-rules'] });
+      toast.success('Approval rule updated');
+    },
+    onError: (error) => {
+      handleError(error, 'Failed to update approval rule', {
+        component: 'Procurement',
+        action: 'updateRule',
+      });
+    },
   });
 
   const deleteRuleMutation = useMutation({
     mutationFn: (id) => db.approvalRules.delete(id),
-    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['approval-rules'] }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['approval-rules'] });
+      toast.success('Approval rule deleted');
+    },
+    onError: (error) => {
+      handleError(error, 'Failed to delete approval rule', {
+        component: 'Procurement',
+        action: 'deleteRule',
+      });
+    },
   });
 
   const markInvoicePaidMutation = useMutation({
@@ -283,12 +360,25 @@ export default function Procurement() {
       queryClient.invalidateQueries({ queryKey: ['invoices'] });
       toast.success('Invoice marked as paid');
     },
+    onError: (error) => {
+      handleError(error, 'Failed to mark invoice as paid', {
+        component: 'Procurement',
+        action: 'markInvoicePaid',
+      });
+    },
   });
 
   const updateShipmentMutation = useMutation({
     mutationFn: ({ id, data }) => db.shipments.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['shipments'] });
+      toast.success('Shipment updated');
+    },
+    onError: (error) => {
+      handleError(error, 'Failed to update shipment', {
+        component: 'Procurement',
+        action: 'updateShipment',
+      });
     },
   });
 
@@ -296,6 +386,13 @@ export default function Procurement() {
     mutationFn: ({ id, data }) => db.shoppingOrders.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['shopping-orders'] });
+      toast.success('Shopping order updated');
+    },
+    onError: (error) => {
+      handleError(error, 'Failed to update shopping order', {
+        component: 'Procurement',
+        action: 'updateShoppingOrder',
+      });
     },
   });
 
@@ -317,16 +414,33 @@ export default function Procurement() {
     currentUser?.role === 'admin' && pendingForMe.length === 0 ? allPendingPOs : pendingForMe;
 
   const handleApprovePOWorkflow = async (po, comments) => {
-    await approvePO(po, currentUser?.email, currentUser?.full_name, comments);
-    queryClient.invalidateQueries({ queryKey: ['purchase-orders'] });
-    queryClient.invalidateQueries({ queryKey: ['approval-history'] });
-    queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    try {
+      await approvePO(po, currentUser?.email, currentUser?.full_name, comments);
+      queryClient.invalidateQueries({ queryKey: ['purchase-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['approval-history'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      toast.success('Purchase order approved');
+    } catch (error) {
+      handleError(error, 'Failed to approve purchase order', {
+        component: 'Procurement',
+        action: 'approvePO',
+      });
+    }
   };
 
   const handleRejectPOWorkflow = async (po, comments) => {
-    await rejectPO(po, currentUser?.email, currentUser?.full_name, comments);
-    queryClient.invalidateQueries({ queryKey: ['purchase-orders'] });
-    queryClient.invalidateQueries({ queryKey: ['approval-history'] });
+    try {
+      await rejectPO(po, currentUser?.email, currentUser?.full_name, comments);
+      queryClient.invalidateQueries({ queryKey: ['purchase-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['approval-history'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
+      toast.success('Purchase order rejected');
+    } catch (error) {
+      handleError(error, 'Failed to reject purchase order', {
+        component: 'Procurement',
+        action: 'rejectPO',
+      });
+    }
   };
 
   // Handlers
@@ -349,17 +463,24 @@ export default function Procurement() {
   };
 
   const handleSubmitForApproval = async (po) => {
-    const result = await submitPOForApproval(po, approvalRules, vendors);
-    queryClient.invalidateQueries({ queryKey: ['purchase-orders'] });
-    queryClient.invalidateQueries({ queryKey: ['approval-history'] });
-    queryClient.invalidateQueries({ queryKey: ['notifications'] });
+    try {
+      const result = await submitPOForApproval(po, approvalRules, vendors);
+      queryClient.invalidateQueries({ queryKey: ['purchase-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['approval-history'] });
+      queryClient.invalidateQueries({ queryKey: ['notifications'] });
 
-    if (result.status === 'auto_approved') {
-      toast.success('Purchase order auto-approved!');
-    } else if (result.approver) {
-      toast.success(`Sent to ${result.approver.approver_name} for approval`);
-    } else {
-      toast.success('Submitted for approval');
+      if (result.status === 'auto_approved') {
+        toast.success('Purchase order auto-approved!');
+      } else if (result.approver) {
+        toast.success(`Sent to ${result.approver.approver_name} for approval`);
+      } else {
+        toast.success('Submitted for approval');
+      }
+    } catch (error) {
+      handleError(error, 'Failed to submit purchase order for approval', {
+        component: 'Procurement',
+        action: 'submitForApproval',
+      });
     }
   };
 
@@ -772,11 +893,36 @@ export default function Procurement() {
               purchaseOrders={purchaseOrders}
               shipments={shipments}
               shoppingOrders={shoppingOrders}
-              onUpdateShipment={(id, data) => updateShipmentMutation.mutateAsync({ id, data })}
-              onUpdateShoppingOrder={(id, data) =>
-                updateShoppingOrderMutation.mutateAsync({ id, data })
-              }
-              onUpdatePO={(id, data) => updatePOMutation.mutateAsync({ id, data })}
+              onUpdateShipment={async (id, data) => {
+                try {
+                  await updateShipmentMutation.mutateAsync({ id, data });
+                } catch (error) {
+                  handleError(error, 'Failed to update shipment', {
+                    component: 'Procurement',
+                    action: 'updateShipment',
+                  });
+                }
+              }}
+              onUpdateShoppingOrder={async (id, data) => {
+                try {
+                  await updateShoppingOrderMutation.mutateAsync({ id, data });
+                } catch (error) {
+                  handleError(error, 'Failed to update shopping order', {
+                    component: 'Procurement',
+                    action: 'updateShoppingOrder',
+                  });
+                }
+              }}
+              onUpdatePO={async (id, data) => {
+                try {
+                  await updatePOMutation.mutateAsync({ id, data });
+                } catch (error) {
+                  handleError(error, 'Failed to update purchase order', {
+                    component: 'Procurement',
+                    action: 'updatePO',
+                  });
+                }
+              }}
             />
           </TabsContent>
 

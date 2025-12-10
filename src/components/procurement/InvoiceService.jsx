@@ -1,6 +1,22 @@
+/**
+ * Vendor Bill/Invoice Service
+ * 
+ * This manages vendor invoices (bills) - invoices WE RECEIVE from vendors
+ * for goods and services purchased. This is Accounts Payable.
+ * 
+ * NOT to be confused with Customer Invoices which are invoices WE ISSUE.
+ * 
+ * Real-World Flow:
+ * 1. Create Purchase Order (PO)
+ * 2. Receive Goods (Goods Receipt / GR)
+ * 3. Receive Vendor Invoice/Bill
+ * 4. Match Invoice to PO and GR (3-way matching)
+ * 5. Approve for Payment
+ * 6. Pay Vendor
+ */
+
 import { db } from '@/api/db';
 import { addDays, format } from 'date-fns';
-import { AuditActions } from '@/components/audit/AuditService';
 
 const PAYMENT_TERMS_DAYS = {
   immediate: 0,
@@ -10,136 +26,163 @@ const PAYMENT_TERMS_DAYS = {
 };
 
 /**
- * Generate invoice number
+ * Generate vendor bill reference number
  */
-function generateInvoiceNumber() {
+function generateBillNumber() {
   const date = new Date();
-  const prefix = 'INV';
+  const prefix = 'BILL';
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
-  const random = Math.floor(Math.random() * 10000)
-    .toString()
-    .padStart(4, '0');
+  const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
   return `${prefix}-${year}${month}-${random}`;
 }
 
 /**
  * Calculate due date based on payment terms
  */
-function calculateDueDate(invoiceDate, paymentTerms) {
+function calculateDueDate(billDate, paymentTerms) {
   const days = PAYMENT_TERMS_DAYS[paymentTerms] || 30;
-  return format(addDays(new Date(invoiceDate), days), 'yyyy-MM-dd');
+  return format(addDays(new Date(billDate), days), 'yyyy-MM-dd');
 }
 
 /**
- * Auto-generate invoice from PO and Goods Receipt
+ * Record a vendor bill/invoice received
+ * This should be entered manually when you receive an invoice from a vendor
  */
-export async function generateInvoiceFromReceipt(purchaseOrder, goodsReceipt, vendor) {
-  // Check if invoice already exists for this receipt
-  const existingInvoices = await db.invoices.filter({ receipt_id: goodsReceipt.id });
-  if (existingInvoices.length > 0) {
-    return { status: 'exists', invoice: existingInvoices[0] };
-  }
+export async function recordVendorBill(billData) {
+  const billDate = billData.bill_date || format(new Date(), 'yyyy-MM-dd');
+  const paymentTerms = billData.payment_terms || 'net_30';
 
-  // Parse received items
-  let receivedItems = [];
-  try {
-    receivedItems = JSON.parse(goodsReceipt.items_received || '[]');
-  } catch (e) {
-    receivedItems = [];
-  }
-
-  // Parse PO items for pricing
-  let poItems = [];
-  try {
-    poItems = JSON.parse(purchaseOrder.items || '[]');
-  } catch (e) {
-    poItems = [];
-  }
-
-  // Build invoice items from received goods
-  const invoiceItems = receivedItems.map((item) => {
-    const poItem = poItems.find((p) => p.name === item.item_name) || {};
-    const quantity = item.received_qty || 0;
-    const unitPrice = poItem.unit_price || 0;
-    return {
-      name: item.item_name,
-      quantity,
-      unit_price: unitPrice,
-      total: quantity * unitPrice,
-    };
-  });
-
-  const subtotal = invoiceItems.reduce((sum, item) => sum + item.total, 0);
-  const taxRate = 7; // Default VAT
-  const taxAmount = Math.round((subtotal * taxRate) / 100);
-  const shippingCost = purchaseOrder.shipping_cost || 0;
-  const totalAmount = subtotal + taxAmount + shippingCost;
-
-  const invoiceDate = format(new Date(), 'yyyy-MM-dd');
-  const paymentTerms = vendor?.payment_terms || 'net_30';
-
-  const invoice = await db.invoices.create({
-    invoice_number: generateInvoiceNumber(),
-    po_id: purchaseOrder.id,
-    po_number: purchaseOrder.po_number,
-    receipt_id: goodsReceipt.id,
-    receipt_number: goodsReceipt.receipt_number,
-    vendor_id: purchaseOrder.vendor_id,
-    vendor_name: purchaseOrder.vendor_name,
-    invoice_date: invoiceDate,
-    due_date: calculateDueDate(invoiceDate, paymentTerms),
-    items: JSON.stringify(invoiceItems),
-    subtotal,
-    tax_rate: taxRate,
-    tax_amount: taxAmount,
-    shipping_cost: shippingCost,
-    total_amount: totalAmount,
+  const bill = await db.customerInvoices.create({
+    invoice_number: billData.vendor_invoice_number || generateBillNumber(),
+    invoice_type: 'vendor_bill',
+    
+    // Link to PO and Receipt
+    po_id: billData.po_id,
+    po_number: billData.po_number,
+    receipt_id: billData.receipt_id,
+    receipt_number: billData.receipt_number,
+    
+    // Vendor details
+    vendor_id: billData.vendor_id,
+    vendor_name: billData.vendor_name,
+    
+    // Dates
+    invoice_date: billDate,
+    due_date: billData.due_date || calculateDueDate(billDate, paymentTerms),
+    
+    // Amount details
+    items: billData.items || '[]',
+    subtotal: billData.subtotal || 0,
+    tax_rate: billData.tax_rate || 0,
+    tax_amount: billData.tax_amount || 0,
+    shipping_cost: billData.shipping_cost || 0,
+    total_amount: billData.total_amount || 0,
+    
+    // Payment info
     payment_terms: paymentTerms,
     status: 'pending',
-    notes: `Auto-generated from GR: ${goodsReceipt.receipt_number}`,
+    
+    notes: billData.notes || '',
   });
 
-  // Create notification
-  await db.notifications.create({
-    type: 'system',
-    title: 'New Invoice Generated',
-    message: `Invoice ${invoice.invoice_number} for ฿${totalAmount.toLocaleString()} has been generated for PO ${purchaseOrder.po_number}.`,
-    priority: 'medium',
-    reference_type: 'task',
-    reference_id: invoice.id,
-    status: 'unread',
-  });
-
-  // Audit log
-  AuditActions.invoiceCreated(invoice);
-
-  return { status: 'created', invoice };
+  return bill;
 }
 
 /**
- * Mark invoice as paid
+ * DEPRECATED: Auto-generation from receipt removed
+ * Vendor bills should be recorded manually when received
  */
-export async function markInvoicePaid(invoiceId) {
-  const invoice = await db.invoices.update(invoiceId, {
-    status: 'paid',
-    payment_date: format(new Date(), 'yyyy-MM-dd'),
-  });
-
-  // Audit log
-  AuditActions.invoicePaid(invoice);
+export async function generateInvoiceFromReceipt(purchaseOrder, goodsReceipt, vendor) {
+  console.warn('generateInvoiceFromReceipt is deprecated. Record vendor bills manually when received.');
+  return { status: 'skipped', message: 'Auto-generation disabled. Record vendor bills manually.' };
 }
 
 /**
- * Check and update overdue invoices
+ * Mark vendor bill as paid
+ */
+export async function markInvoicePaid(invoiceId, paymentDetails = {}) {
+  const invoice = await db.customerInvoices.update(invoiceId, {
+    status: 'paid',
+    payment_date: paymentDetails.payment_date || format(new Date(), 'yyyy-MM-dd'),
+    payment_method: paymentDetails.payment_method || 'bank_transfer',
+    payment_reference: paymentDetails.reference || '',
+  });
+  return invoice;
+}
+
+/**
+ * Approve vendor bill for payment
+ */
+export async function approveForPayment(invoiceId, approverEmail) {
+  const invoice = await db.customerInvoices.update(invoiceId, {
+    status: 'approved',
+    approved_by: approverEmail,
+    approved_date: format(new Date(), 'yyyy-MM-dd'),
+  });
+  return invoice;
+}
+
+/**
+ * Check for overdue vendor bills
  */
 export async function checkOverdueInvoices() {
-  const pendingInvoices = await db.invoices.filter({ status: 'pending' });
+  const pendingInvoices = await db.customerInvoices.filter({ 
+    status: 'pending',
+    invoice_type: 'vendor_bill'
+  });
   const today = new Date();
+  const overdue = [];
 
   for (const invoice of pendingInvoices) {
     if (invoice.due_date && new Date(invoice.due_date) < today) {
-      await db.invoices.update(invoice.id, { status: 'overdue' });
+      await db.customerInvoices.update(invoice.id, { status: 'overdue' });
+      overdue.push(invoice);
     }
   }
+
+  return overdue;
+}
+
+/**
+ * Get vendor bill summary
+ */
+export function getVendorBillSummary(bills) {
+  const summary = {
+    total: bills.length,
+    pending: 0,
+    approved: 0,
+    paid: 0,
+    overdue: 0,
+    pendingAmount: 0,
+    overdueAmount: 0,
+  };
+
+  const today = new Date();
+
+  bills.forEach((bill) => {
+    const amount = bill.total_amount || 0;
+    const isOverdue = bill.due_date && new Date(bill.due_date) < today && 
+      bill.status !== 'paid';
+
+    switch (bill.status) {
+      case 'pending':
+        summary.pending++;
+        summary.pendingAmount += amount;
+        if (isOverdue) {
+          summary.overdue++;
+          summary.overdueAmount += amount;
+        }
+        break;
+      case 'approved':
+        summary.approved++;
+        summary.pendingAmount += amount;
+        break;
+      case 'paid':
+        summary.paid++;
+        break;
+    }
+  });
+
+  return summary;
 }

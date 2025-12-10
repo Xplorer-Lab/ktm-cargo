@@ -52,7 +52,7 @@ import {
   triggerPaymentReceivedAlert,
 } from '@/components/notifications/NotificationService';
 import { updateVendorOnDelivery } from '@/components/vendors/VendorPerformanceService';
-import { processShipmentForInvoicing } from '@/components/invoices/InvoiceGenerationService';
+// Invoice creation is now manual - go to Invoices page to create invoices
 
 import { startTour } from '@/components/common/TourGuide';
 
@@ -234,23 +234,14 @@ export default function Shipments() {
         }
       });
 
-      // Generate invoice if shipment is paid
+      // Remind to create invoice when shipment is delivered and paid
       if (shipment.payment_status === 'paid') {
-        processShipmentForInvoicing(updatedShipment, customers, vendorOrders, vendors).then(
-          (result) => {
-            if (!result.skipped) {
-              queryClient.invalidateQueries({ queryKey: ['customer-invoices'] });
-              toast.success('Invoice and payout records generated');
-            }
-          }
-        );
+        toast.info('Shipment delivered & paid. Remember to create an invoice from the Invoices page.');
       }
     }
   };
 
   const handlePaymentChange = async (shipment, newPaymentStatus) => {
-    const updatedShipment = { ...shipment, payment_status: newPaymentStatus };
-
     // Update shipment first
     await db.shipments.update(shipment.id, { payment_status: newPaymentStatus });
     queryClient.invalidateQueries({ queryKey: ['shipments'] });
@@ -258,18 +249,11 @@ export default function Shipments() {
     // Trigger payment received notification
     if (newPaymentStatus === 'paid' && shipment.payment_status !== 'paid') {
       triggerPaymentReceivedAlert(shipment).catch(console.error);
-    }
-
-    // Generate invoice if shipment is delivered and now paid
-    if (newPaymentStatus === 'paid' && shipment.status === 'delivered') {
-      processShipmentForInvoicing(updatedShipment, customers, vendorOrders, vendors).then(
-        (result) => {
-          if (!result.skipped) {
-            queryClient.invalidateQueries({ queryKey: ['customer-invoices'] });
-            toast.success('Invoice and payout records generated');
-          }
-        }
-      );
+      
+      // Remind to create invoice when shipment is delivered and paid
+      if (shipment.status === 'delivered') {
+        toast.info('Payment received. Remember to create an invoice from the Invoices page.');
+      }
     }
   };
 

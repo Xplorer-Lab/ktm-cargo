@@ -203,6 +203,7 @@ export const createEntityClient = (tableName, selectFields = '*') => ({
 });
 
 export const db = {
+  profiles: createEntityClient('profiles', '*'),
   customers: createEntityClient('customers', '*'),
   shipments: createEntityClient('shipments', '*'),
   shoppingOrders: createEntityClient('shopping_orders', '*'),

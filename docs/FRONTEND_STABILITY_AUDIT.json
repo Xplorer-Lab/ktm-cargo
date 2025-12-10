@@ -1,0 +1,795 @@
+{
+  "timestamp": "2025-12-07T09:25:49.591Z",
+  "summary": {
+    "totalFilesAudited": 158,
+    "filesWithIssues": 26,
+    "totalErrorHandlingIssues": 89,
+    "totalValidationIssues": 13,
+    "errorHandlingFiles": 24,
+    "validationFiles": 6
+  },
+  "errorHandling": {
+    "total": 89,
+    "byFile": {
+      "src/components/customers/CampaignForm.jsx": [
+        {
+          "type": "missing_error_handling",
+          "pattern": "Async arrow function",
+          "line": 189,
+          "code": "const onFormSubmit = async (data) => {",
+          "file": "src/components/customers/CampaignForm.jsx"
+        }
+      ],
+      "src/components/documents/DocumentGenerator.jsx": [
+        {
+          "type": "missing_error_handling",
+          "pattern": "Async arrow function",
+          "line": 28,
+          "code": "const handleGenerate = async (docType) => {",
+          "file": "src/components/documents/DocumentGenerator.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "Async arrow function",
+          "line": 37,
+          "code": "const handleGenerateAll = async () => {",
+          "file": "src/components/documents/DocumentGenerator.jsx"
+        }
+      ],
+      "src/components/notifications/NotificationBell.jsx": [
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 196,
+          "code": "onClick={() => dismissMutation.mutate(notification.id)}",
+          "file": "src/components/notifications/NotificationBell.jsx"
+        }
+      ],
+      "src/components/portal/ClientNotificationBell.jsx": [
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 96,
+          "code": "onClick={() => markAllReadMutation.mutate()}",
+          "file": "src/components/portal/ClientNotificationBell.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 128,
+          "code": "onClick={() => markReadMutation.mutate(notif.id)}",
+          "file": "src/components/portal/ClientNotificationBell.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "useMutation hook",
+          "line": 54,
+          "code": "const markReadMutation = useMutation({",
+          "file": "src/components/portal/ClientNotificationBell.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "useMutation hook",
+          "line": 62,
+          "code": "const markAllReadMutation = useMutation({",
+          "file": "src/components/portal/ClientNotificationBell.jsx"
+        }
+      ],
+      "src/components/portal/CustomerNewOrder.jsx": [
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 215,
+          "code": "createMutation.mutate(form);",
+          "file": "src/components/portal/CustomerNewOrder.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "useMutation hook",
+          "line": 132,
+          "code": "const createMutation = useMutation({",
+          "file": "src/components/portal/CustomerNewOrder.jsx"
+        }
+      ],
+      "src/components/portal/CustomerProfile.jsx": [
+        {
+          "type": "missing_error_handling",
+          "pattern": "useMutation hook",
+          "line": 30,
+          "code": "const updateMutation = useMutation({",
+          "file": "src/components/portal/CustomerProfile.jsx"
+        }
+      ],
+      "src/components/portal/CustomerSupport.jsx": [
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 147,
+          "code": "createTicketMutation.mutate();",
+          "file": "src/components/portal/CustomerSupport.jsx"
+        }
+      ],
+      "src/components/portal/VendorOrders.jsx": [
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 86,
+          "code": "updateOrderMutation.mutate({ orderId: selectedOrder.id, status: 'sent' });",
+          "file": "src/components/portal/VendorOrders.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "useMutation hook",
+          "line": 62,
+          "code": "const updateOrderMutation = useMutation({",
+          "file": "src/components/portal/VendorOrders.jsx"
+        }
+      ],
+      "src/components/procurement/VendorOnboarding.jsx": [
+        {
+          "type": "missing_error_handling",
+          "pattern": "Async handleSubmit",
+          "line": 61,
+          "code": "const handleSubmit = async () => {",
+          "file": "src/components/procurement/VendorOnboarding.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "Async arrow function",
+          "line": 61,
+          "code": "const handleSubmit = async () => {",
+          "file": "src/components/procurement/VendorOnboarding.jsx"
+        }
+      ],
+      "src/components/settings/CompanyBranding.jsx": [
+        {
+          "type": "missing_error_handling",
+          "pattern": "useMutation hook",
+          "line": 59,
+          "code": "const saveMutation = useMutation({",
+          "file": "src/components/settings/CompanyBranding.jsx"
+        }
+      ],
+      "src/components/settings/NotificationTemplateManager.jsx": [
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 189,
+          "code": "updateMutation.mutate({ id: editingTemplate.id, data: formData });",
+          "file": "src/components/settings/NotificationTemplateManager.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 191,
+          "code": "createMutation.mutate(formData);",
+          "file": "src/components/settings/NotificationTemplateManager.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 197,
+          "code": "deleteMutation.mutate(templateToDelete.id);",
+          "file": "src/components/settings/NotificationTemplateManager.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "useMutation hook",
+          "line": 119,
+          "code": "const createMutation = useMutation({",
+          "file": "src/components/settings/NotificationTemplateManager.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "useMutation hook",
+          "line": 129,
+          "code": "const updateMutation = useMutation({",
+          "file": "src/components/settings/NotificationTemplateManager.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "useMutation hook",
+          "line": 139,
+          "code": "const deleteMutation = useMutation({",
+          "file": "src/components/settings/NotificationTemplateManager.jsx"
+        }
+      ],
+      "src/components/settings/PricingManager.jsx": [
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 215,
+          "code": "deletePricingMutation.mutate(pricingToDelete.id);",
+          "file": "src/components/settings/PricingManager.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 221,
+          "code": "deleteSurchargeMutation.mutate(surchargeToDelete.id);",
+          "file": "src/components/settings/PricingManager.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 547,
+          "code": "updatePricingMutation.mutate({ id: editingPricing.id, data });",
+          "file": "src/components/settings/PricingManager.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 549,
+          "code": "createPricingMutation.mutate(data);",
+          "file": "src/components/settings/PricingManager.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 583,
+          "code": "updateSurchargeMutation.mutate({ id: editingSurcharge.id, data });",
+          "file": "src/components/settings/PricingManager.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 585,
+          "code": "createSurchargeMutation.mutate(data);",
+          "file": "src/components/settings/PricingManager.jsx"
+        }
+      ],
+      "src/components/settings/StaffManagement.jsx": [
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 103,
+          "code": "updateUserMutation.mutate({ id: userId, data: { staff_role: newRole } });",
+          "file": "src/components/settings/StaffManagement.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 109,
+          "code": "updateUserMutation.mutate({",
+          "file": "src/components/settings/StaffManagement.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 120,
+          "code": "deleteUserMutation.mutate(userToDelete.id);",
+          "file": "src/components/settings/StaffManagement.jsx"
+        }
+      ],
+      "src/pages/CustomerSegments.jsx": [
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 300,
+          "code": "createSegmentMutation.mutate(data);",
+          "file": "src/pages/CustomerSegments.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 306,
+          "code": "deleteCampaignMutation.mutate(campaignToDelete.id);",
+          "file": "src/pages/CustomerSegments.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 328,
+          "code": "createCampaignMutation.mutate(campaignData);",
+          "file": "src/pages/CustomerSegments.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 332,
+          "code": "updateCampaignMutation.mutate({",
+          "file": "src/pages/CustomerSegments.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 534,
+          "code": "deleteSegmentMutation.mutate(segment.id);",
+          "file": "src/pages/CustomerSegments.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "useMutation hook",
+          "line": 98,
+          "code": "const createCampaignMutation = useMutation({",
+          "file": "src/pages/CustomerSegments.jsx"
+        }
+      ],
+      "src/pages/Customers.jsx": [
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 191,
+          "code": "updateMutation.mutate({ id: editingCustomer.id, data: form });",
+          "file": "src/pages/Customers.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 193,
+          "code": "createMutation.mutate(form);",
+          "file": "src/pages/Customers.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 214,
+          "code": "deleteMutation.mutate(customerToDelete.id);",
+          "file": "src/pages/Customers.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "useMutation hook",
+          "line": 103,
+          "code": "const createMutation = useMutation({",
+          "file": "src/pages/Customers.jsx"
+        }
+      ],
+      "src/pages/Feedback.jsx": [
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 65,
+          "code": "submitMutation.mutate({",
+          "file": "src/pages/Feedback.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "useMutation hook",
+          "line": 46,
+          "code": "const submitMutation = useMutation({",
+          "file": "src/pages/Feedback.jsx"
+        }
+      ],
+      "src/pages/Inventory.jsx": [
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 223,
+          "code": "deleteItemMutation.mutate(itemToDelete.id);",
+          "file": "src/pages/Inventory.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 628,
+          "code": "createItemMutation.mutate(form);",
+          "file": "src/pages/Inventory.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 774,
+          "code": "createMovementMutation.mutate({ ...movementForm, item_id: selectedItem.id });",
+          "file": "src/pages/Inventory.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "useMutation hook",
+          "line": 99,
+          "code": "const createItemMutation = useMutation({",
+          "file": "src/pages/Inventory.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "useMutation hook",
+          "line": 108,
+          "code": "const updateItemMutation = useMutation({",
+          "file": "src/pages/Inventory.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "useMutation hook",
+          "line": 115,
+          "code": "const deleteItemMutation = useMutation({",
+          "file": "src/pages/Inventory.jsx"
+        }
+      ],
+      "src/pages/Procurement.jsx": [
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 846,
+          "code": "onAdd={(data) => createContractMutation.mutate(data)}",
+          "file": "src/pages/Procurement.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 847,
+          "code": "onUpdate={(id, data) => updateContractMutation.mutate({ id, data })}",
+          "file": "src/pages/Procurement.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 848,
+          "code": "onDelete={(id) => deleteContractMutation.mutate(id)}",
+          "file": "src/pages/Procurement.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 858,
+          "code": "onCreatePayment={(data) => createPaymentMutation.mutate(data)}",
+          "file": "src/pages/Procurement.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 868,
+          "code": "onMarkPaid={(id) => markInvoicePaidMutation.mutate(id)}",
+          "file": "src/pages/Procurement.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 884,
+          "code": "onAdd={(data) => createRuleMutation.mutate(data)}",
+          "file": "src/pages/Procurement.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 885,
+          "code": "onUpdate={(id, data) => updateRuleMutation.mutate({ id, data })}",
+          "file": "src/pages/Procurement.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 886,
+          "code": "onDelete={(id) => deleteRuleMutation.mutate(id)}",
+          "file": "src/pages/Procurement.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 984,
+          "code": "onSubmit={(data) => createReceiptMutation.mutate(data)}",
+          "file": "src/pages/Procurement.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 1036,
+          "code": "deletePOMutation.mutate(deleteConfirm.po?.id);",
+          "file": "src/pages/Procurement.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "useMutation hook",
+          "line": 161,
+          "code": "const createPOMutation = useMutation({",
+          "file": "src/pages/Procurement.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "useMutation hook",
+          "line": 343,
+          "code": "const deleteRuleMutation = useMutation({",
+          "file": "src/pages/Procurement.jsx"
+        }
+      ],
+      "src/pages/Reports.jsx": [
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 274,
+          "code": "createReportMutation.mutate(data);",
+          "file": "src/pages/Reports.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 1535,
+          "code": "onDelete={(id) => deleteReportMutation.mutate(id)}",
+          "file": "src/pages/Reports.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 1650,
+          "code": "createExpenseMutation.mutate(expenseForm);",
+          "file": "src/pages/Reports.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "useMutation hook",
+          "line": 176,
+          "code": "const createExpenseMutation = useMutation({",
+          "file": "src/pages/Reports.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "useMutation hook",
+          "line": 191,
+          "code": "const createReportMutation = useMutation({",
+          "file": "src/pages/Reports.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "useMutation hook",
+          "line": 200,
+          "code": "const updateReportMutation = useMutation({",
+          "file": "src/pages/Reports.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "useMutation hook",
+          "line": 210,
+          "code": "const deleteReportMutation = useMutation({",
+          "file": "src/pages/Reports.jsx"
+        }
+      ],
+      "src/pages/Settings.jsx": [
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 170,
+          "code": "updateProfileMutation.mutate({ business_settings: businessSettings });",
+          "file": "src/pages/Settings.jsx"
+        }
+      ],
+      "src/pages/Shipments.jsx": [
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 181,
+          "code": "createMutation.mutate(data);",
+          "file": "src/pages/Shipments.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 193,
+          "code": "deleteMutation.mutate(shipmentToDelete.id);",
+          "file": "src/pages/Shipments.jsx"
+        }
+      ],
+      "src/pages/ShoppingOrders.jsx": [
+        {
+          "type": "missing_error_handling",
+          "pattern": "Async onClick handler",
+          "line": 833,
+          "code": "onClick={async () => {",
+          "file": "src/pages/ShoppingOrders.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 252,
+          "code": "updateMutation.mutate(",
+          "file": "src/pages/ShoppingOrders.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 271,
+          "code": "createMutation.mutate(data);",
+          "file": "src/pages/ShoppingOrders.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 288,
+          "code": "updateMutation.mutate(",
+          "file": "src/pages/ShoppingOrders.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 876,
+          "code": "deleteMutation.mutate(deleteConfirm.order?.id);",
+          "file": "src/pages/ShoppingOrders.jsx"
+        }
+      ],
+      "src/pages/Tasks.jsx": [
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 150,
+          "code": "updateMutation.mutate({ id: editingTask.id, data: form });",
+          "file": "src/pages/Tasks.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 152,
+          "code": "createMutation.mutate(form);",
+          "file": "src/pages/Tasks.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 193,
+          "code": "updateMutation.mutate({ id: task.id, data: { ...task, status: newStatus } });",
+          "file": "src/pages/Tasks.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 642,
+          "code": "onDelete={(id) => deleteMutation.mutate(id)}",
+          "file": "src/pages/Tasks.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 675,
+          "code": "onDelete={(id) => deleteMutation.mutate(id)}",
+          "file": "src/pages/Tasks.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "useMutation hook",
+          "line": 138,
+          "code": "const updateMutation = useMutation({",
+          "file": "src/pages/Tasks.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "useMutation hook",
+          "line": 183,
+          "code": "const deleteMutation = useMutation({",
+          "file": "src/pages/Tasks.jsx"
+        }
+      ],
+      "src/pages/Vendors.jsx": [
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 294,
+          "code": "updateVendorMutation.mutate({ id: editingVendor.id, data });",
+          "file": "src/pages/Vendors.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 296,
+          "code": "createVendorMutation.mutate(data);",
+          "file": "src/pages/Vendors.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 302,
+          "code": "deleteVendorMutation.mutate(vendorToDelete.id);",
+          "file": "src/pages/Vendors.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 307,
+          "code": "updateOrderMutation.mutate({",
+          "file": "src/pages/Vendors.jsx"
+        },
+        {
+          "type": "missing_error_handling",
+          "pattern": "React Query mutate",
+          "line": 804,
+          "code": "onSubmit={(data) => createOrderMutation.mutate(data)}",
+          "file": "src/pages/Vendors.jsx"
+        }
+      ]
+    }
+  },
+  "formValidation": {
+    "total": 13,
+    "byFile": {
+      "src/components/settings/NotificationTemplateManager.jsx": [
+        {
+          "type": "missing_form_validation",
+          "pattern": "onSubmit handler",
+          "line": 322,
+          "code": "<form onSubmit={handleSubmit} className=\"space-y-4 mt-4\">",
+          "file": "src/components/settings/NotificationTemplateManager.jsx"
+        },
+        {
+          "type": "missing_form_validation",
+          "pattern": "handleSubmit function",
+          "line": 181,
+          "code": "const handleSubmit = (e) => {",
+          "file": "src/components/settings/NotificationTemplateManager.jsx"
+        }
+      ],
+      "src/components/ui/form.jsx": [
+        {
+          "type": "missing_form_validation",
+          "pattern": "HTML form element",
+          "line": 29,
+          "code": "throw new Error('useFormField should be used within <FormField>');",
+          "file": "src/components/ui/form.jsx"
+        },
+        {
+          "type": "missing_form_validation",
+          "pattern": "HTML form element",
+          "line": 50,
+          "code": "<FormItemContext.Provider value={{ id }}>",
+          "file": "src/components/ui/form.jsx"
+        }
+      ],
+      "src/pages/ClientPortal.jsx": [
+        {
+          "type": "missing_form_validation",
+          "pattern": "HTML form element",
+          "line": 347,
+          "code": "<form onSubmit={handleSignUp} className=\"space-y-4\">",
+          "file": "src/pages/ClientPortal.jsx"
+        },
+        {
+          "type": "missing_form_validation",
+          "pattern": "onSubmit handler",
+          "line": 305,
+          "code": "<form onSubmit={handleSignIn} className=\"space-y-4\">",
+          "file": "src/pages/ClientPortal.jsx"
+        },
+        {
+          "type": "missing_form_validation",
+          "pattern": "onSubmit handler",
+          "line": 347,
+          "code": "<form onSubmit={handleSignUp} className=\"space-y-4\">",
+          "file": "src/pages/ClientPortal.jsx"
+        }
+      ],
+      "src/pages/Inventory.jsx": [
+        {
+          "type": "missing_form_validation",
+          "pattern": "HTML form element",
+          "line": 771,
+          "code": "<form",
+          "file": "src/pages/Inventory.jsx"
+        },
+        {
+          "type": "missing_form_validation",
+          "pattern": "onSubmit handler",
+          "line": 626,
+          "code": "onSubmit={(e) => {",
+          "file": "src/pages/Inventory.jsx"
+        },
+        {
+          "type": "missing_form_validation",
+          "pattern": "onSubmit handler",
+          "line": 772,
+          "code": "onSubmit={(e) => {",
+          "file": "src/pages/Inventory.jsx"
+        }
+      ],
+      "src/pages/Procurement.jsx": [
+        {
+          "type": "missing_form_validation",
+          "pattern": "onSubmit handler",
+          "line": 984,
+          "code": "onSubmit={(data) => createReceiptMutation.mutate(data)}",
+          "file": "src/pages/Procurement.jsx"
+        }
+      ],
+      "src/pages/Reports.jsx": [
+        {
+          "type": "missing_form_validation",
+          "pattern": "onSubmit handler",
+          "line": 1648,
+          "code": "onSubmit={(e) => {",
+          "file": "src/pages/Reports.jsx"
+        },
+        {
+          "type": "missing_form_validation",
+          "pattern": "onSubmit handler",
+          "line": 1737,
+          "code": "onSubmit={handleReportSubmit}",
+          "file": "src/pages/Reports.jsx"
+        }
+      ]
+    }
+  }
+}

@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useMemo } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { shoppingOrderSchema } from '@/lib/schemas';
@@ -6,6 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
 import {
     Select,
     SelectContent,
@@ -13,9 +14,28 @@ import {
     SelectTrigger,
     SelectValue,
 } from '@/components/ui/select';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import { ChevronsUpDown, Check, Truck, Package, AlertTriangle } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import {
+    ChevronsUpDown,
+    Check,
+    Truck,
+    Package,
+    AlertTriangle,
+    User,
+    Phone,
+    MapPin,
+    Link2,
+    FileText,
+    DollarSign,
+    Scale,
+    Percent,
+    CreditCard,
+    Calculator,
+    Info,
+    Loader2,
+    ShoppingBag,
+    TrendingUp,
+} from 'lucide-react';
 import {
     Command,
     CommandEmpty,
@@ -27,6 +47,23 @@ import {
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
+import VendorCapacityAlert from '@/components/shared/VendorCapacityAlert';
+
+const statusOptions = [
+    { value: 'pending', label: 'Pending', color: 'bg-slate-100 text-slate-700' },
+    { value: 'purchasing', label: 'Purchasing', color: 'bg-blue-100 text-blue-700' },
+    { value: 'purchased', label: 'Purchased', color: 'bg-indigo-100 text-indigo-700' },
+    { value: 'received', label: 'Received', color: 'bg-purple-100 text-purple-700' },
+    { value: 'shipping', label: 'Shipping', color: 'bg-amber-100 text-amber-700' },
+    { value: 'delivered', label: 'Delivered', color: 'bg-emerald-100 text-emerald-700' },
+    { value: 'cancelled', label: 'Cancelled', color: 'bg-rose-100 text-rose-700' },
+];
+
+const paymentStatusOptions = [
+    { value: 'unpaid', label: 'Unpaid', color: 'bg-rose-100 text-rose-700' },
+    { value: 'deposit_paid', label: 'Deposit Paid', color: 'bg-amber-100 text-amber-700' },
+    { value: 'paid', label: 'Paid', color: 'bg-emerald-100 text-emerald-700' },
+];
 
 export default function ShoppingOrderForm({
     order,
@@ -36,6 +73,7 @@ export default function ShoppingOrderForm({
     purchaseOrders = [],
 }) {
     const [openCombobox, setOpenCombobox] = useState(false);
+    const [isSubmitting, setIsSubmitting] = useState(false);
 
     const {
         register,
@@ -74,40 +112,34 @@ export default function ShoppingOrderForm({
     const watchedValues = watch();
 
     // Calculation Logic
-    const [calculated, setCalculated] = useState({
-        productCost: 0,
-        commission: 0,
-        shippingCost: 0,
-        total: 0,
-        vendorCost: 0,
-    });
-
-    useEffect(() => {
+    const calculated = useMemo(() => {
         const productCost =
             parseFloat(watchedValues.actual_product_cost || watchedValues.estimated_product_cost) || 0;
         const weight = parseFloat(watchedValues.actual_weight || watchedValues.estimated_weight) || 0;
         const commissionRate = parseFloat(watchedValues.commission_rate) || 0;
-
-        // Default shipping rate for shopping orders if not linked to PO
         const shippingRate = 110;
 
         const commission = productCost * (commissionRate / 100);
         const shippingCost = weight * shippingRate;
         const total = productCost + commission + shippingCost;
 
-        // Vendor Cost Calculation
         let vendorCost = 0;
         if (watchedValues.vendor_po_id && watchedValues.vendor_cost_per_kg) {
             vendorCost = weight * parseFloat(watchedValues.vendor_cost_per_kg);
         }
 
-        setCalculated({
+        const profit = commission + (shippingCost - vendorCost);
+        const margin = total > 0 ? ((profit / total) * 100).toFixed(1) : 0;
+
+        return {
             productCost,
             commission,
             shippingCost,
             total,
             vendorCost,
-        });
+            profit,
+            margin,
+        };
     }, [
         watchedValues.actual_product_cost,
         watchedValues.estimated_product_cost,
@@ -118,13 +150,14 @@ export default function ShoppingOrderForm({
         watchedValues.vendor_cost_per_kg,
     ]);
 
-
     // Filter POs
-    const availablePOs = purchaseOrders.filter(
-        (po) =>
-            ['approved', 'sent', 'partial_received', 'received'].includes(po.status) &&
-            (po.remaining_weight_kg > 0 || !po.total_weight_kg)
-    );
+    const availablePOs = useMemo(() => (
+        purchaseOrders.filter(
+            (po) =>
+                ['approved', 'sent', 'partial_received', 'received'].includes(po.status) &&
+                (po.remaining_weight_kg > 0 || !po.total_weight_kg)
+        )
+    ), [purchaseOrders]);
 
     const handleCustomerSelect = (customerName) => {
         const customer = customers.find((c) => c.name === customerName);
@@ -160,35 +193,56 @@ export default function ShoppingOrderForm({
         }
     };
 
-    const onFormSubmit = (data) => {
-        const formattedData = {
-            ...data,
-            commission_amount: calculated.commission,
-            shipping_cost: calculated.shippingCost,
-            total_amount: calculated.total,
-            vendor_cost: calculated.vendorCost,
-        };
-        onSubmit(formattedData);
+    const onFormSubmit = async (data) => {
+        setIsSubmitting(true);
+        try {
+            const formattedData = {
+                ...data,
+                commission_amount: calculated.commission,
+                shipping_cost: calculated.shippingCost,
+                total_amount: calculated.total,
+                vendor_cost: calculated.vendorCost,
+            };
+            await onSubmit(formattedData);
+        } finally {
+            setIsSubmitting(false);
+        }
     };
 
+    const selectedStatus = statusOptions.find(s => s.value === watchedValues.status);
+    const selectedPaymentStatus = paymentStatusOptions.find(s => s.value === watchedValues.payment_status);
+
     return (
-        <Card className="border-0 shadow-lg">
-            <CardHeader className="border-b">
-                <CardTitle>{order ? 'Edit Shopping Order' : 'New Shopping Order'}</CardTitle>
+        <Card className="border-0 shadow-2xl bg-white dark:bg-slate-900 max-h-[90vh] overflow-y-auto">
+            <CardHeader className="border-b bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/50 dark:to-pink-950/50 sticky top-0 z-10">
+                <div className="flex items-center gap-3">
+                    <div className="p-2.5 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl text-white">
+                        <ShoppingBag className="w-5 h-5" />
+                    </div>
+                    <div>
+                        <CardTitle className="text-lg">{order ? 'Edit Shopping Order' : 'New Shopping Order'}</CardTitle>
+                        <CardDescription>
+                            {order ? `Editing order for ${order.customer_name}` : 'Create a new shopping assistance order'}
+                        </CardDescription>
+                    </div>
+                </div>
             </CardHeader>
             <CardContent className="p-6">
                 <form onSubmit={handleSubmit(onFormSubmit)} className="space-y-6">
                     {/* Customer Section */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                         <div className="space-y-2 flex flex-col">
-                            <Label>Customer Name *</Label>
+                            <Label className="flex items-center gap-2">
+                                <User className="w-4 h-4 text-slate-400" />
+                                Customer Name <span className="text-rose-500">*</span>
+                            </Label>
                             <Popover open={openCombobox} onOpenChange={setOpenCombobox}>
                                 <PopoverTrigger asChild>
                                     <Button
                                         variant="outline"
                                         role="combobox"
                                         aria-expanded={openCombobox}
-                                        className={cn("w-full justify-between", errors.customer_name && "border-red-500")}
+                                        className={cn("w-full justify-between h-11", errors.customer_name && "border-rose-500")}
                                     >
                                         {watchedValues.customer_name || 'Select customer...'}
                                         <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -212,7 +266,12 @@ export default function ShoppingOrderForm({
                                                                 watchedValues.customer_name === customer.name ? 'opacity-100' : 'opacity-0'
                                                             )}
                                                         />
-                                                        {customer.name}
+                                                        <div className="flex flex-col">
+                                                            <span>{customer.name}</span>
+                                                            {customer.phone && (
+                                                                <span className="text-xs text-slate-500">{customer.phone}</span>
+                                                            )}
+                                                        </div>
                                                     </CommandItem>
                                                 ))}
                                             </CommandGroup>
@@ -220,112 +279,173 @@ export default function ShoppingOrderForm({
                                     </Command>
                                 </PopoverContent>
                             </Popover>
-                            {errors.customer_name && <p className="text-xs text-red-500">{errors.customer_name.message}</p>}
+                            {errors.customer_name && (
+                                <p className="text-xs text-rose-500 flex items-center gap-1">
+                                    <Info className="w-3 h-3" />
+                                    {errors.customer_name.message}
+                                </p>
+                            )}
                             <input type="hidden" {...register('customer_name')} />
                         </div>
 
                         <div className="space-y-2">
-                            <Label>Phone Number *</Label>
+                            <Label className="flex items-center gap-2">
+                                <Phone className="w-4 h-4 text-slate-400" />
+                                Phone Number <span className="text-rose-500">*</span>
+                            </Label>
                             <Input
                                 {...register('customer_phone')}
                                 placeholder="+66 or +95"
-                                className={cn(errors.customer_phone && "border-red-500")}
+                                className={cn("h-11", errors.customer_phone && "border-rose-500")}
                             />
-                            {errors.customer_phone && <p className="text-xs text-red-500">{errors.customer_phone.message}</p>}
+                            {errors.customer_phone && (
+                                <p className="text-xs text-rose-500 flex items-center gap-1">
+                                    <Info className="w-3 h-3" />
+                                    {errors.customer_phone.message}
+                                </p>
+                            )}
                         </div>
                     </div>
 
                     <div className="space-y-2">
-                        <Label>Delivery Address (Yangon)</Label>
+                        <Label className="flex items-center gap-2">
+                            <MapPin className="w-4 h-4 text-emerald-500" />
+                            Delivery Address (Yangon)
+                        </Label>
                         <Input
                             {...register('delivery_address')}
-                            placeholder="Yangon address"
+                            placeholder="Yangon delivery address"
+                            className="h-11"
                         />
                     </div>
 
                     {/* Product Details */}
                     <div className="grid grid-cols-1 gap-4">
                         <div className="space-y-2">
-                            <Label>Product Links</Label>
+                            <Label className="flex items-center gap-2">
+                                <Link2 className="w-4 h-4 text-slate-400" />
+                                Product Links
+                            </Label>
                             <Textarea
                                 {...register('product_links')}
-                                placeholder="Paste links here..."
+                                placeholder="Paste product links here (one per line)..."
                                 rows={2}
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label>Product Details *</Label>
+                            <Label className="flex items-center gap-2">
+                                <FileText className="w-4 h-4 text-slate-400" />
+                                Product Details <span className="text-rose-500">*</span>
+                            </Label>
                             <Textarea
                                 {...register('product_details')}
-                                placeholder="Size, color, quantity..."
+                                placeholder="Size, color, quantity, specifications..."
                                 rows={3}
-                                className={cn(errors.product_details && "border-red-500")}
+                                className={cn(errors.product_details && "border-rose-500")}
                             />
-                            {errors.product_details && <p className="text-xs text-red-500">{errors.product_details.message}</p>}
+                            {errors.product_details && (
+                                <p className="text-xs text-rose-500 flex items-center gap-1">
+                                    <Info className="w-3 h-3" />
+                                    {errors.product_details.message}
+                                </p>
+                            )}
                         </div>
                     </div>
 
                     {/* Costs & Weights */}
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-4 bg-slate-50 rounded-lg">
-                        <div className="space-y-2">
-                            <Label>Estimated Product Cost (THB)</Label>
-                            <Input
-                                type="number"
-                                step="0.01"
-                                {...register('estimated_product_cost')}
-                                placeholder="0.00"
-                            />
+                    <div className="p-5 bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-800/50 rounded-2xl space-y-4">
+                        <div className="flex items-center gap-2 mb-2">
+                            <Calculator className="w-5 h-5 text-slate-600" />
+                            <span className="font-semibold text-slate-700 dark:text-slate-200">Cost & Weight Estimates</span>
                         </div>
-                        <div className="space-y-2">
-                            <Label>Actual Product Cost (THB)</Label>
-                            <Input
-                                type="number"
-                                step="0.01"
-                                {...register('actual_product_cost')}
-                                placeholder="0.00"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label>Estimated Weight (kg)</Label>
-                            <Input
-                                type="number"
-                                step="0.1"
-                                {...register('estimated_weight')}
-                                placeholder="0.0"
-                            />
-                        </div>
-                        <div className="space-y-2">
-                            <Label>Actual Weight (kg)</Label>
-                            <Input
-                                type="number"
-                                step="0.1"
-                                {...register('actual_weight')}
-                                placeholder="0.0"
-                            />
+
+                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                            <div className="space-y-2">
+                                <Label className="flex items-center gap-2">
+                                    <DollarSign className="w-4 h-4 text-slate-400" />
+                                    Estimated Product Cost (THB)
+                                </Label>
+                                <Input
+                                    type="number"
+                                    step="0.01"
+                                    {...register('estimated_product_cost')}
+                                    placeholder="0.00"
+                                    className="h-11"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label className="flex items-center gap-2">
+                                    <DollarSign className="w-4 h-4 text-emerald-500" />
+                                    Actual Product Cost (THB)
+                                </Label>
+                                <Input
+                                    type="number"
+                                    step="0.01"
+                                    {...register('actual_product_cost')}
+                                    placeholder="0.00"
+                                    className="h-11 border-emerald-200 focus-visible:ring-emerald-500"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label className="flex items-center gap-2">
+                                    <Scale className="w-4 h-4 text-slate-400" />
+                                    Estimated Weight (kg)
+                                </Label>
+                                <Input
+                                    type="number"
+                                    step="0.1"
+                                    {...register('estimated_weight')}
+                                    placeholder="0.0"
+                                    className="h-11"
+                                />
+                            </div>
+                            <div className="space-y-2">
+                                <Label className="flex items-center gap-2">
+                                    <Scale className="w-4 h-4 text-emerald-500" />
+                                    Actual Weight (kg)
+                                </Label>
+                                <Input
+                                    type="number"
+                                    step="0.1"
+                                    {...register('actual_weight')}
+                                    placeholder="0.0"
+                                    className="h-11 border-emerald-200 focus-visible:ring-emerald-500"
+                                />
+                            </div>
                         </div>
                     </div>
 
                     {/* PO Linkage */}
                     {availablePOs.length > 0 && (
-                        <div className="p-4 bg-blue-50 rounded-lg border border-blue-200 space-y-3">
+                        <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-xl border border-blue-200 dark:border-blue-800 space-y-3">
                             <div className="flex items-center gap-2">
-                                <Truck className="w-4 h-4 text-blue-600" />
-                                <Label className="text-blue-800 font-medium">Link to Vendor Purchase Order (Optional)</Label>
+                                <div className="p-1.5 bg-blue-100 dark:bg-blue-900/50 rounded-lg">
+                                    <Truck className="w-4 h-4 text-blue-600" />
+                                </div>
+                                <Label className="text-blue-800 dark:text-blue-200 font-medium">Link to Vendor Purchase Order (Optional)</Label>
                             </div>
                             <Controller
                                 name="vendor_po_id"
                                 control={control}
                                 render={({ field }) => (
                                     <Select value={field.value || 'none'} onValueChange={handlePOChange}>
-                                        <SelectTrigger>
+                                        <SelectTrigger className="h-11 bg-white dark:bg-slate-800">
                                             <SelectValue placeholder="Select vendor PO" />
                                         </SelectTrigger>
                                         <SelectContent>
                                             <SelectItem value="none">No PO Linked</SelectItem>
                                             {availablePOs.map((po) => (
                                                 <SelectItem key={po.id} value={po.id}>
-                                                    {po.po_number} - {po.vendor_name}
-                                                    {po.remaining_weight_kg ? ` (${po.remaining_weight_kg}kg left)` : ''}
+                                                    <div className="flex items-center gap-2">
+                                                        <span className="font-mono">{po.po_number}</span>
+                                                        <span>-</span>
+                                                        <span>{po.vendor_name}</span>
+                                                        {po.remaining_weight_kg && (
+                                                            <Badge className="bg-emerald-100 text-emerald-700 text-xs">
+                                                                {po.remaining_weight_kg}kg left
+                                                            </Badge>
+                                                        )}
+                                                    </div>
                                                 </SelectItem>
                                             ))}
                                         </SelectContent>
@@ -333,6 +453,14 @@ export default function ShoppingOrderForm({
                                 )}
                             />
                         </div>
+                    )}
+
+                    {/* Vendor Capacity Alert - Real-time visualization */}
+                    {watchedValues.vendor_po_id && (parseFloat(watchedValues.actual_weight) > 0 || parseFloat(watchedValues.estimated_weight) > 0) && (
+                        <VendorCapacityAlert
+                            purchaseOrder={purchaseOrders.find(po => po.id === watchedValues.vendor_po_id)}
+                            requestedWeight={parseFloat(watchedValues.actual_weight || watchedValues.estimated_weight) || 0}
+                        />
                     )}
 
                     {/* Status & Commission */}
@@ -344,44 +472,51 @@ export default function ShoppingOrderForm({
                                 control={control}
                                 render={({ field }) => (
                                     <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
-                                        <SelectTrigger>
+                                        <SelectTrigger className="h-11">
                                             <SelectValue placeholder="Status" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="pending">Pending</SelectItem>
-                                            <SelectItem value="purchasing">Purchasing</SelectItem>
-                                            <SelectItem value="purchased">Purchased</SelectItem>
-                                            <SelectItem value="received">Received</SelectItem>
-                                            <SelectItem value="shipping">Shipping</SelectItem>
-                                            <SelectItem value="delivered">Delivered</SelectItem>
-                                            <SelectItem value="cancelled">Cancelled</SelectItem>
+                                            {statusOptions.map((opt) => (
+                                                <SelectItem key={opt.value} value={opt.value}>
+                                                    <Badge className={cn("text-xs", opt.color)}>{opt.label}</Badge>
+                                                </SelectItem>
+                                            ))}
                                         </SelectContent>
                                     </Select>
                                 )}
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label>Commission Rate (%)</Label>
+                            <Label className="flex items-center gap-2">
+                                <Percent className="w-4 h-4 text-slate-400" />
+                                Commission Rate (%)
+                            </Label>
                             <Input
                                 type="number"
                                 {...register('commission_rate')}
                                 placeholder="10"
+                                className="h-11"
                             />
                         </div>
                         <div className="space-y-2">
-                            <Label>Payment Status</Label>
+                            <Label className="flex items-center gap-2">
+                                <CreditCard className="w-4 h-4 text-slate-400" />
+                                Payment Status
+                            </Label>
                             <Controller
                                 name="payment_status"
                                 control={control}
                                 render={({ field }) => (
                                     <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
-                                        <SelectTrigger>
+                                        <SelectTrigger className="h-11">
                                             <SelectValue placeholder="Payment" />
                                         </SelectTrigger>
                                         <SelectContent>
-                                            <SelectItem value="unpaid">Unpaid</SelectItem>
-                                            <SelectItem value="deposit_paid">Deposit Paid</SelectItem>
-                                            <SelectItem value="paid">Paid</SelectItem>
+                                            {paymentStatusOptions.map((opt) => (
+                                                <SelectItem key={opt.value} value={opt.value}>
+                                                    <Badge className={cn("text-xs", opt.color)}>{opt.label}</Badge>
+                                                </SelectItem>
+                                            ))}
                                         </SelectContent>
                                     </Select>
                                 )}
@@ -393,39 +528,65 @@ export default function ShoppingOrderForm({
                         <Label>Internal Notes</Label>
                         <Textarea
                             {...register('notes')}
+                            placeholder="Internal notes about this order..."
                             rows={2}
                         />
                     </div>
 
                     {/* Calculations Review */}
-                    <div className="bg-slate-100 p-4 rounded-lg space-y-2">
-                        <h4 className="font-medium text-slate-700 mb-2">Cost Summary</h4>
+                    <div className="bg-gradient-to-br from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 p-5 rounded-2xl space-y-4">
+                        <h4 className="font-semibold text-slate-900 dark:text-white flex items-center gap-2">
+                            <Calculator className="w-5 h-5 text-purple-600" />
+                            Cost Summary
+                        </h4>
                         <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm">
-                            <div>
-                                <p className="text-slate-500">Product Cost</p>
-                                <p className="font-semibold">฿{calculated.productCost.toLocaleString()}</p>
+                            <div className="p-3 bg-white dark:bg-slate-800 rounded-xl">
+                                <p className="text-slate-500 text-xs mb-1">Product Cost</p>
+                                <p className="font-bold text-lg">฿{calculated.productCost.toLocaleString()}</p>
                             </div>
-                            <div>
-                                <p className="text-slate-500">Commission</p>
-                                <p className="font-semibold text-emerald-600">฿{calculated.commission.toLocaleString()}</p>
+                            <div className="p-3 bg-white dark:bg-slate-800 rounded-xl">
+                                <p className="text-slate-500 text-xs mb-1">Commission ({watchedValues.commission_rate}%)</p>
+                                <p className="font-bold text-lg text-emerald-600">฿{calculated.commission.toLocaleString()}</p>
                             </div>
-                            <div>
-                                <p className="text-slate-500">Shipping Estimate</p>
-                                <p className="font-semibold">฿{calculated.shippingCost.toLocaleString()}</p>
+                            <div className="p-3 bg-white dark:bg-slate-800 rounded-xl">
+                                <p className="text-slate-500 text-xs mb-1">Shipping Estimate</p>
+                                <p className="font-bold text-lg">฿{calculated.shippingCost.toLocaleString()}</p>
                             </div>
-                            <div>
-                                <p className="text-slate-500">Total to Collect</p>
-                                <p className="font-bold text-lg text-blue-600">฿{calculated.total.toLocaleString()}</p>
+                            <div className="p-3 bg-gradient-to-br from-purple-500 to-pink-600 rounded-xl text-white">
+                                <p className="text-purple-100 text-xs mb-1">Total to Collect</p>
+                                <p className="font-bold text-xl">฿{calculated.total.toLocaleString()}</p>
                             </div>
                         </div>
+
+                        {calculated.profit > 0 && (
+                            <div className="pt-3 border-t border-purple-200 dark:border-purple-800 flex items-center gap-4">
+                                <div className="flex items-center gap-2">
+                                    <TrendingUp className="w-4 h-4 text-emerald-600" />
+                                    <span className="text-emerald-600 font-semibold">
+                                        Profit: ฿{calculated.profit.toLocaleString()}
+                                    </span>
+                                </div>
+                                <Badge className="bg-emerald-100 text-emerald-700">
+                                    {calculated.margin}% margin
+                                </Badge>
+                            </div>
+                        )}
                     </div>
 
-                    <div className="flex gap-3 pt-4">
+                    <div className="flex gap-3 pt-4 border-t border-slate-100 dark:border-slate-800">
                         <Button type="button" variant="outline" onClick={onCancel} className="flex-1">
                             Cancel
                         </Button>
-                        <Button type="submit" className="flex-1 bg-purple-600 hover:bg-purple-700">
-                            {order ? 'Update Order' : 'Create Order'}
+                        <Button
+                            type="submit"
+                            className="flex-1 bg-gradient-to-r from-purple-500 to-pink-600 hover:from-purple-600 hover:to-pink-700 text-white shadow-lg shadow-purple-500/30"
+                            disabled={isSubmitting}
+                        >
+                            {isSubmitting ? (
+                                <Loader2 className="w-4 h-4 animate-spin" />
+                            ) : (
+                                order ? 'Update Order' : 'Create Order'
+                            )}
                         </Button>
                     </div>
                 </form>

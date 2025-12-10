@@ -45,10 +45,14 @@ export const shipmentSchema = z.object({
   packaging_fee: z.preprocess(numberPreprocess, z.number().optional().default(0)),
   notes: z.string().optional(),
   vendor_po_id: z.string().optional(),
+  vendor_id: z.string().optional(),
   vendor_name: z.string().optional(),
   vendor_po_number: z.string().optional(),
   vendor_cost_per_kg: z.preprocess(numberPreprocess, z.number().optional()),
+  vendor_total_cost: z.preprocess(numberPreprocess, z.number().optional()),
   margin_percentage: z.preprocess(numberPreprocess, z.number().optional()),
+  origin: z.string().optional(),
+  destination: z.string().optional(),
 });
 
 export const shoppingOrderSchema = z.object({

@@ -7,19 +7,28 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
-import { Building2, Upload, Save, Loader2, Image, Palette } from 'lucide-react';
+import { Alert, AlertDescription } from '@/components/ui/alert';
+import { Building2, Upload, Save, Loader2, Image, Palette, AlertTriangle } from 'lucide-react';
 import { toast } from 'sonner';
 
 export default function CompanyBranding() {
   const queryClient = useQueryClient();
   const [uploading, setUploading] = useState(false);
+  const [logoError, setLogoError] = useState(false);
 
-  const { data: settings, isLoading } = useQuery({
+  const { data: settings, isLoading, isError } = useQuery({
     queryKey: ['company-settings'],
     queryFn: async () => {
-      const list = await db.companySettings.list();
-      return list[0] || null;
+      try {
+        const list = await db.companySettings.list();
+        return list[0] || null;
+      } catch (err) {
+        console.error('Failed to fetch company settings:', err);
+        // Return null so the form still works with defaults
+        return null;
+      }
     },
+    retry: false, // Don't retry on error
   });
 
   const [form, setForm] = useState({
@@ -39,6 +48,8 @@ export default function CompanyBranding() {
 
   useEffect(() => {
     if (settings) {
+      console.log('Loaded company settings:', settings);
+      console.log('Logo URL from DB:', settings.logo_url);
       setForm({
         company_name: settings.company_name || 'BKK-YGN Cargo',
         logo_url: settings.logo_url || '',
@@ -53,23 +64,34 @@ export default function CompanyBranding() {
         primary_color: settings.primary_color || '#2563eb',
         currency: settings.currency || 'THB',
       });
+      // Reset logo error when settings load
+      setLogoError(false);
     }
   }, [settings]);
 
   const saveMutation = useMutation({
     mutationFn: async (data) => {
-      if (settings?.id) {
-        return db.companySettings.update(settings.id, data);
-      } else {
-        return db.companySettings.create(data);
+      try {
+        if (settings?.id) {
+          return await db.companySettings.update(settings.id, data);
+        } else {
+          return await db.companySettings.create(data);
+        }
+      } catch (err) {
+        console.error('Failed to save company settings:', err);
+        throw new Error(
+          err.message?.includes('relation') 
+            ? 'Database table not found. Please run the migration first.'
+            : err.message || 'Failed to save settings'
+        );
       }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['company-settings'] });
       toast.success('Company settings saved successfully');
     },
-    onError: () => {
-      toast.error('Failed to save settings');
+    onError: (err) => {
+      toast.error(err.message || 'Failed to save settings');
     },
   });
 
@@ -92,11 +114,35 @@ export default function CompanyBranding() {
     }
 
     setUploading(true);
+    setLogoError(false); // Reset error state before upload
     try {
-      const { url, file_url } = await uploadLogo(file);
-      setForm((prev) => ({ ...prev, logo_url: url || file_url }));
-      toast.success('Logo uploaded successfully');
+      console.log('Uploading logo...');
+      const result = await uploadLogo(file);
+      console.log('Upload result:', result);
+      
+      const logoUrl = result.url || result.file_url;
+      console.log('Logo URL to save:', logoUrl);
+      
+      if (!logoUrl) {
+        throw new Error('No URL returned from upload');
+      }
+      
+      // Update local form state
+      setForm((prev) => ({ ...prev, logo_url: logoUrl }));
+      
+      // Auto-save to database immediately
+      if (settings?.id) {
+        console.log('Updating existing settings with logo:', settings.id);
+        await db.companySettings.update(settings.id, { logo_url: logoUrl });
+      } else {
+        console.log('Creating new settings with logo');
+        await db.companySettings.create({ ...form, logo_url: logoUrl });
+      }
+      
+      queryClient.invalidateQueries({ queryKey: ['company-settings'] });
+      toast.success('Logo uploaded and saved successfully');
     } catch (err) {
+      console.error('Logo upload error:', err);
       toast.error(err.message || 'Failed to upload logo');
     } finally {
       setUploading(false);
@@ -119,6 +165,15 @@ export default function CompanyBranding() {
 
   return (
     <div className="space-y-6">
+      {isError && (
+        <Alert variant="destructive" className="bg-amber-50 border-amber-200 text-amber-800">
+          <AlertTriangle className="h-4 w-4" />
+          <AlertDescription>
+            <strong>Database setup required:</strong> The company_settings table may not exist. 
+            Please run the migration: <code className="bg-amber-100 px-1 rounded">migrations/create_company_settings.sql</code>
+          </AlertDescription>
+        </Alert>
+      )}
       <Card className="border-0 shadow-sm">
         <CardHeader>
           <CardTitle className="flex items-center gap-2">
@@ -136,13 +191,25 @@ export default function CompanyBranding() {
             <Label>Company Logo</Label>
             <div className="flex items-center gap-6">
               <div className="w-24 h-24 border-2 border-dashed border-slate-200 rounded-xl flex items-center justify-center bg-slate-50 overflow-hidden">
-                {form.logo_url ? (
-                  <img src={form.logo_url} alt="Logo" className="w-full h-full object-contain" />
+                {form.logo_url && !logoError ? (
+                  <img 
+                    src={form.logo_url} 
+                    alt="Logo" 
+                    className="w-full h-full object-contain"
+                    onError={() => {
+                      console.error('Failed to load logo from:', form.logo_url);
+                      setLogoError(true);
+                    }}
+                    onLoad={() => setLogoError(false)}
+                  />
                 ) : (
-                  <Image className="w-8 h-8 text-slate-300" />
+                  <div className="flex flex-col items-center">
+                    <Image className="w-8 h-8 text-slate-300" />
+                    {logoError && <span className="text-xs text-rose-500 mt-1">Load failed</span>}
+                  </div>
                 )}
               </div>
-              <div>
+              <div className="space-y-2">
                 <input
                   type="file"
                   accept="image/*"
@@ -162,7 +229,18 @@ export default function CompanyBranding() {
                   )}
                   Upload Logo
                 </Button>
-                <p className="text-xs text-slate-500 mt-2">Recommended: 200x200px, PNG or JPG</p>
+                <p className="text-xs text-slate-500">Recommended: 200x200px, PNG or JPG</p>
+                {form.logo_url && (
+                  <a 
+                    href={form.logo_url} 
+                    target="_blank" 
+                    rel="noopener noreferrer"
+                    className="text-xs text-blue-600 hover:underline block truncate max-w-[200px]"
+                    title={form.logo_url}
+                  >
+                    View uploaded logo →
+                  </a>
+                )}
               </div>
             </div>
           </div>

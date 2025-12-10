@@ -57,8 +57,10 @@ import { toast } from 'sonner';
 import { format, subDays, differenceInDays } from 'date-fns';
 import { useUser } from '@/components/auth/UserContext';
 import { hasPermission } from '@/components/auth/RolePermissions';
+import { useErrorHandler } from '@/hooks/useErrorHandler';
 
 export default function CustomerSegments() {
+  const { handleError } = useErrorHandler();
   const [selectedSegment, setSelectedSegment] = useState(null);
   const [selectedCustomers, setSelectedCustomers] = useState([]);
   const [showCampaignForm, setShowCampaignForm] = useState(false);
@@ -104,6 +106,13 @@ export default function CustomerSegments() {
       queryClient.invalidateQueries({ queryKey: ['campaigns'] });
       setShowCampaignForm(false);
       setSelectedCustomers([]);
+      toast.success('Campaign created successfully');
+    },
+    onError: (error) => {
+      handleError(error, 'Failed to create campaign', {
+        component: 'CustomerSegments',
+        action: 'createCampaign',
+      });
     },
   });
 
@@ -111,6 +120,13 @@ export default function CustomerSegments() {
     mutationFn: ({ id, data }) => db.campaigns.update(id, data),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['campaigns'] });
+      toast.success('Campaign updated successfully');
+    },
+    onError: (error) => {
+      handleError(error, 'Failed to update campaign', {
+        component: 'CustomerSegments',
+        action: 'updateCampaign',
+      });
     },
   });
 
@@ -127,6 +143,12 @@ export default function CustomerSegments() {
       setCampaignToDelete(null);
       toast.success('Campaign deleted successfully');
     },
+    onError: (error) => {
+      handleError(error, 'Failed to delete campaign', {
+        component: 'CustomerSegments',
+        action: 'deleteCampaign',
+      });
+    },
   });
 
   const createSegmentMutation = useMutation({
@@ -135,6 +157,12 @@ export default function CustomerSegments() {
       queryClient.invalidateQueries({ queryKey: ['custom-segments'] });
       setShowSegmentBuilder(false);
       toast.success('Segment created');
+    },
+    onError: (error) => {
+      handleError(error, 'Failed to create segment', {
+        component: 'CustomerSegments',
+        action: 'createSegment',
+      });
     },
   });
 
@@ -146,6 +174,12 @@ export default function CustomerSegments() {
       setEditingSegment(null);
       toast.success('Segment updated');
     },
+    onError: (error) => {
+      handleError(error, 'Failed to update segment', {
+        component: 'CustomerSegments',
+        action: 'updateSegment',
+      });
+    },
   });
 
   const deleteSegmentMutation = useMutation({
@@ -153,6 +187,12 @@ export default function CustomerSegments() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['custom-segments'] });
       toast.success('Segment deleted');
+    },
+    onError: (error) => {
+      handleError(error, 'Failed to delete segment', {
+        component: 'CustomerSegments',
+        action: 'deleteSegment',
+      });
     },
   });
 

@@ -57,10 +57,8 @@ import { Skeleton } from '@/components/ui/skeleton';
 import ShoppingOrderForm from '@/components/shopping/ShoppingOrderForm';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 import ShoppingOrderAllocationPanel from '@/components/shopping/ShoppingOrderAllocationPanel';
-import {
-  processShoppingOrderInvoicing,
-  calculateShoppingOrderProfit,
-} from '@/components/shopping/ShoppingInvoiceService';
+import { calculateShoppingOrderProfit } from '@/components/shopping/ShoppingInvoiceService';
+// Invoice creation is now manual - go to Invoices page to create invoices
 import { startTour } from '@/components/common/TourGuide';
 
 import { toast } from 'sonner';
@@ -227,17 +225,10 @@ export default function ShoppingOrders() {
     await updateMutation.mutateAsync({ id: orderId, data });
   };
 
-  // Auto-generate invoice when status becomes delivered + paid
-  const handleAutoInvoice = async (order) => {
+  // Remind user to create invoice when order is delivered + paid
+  const remindToCreateInvoice = (order) => {
     if (order.status === 'delivered' && order.payment_status === 'paid') {
-      try {
-        const result = await processShoppingOrderInvoicing(order, customers);
-        if (result.isNew) {
-          toast.success(`Invoice ${result.invoice?.invoice_number} generated`);
-        }
-      } catch (err) {
-        handleError(err, 'Failed to generate invoice');
-      }
+      toast.info('Order completed. Remember to create an invoice from the Invoices page.');
     }
   };
 
@@ -258,8 +249,8 @@ export default function ShoppingOrders() {
         },
         {
           onSuccess: () => {
-            // Auto-generate invoice if delivered + paid
-            handleAutoInvoice({ ...editingOrder, ...data });
+            // Remind to create invoice if delivered + paid
+            remindToCreateInvoice({ ...editingOrder, ...data });
           },
         }
       );
@@ -289,9 +280,9 @@ export default function ShoppingOrders() {
       { id: order.id, data: { payment_status: newStatus } },
       {
         onSuccess: () => {
-          // Auto-generate invoice if delivered + paid
+          // Remind to create invoice if delivered + paid
           if (newStatus === 'paid' && order.status === 'delivered') {
-            handleAutoInvoice({ ...order, payment_status: newStatus });
+            remindToCreateInvoice({ ...order, payment_status: newStatus });
           }
         },
       }
@@ -830,19 +821,11 @@ export default function ShoppingOrders() {
                       <Button
                         variant="outline"
                         className="flex-1"
-                        onClick={async () => {
-                          const result = await processShoppingOrderInvoicing(
-                            selectedOrder,
-                            customers
-                          );
-                          if (result.isNew) {
-                            toast.success(`Invoice ${result.invoice?.invoice_number} generated`);
-                          } else if (result.invoice) {
-                            toast.info('Invoice already exists');
-                          }
+                        onClick={() => {
+                          toast.info('Go to Invoices page to create an invoice for this order.');
                         }}
                       >
-                        <Receipt className="w-4 h-4 mr-2" /> Generate Invoice
+                        <Receipt className="w-4 h-4 mr-2" /> Create Invoice
                       </Button>
                     )}
                 </div>
