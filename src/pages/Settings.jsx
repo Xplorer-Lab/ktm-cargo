@@ -135,6 +135,7 @@ export default function Settings() {
     tax_id: '',
     default_insurance_rate: 2,
     default_commission_rate: 10,
+    default_shopping_price_per_kg: 110,
     invoice_prefix: 'INV',
     tracking_prefix: 'BKK',
     auto_send_receipts: true,
@@ -607,6 +608,22 @@ export default function Settings() {
                         %
                       </span>
                     </div>
+                  </div>
+                  <div className="space-y-2">
+                    <Label>Default Shopping Price (฿/kg)</Label>
+                    <Input
+                      type="number"
+                      min="0"
+                      step="1"
+                      value={businessSettings.default_shopping_price_per_kg ?? 110}
+                      onChange={(e) =>
+                        setBusinessSettings({
+                          ...businessSettings,
+                          default_shopping_price_per_kg: parseFloat(e.target.value) || 110,
+                        })
+                      }
+                    />
+                    <p className="text-xs text-slate-500">Used for shopping orders when no service pricing is set</p>
                   </div>
                 </div>
                 <div className="space-y-2">

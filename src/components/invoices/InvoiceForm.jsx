@@ -184,13 +184,17 @@ export default function InvoiceForm({
     } else {
       const order = shoppingOrders.find((o) => o.id === sourceId);
       if (order) {
+        const weight = parseFloat(order.actual_weight || order.estimated_weight) || 0;
+        const shipping = parseFloat(order.shipping_cost) || 0;
+        const pricePerKg = weight > 0 ? Math.round((shipping / weight) * 100) / 100 : 0;
         setValue('order_id', order.id);
         setValue('order_number', order.order_number || '');
         setValue('customer_name', order.customer_name);
         setValue('product_cost', order.actual_product_cost || order.estimated_product_cost || 0);
         setValue('commission_amount', order.commission_amount || 0);
-        setValue('shipping_amount', order.shipping_cost || 0);
-        setValue('weight_kg', order.actual_weight || order.estimated_weight || 0);
+        setValue('shipping_amount', shipping);
+        setValue('weight_kg', weight);
+        setValue('price_per_kg', pricePerKg);
         setValue('notes', `Shopping Order: ${order.order_number}\nProducts: ${order.product_details || ''}`);
       }
     }

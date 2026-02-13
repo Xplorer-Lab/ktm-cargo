@@ -1,0 +1,12 @@
+---
+alwaysApply: true
+---
+
+# React / Next.js Standards
+
+- Use App Router (Next.js 14+)
+- Components: Shadcn/ui + Tailwind, server components preferred.
+- State: Zustand / Jotai over Redux for simplicity.
+- Data fetching: Server actions > API routes when possible.
+- Accessibility: ARIA labels, keyboard nav basics.
+- SEO: Metadata API, dynamic OG images.

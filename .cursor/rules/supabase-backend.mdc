@@ -1,0 +1,9 @@
+---
+alwaysApply: true
+---
+# Supabase Best Practices
+
+- Row Level Security (RLS) on all tables.
+- Use edge functions for complex logic.
+- Schema changes: Migration files + seed data.
+- Auth: Supabase auth + magic links / OAuth.

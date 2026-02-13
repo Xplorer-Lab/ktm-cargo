@@ -1,0 +1,11 @@
+---
+alwaysApply: true
+---
+# Monetization & Subscription Standards
+
+- Always design with subscription in mind: Free tier (limited), Pro ($9–$29/mo), optional Enterprise.
+- Use Stripe: Checkout sessions, webhooks (create/update/cancel), customer portal.
+- Protect features: Middleware / server actions မှာ subscription status check (Supabase + Stripe customer ID).
+- Tiers features: Clearly define in code comments / docs.
+- Free trial: 7–14 days auto.
+- Analytics: Add simple event tracking (PostHog / Plausible snippet).

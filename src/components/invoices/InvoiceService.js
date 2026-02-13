@@ -168,7 +168,9 @@ export async function createInvoiceFromShoppingOrder(order, customer) {
   const productCost = parseFloat(order.actual_product_cost || order.estimated_product_cost) || 0;
   const commissionAmount = parseFloat(order.commission_amount) || 0;
   const shippingCost = parseFloat(order.shipping_cost) || 0;
+  const weight = parseFloat(order.actual_weight || order.estimated_weight) || 0;
   const totalAmount = parseFloat(order.total_amount) || (productCost + commissionAmount + shippingCost);
+  const pricePerKg = weight > 0 ? Math.round((shippingCost / weight) * 100) / 100 : 110;
 
   const invoice = await createCustomerInvoice({
     invoice_type: 'shopping_order',
@@ -179,8 +181,8 @@ export async function createInvoiceFromShoppingOrder(order, customer) {
     customer_email: customer?.email || '',
     customer_phone: order.customer_phone || '',
     service_type: 'shopping_service',
-    weight_kg: order.actual_weight || order.estimated_weight || 0,
-    price_per_kg: 110,
+    weight_kg: weight,
+    price_per_kg: pricePerKg,
     shipping_amount: shippingCost,
     product_cost: productCost,
     commission_amount: commissionAmount,

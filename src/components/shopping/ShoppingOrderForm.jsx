@@ -48,6 +48,10 @@ import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover
 import { cn } from '@/lib/utils';
 import { toast } from 'sonner';
 import VendorCapacityAlert from '@/components/shared/VendorCapacityAlert';
+import { useQuery } from '@tanstack/react-query';
+import { db } from '@/api/db';
+import { auth } from '@/api/auth';
+import { computeShoppingOrderTotals } from '@/lib/calculations';
 
 const statusOptions = [
     { value: 'pending', label: 'Pending', color: 'bg-slate-100 text-slate-700' },
@@ -65,6 +69,8 @@ const paymentStatusOptions = [
     { value: 'paid', label: 'Paid', color: 'bg-emerald-100 text-emerald-700' },
 ];
 
+const DEFAULT_SHOPPING_RATE = 110;
+
 export default function ShoppingOrderForm({
     order,
     onSubmit,
@@ -74,6 +80,21 @@ export default function ShoppingOrderForm({
 }) {
     const [openCombobox, setOpenCombobox] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
+
+    const { data: servicePricing = [] } = useQuery({
+        queryKey: ['service-pricing'],
+        queryFn: () => db.servicePricing.filter({ is_active: true }),
+    });
+    const { data: user } = useQuery({
+        queryKey: ['current-user'],
+        queryFn: () => auth.me(),
+    });
+
+    const shoppingPricePerKg = (() => {
+        const fromPricing = servicePricing.find((p) => String(p.service_type).startsWith('shopping_'));
+        if (fromPricing?.price_per_kg != null && fromPricing.price_per_kg > 0) return fromPricing.price_per_kg;
+        return user?.business_settings?.default_shopping_price_per_kg ?? DEFAULT_SHOPPING_RATE;
+    })();
 
     const {
         register,
@@ -111,34 +132,32 @@ export default function ShoppingOrderForm({
 
     const watchedValues = watch();
 
-    // Calculation Logic
+    // Calculation Logic (central module for consistency)
     const calculated = useMemo(() => {
         const productCost =
             parseFloat(watchedValues.actual_product_cost || watchedValues.estimated_product_cost) || 0;
         const weight = parseFloat(watchedValues.actual_weight || watchedValues.estimated_weight) || 0;
         const commissionRate = parseFloat(watchedValues.commission_rate) || 0;
-        const shippingRate = 110;
+        const vendorCostPerKg = watchedValues.vendor_po_id && watchedValues.vendor_cost_per_kg
+            ? parseFloat(watchedValues.vendor_cost_per_kg)
+            : 0;
 
-        const commission = productCost * (commissionRate / 100);
-        const shippingCost = weight * shippingRate;
-        const total = productCost + commission + shippingCost;
-
-        let vendorCost = 0;
-        if (watchedValues.vendor_po_id && watchedValues.vendor_cost_per_kg) {
-            vendorCost = weight * parseFloat(watchedValues.vendor_cost_per_kg);
-        }
-
-        const profit = commission + (shippingCost - vendorCost);
-        const margin = total > 0 ? ((profit / total) * 100).toFixed(1) : 0;
+        const result = computeShoppingOrderTotals({
+            productCost,
+            weightKg: weight,
+            pricePerKg: shoppingPricePerKg,
+            vendorCostPerKg,
+            commissionRatePercent: commissionRate,
+        });
 
         return {
-            productCost,
-            commission,
-            shippingCost,
-            total,
-            vendorCost,
-            profit,
-            margin,
+            productCost: result.productCost,
+            commission: result.commission,
+            shippingCost: result.shippingCost,
+            total: result.total,
+            vendorCost: result.vendorCost,
+            profit: result.profit,
+            margin: String(result.marginPercent),
         };
     }, [
         watchedValues.actual_product_cost,
@@ -148,6 +167,7 @@ export default function ShoppingOrderForm({
         watchedValues.commission_rate,
         watchedValues.vendor_po_id,
         watchedValues.vendor_cost_per_kg,
+        shoppingPricePerKg,
     ]);
 
     // Filter POs
