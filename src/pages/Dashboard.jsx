@@ -36,14 +36,12 @@ export default function Dashboard() {
   const {
     shipments,
     customers,
-    shoppingOrders,
-    expenses,
     financials,
     shipmentCategories,
     isLoading
   } = useDashboardData();
 
-  const { totalRevenue, totalProfit, totalWeight, totalExpenses } = financials;
+  const { totalCollected, totalVendorPaid, totalCargoPaid, netProfit } = financials;
   const {
     pending: pendingShipments,
     inTransit: inTransitShipments,
@@ -137,32 +135,34 @@ export default function Dashboard() {
           ) : (
             <>
               <StatsCard
-                title="Total Revenue"
-                value={`฿${totalRevenue.toLocaleString()}`}
+                title="Total Collected"
+                value={`฿${totalCollected.toLocaleString()}`}
                 icon={DollarSign}
                 bgColor="bg-emerald-500"
-                trend="+12% this month"
+                trend="From customers"
                 trendUp
               />
               <StatsCard
-                title="Total Shipments"
-                value={shipments.length}
-                icon={Package}
+                title="Vendor Paid"
+                value={`฿${totalVendorPaid.toLocaleString()}`}
+                icon={ShoppingBag}
                 bgColor="bg-blue-500"
-                trend={`${totalWeight.toFixed(1)} kg shipped`}
-                trendUp
+                trend="Product costs"
               />
               <StatsCard
-                title="Active Customers"
-                value={customers.length}
-                icon={Users}
-                bgColor="bg-purple-500"
+                title="Cargo & Expense"
+                value={`฿${totalCargoPaid.toLocaleString()}`}
+                icon={Truck}
+                bgColor="bg-rose-500"
+                trend="Logistics"
               />
               <StatsCard
-                title="Est. Profit"
-                value={`฿${totalProfit.toLocaleString()}`}
+                title="Net Profit"
+                value={`฿${netProfit.toLocaleString()}`}
                 icon={TrendingUp}
-                bgColor="bg-amber-500"
+                bgColor="bg-purple-500"
+                trend="Dropshipping Margin"
+                trendUp={netProfit >= 0}
               />
             </>
           )}
@@ -398,21 +398,27 @@ export default function Dashboard() {
               </CardHeader>
               <CardContent className="space-y-4">
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-500">Revenue</span>
+                  <span className="text-slate-500">Total Collected</span>
                   <span className="font-semibold text-emerald-600">
-                    ฿{totalRevenue.toLocaleString()}
+                    ฿{totalCollected.toLocaleString()}
                   </span>
                 </div>
                 <div className="flex justify-between items-center">
-                  <span className="text-slate-500">Expenses</span>
+                  <span className="text-slate-500">Vendor Paid</span>
                   <span className="font-semibold text-rose-600">
-                    ฿{totalExpenses.toLocaleString()}
+                    ฿{totalVendorPaid.toLocaleString()}
+                  </span>
+                </div>
+                <div className="flex justify-between items-center">
+                  <span className="text-slate-500">Cargo & Expenses</span>
+                  <span className="font-semibold text-rose-600">
+                    ฿{totalCargoPaid.toLocaleString()}
                   </span>
                 </div>
                 <div className="border-t pt-3 flex justify-between items-center">
                   <span className="text-slate-700 font-medium">Net Profit</span>
                   <span className="font-bold text-lg text-blue-600">
-                    ฿{(totalProfit - totalExpenses).toLocaleString()}
+                    ฿{netProfit.toLocaleString()}
                   </span>
                 </div>
               </CardContent>

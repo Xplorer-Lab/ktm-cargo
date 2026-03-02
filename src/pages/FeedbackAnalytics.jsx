@@ -40,17 +40,17 @@ export default function FeedbackAnalytics() {
       submittedFeedbacks.reduce((s, f) => s + (f.rating || 0), 0) / submittedFeedbacks.length;
     const avgService =
       submittedFeedbacks.filter((f) => f.service_rating).reduce((s, f) => s + f.service_rating, 0) /
-        submittedFeedbacks.filter((f) => f.service_rating).length || 0;
+      submittedFeedbacks.filter((f) => f.service_rating).length || 0;
     const avgDelivery =
       submittedFeedbacks
         .filter((f) => f.delivery_rating)
         .reduce((s, f) => s + f.delivery_rating, 0) /
-        submittedFeedbacks.filter((f) => f.delivery_rating).length || 0;
+      submittedFeedbacks.filter((f) => f.delivery_rating).length || 0;
     const avgComm =
       submittedFeedbacks
         .filter((f) => f.communication_rating)
         .reduce((s, f) => s + f.communication_rating, 0) /
-        submittedFeedbacks.filter((f) => f.communication_rating).length || 0;
+      submittedFeedbacks.filter((f) => f.communication_rating).length || 0;
     const recommendRate =
       (submittedFeedbacks.filter((f) => f.would_recommend).length / submittedFeedbacks.length) *
       100;
@@ -63,14 +63,20 @@ export default function FeedbackAnalytics() {
     }));
 
     // By service type
-    const byService = {};
+    const byService = new Map();
     submittedFeedbacks.forEach((f) => {
       const type = f.service_type || 'other';
-      if (!byService[type]) byService[type] = { total: 0, count: 0 };
-      byService[type].total += f.rating || 0;
-      byService[type].count++;
+      if (!byService.has(type)) {
+        byService.set(type, { total: 0, count: 0 });
+      }
+      const existing = byService.get(type);
+      byService.set(type, {
+        total: existing.total + (f.rating || 0),
+        count: existing.count + 1,
+      });
     });
-    const serviceRatings = Object.entries(byService).map(([name, data]) => ({
+
+    const serviceRatings = Array.from(byService.entries()).map(([name, data]) => ({
       name: name.replace('_', ' '),
       rating: (data.total / data.count).toFixed(1),
       count: data.count,

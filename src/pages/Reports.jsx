@@ -39,6 +39,7 @@ import {
   AlertTriangle,
   Clock,
   Scale,
+  ShoppingBag,
 } from 'lucide-react';
 import {
   AreaChart,
@@ -235,7 +236,7 @@ export default function Reports() {
       const data = getReportData(report.report_type);
       const count = await exportReport(report, data);
       toast.success(`Exported ${count} records`);
-    } catch (error) {
+    } catch {
       toast.error('Failed to export report');
     } finally {
       setRunningReportId(null);
@@ -256,7 +257,7 @@ export default function Reports() {
       });
       queryClient.invalidateQueries({ queryKey: ['scheduled-reports'] });
       toast.success(`Report sent to ${count} recipient(s)`);
-    } catch (error) {
+    } catch {
       toast.error('Failed to send report');
     } finally {
       setSendingReportId(null);
@@ -297,26 +298,36 @@ export default function Reports() {
   }, [expenses, dateRange]);
 
   // Calculate metrics
+  // Calculate Dropshipping Order Metrics
+  const shoppingOrdersTotalRevenue = filteredOrders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
+  const shoppingOrdersTotalVendorCost = filteredOrders.reduce((sum, o) => sum + (o.vendor_cost || 0), 0);
+  const shoppingOrdersTotalCargoCost = filteredOrders.reduce((sum, o) => sum + (o.cargo_cost || 0), 0);
+  const shoppingOrdersTrueProfit = filteredOrders.reduce(
+    (sum, o) => sum + (o.total_amount || 0) - (o.vendor_cost || 0) - (o.cargo_cost || 0),
+    0
+  );
+
+  // Overall metrics integration
   const totalRevenue =
-    filteredShipments.reduce((sum, s) => sum + (s.total_amount || 0), 0) +
-    filteredOrders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
+    filteredShipments.reduce((sum, s) => sum + (s.total_amount || 0), 0) + shoppingOrdersTotalRevenue;
+
+  // Combine normal shipment profit with our newly calculated dropshipping true profit
   const totalProfit =
-    filteredShipments.reduce((sum, s) => sum + (s.profit || 0), 0) +
-    // Use stored profit if available; fall back to commission_amount as a conservative estimate
-    filteredOrders.reduce((sum, o) => sum + (o.profit ?? o.commission_amount ?? 0), 0);
+    filteredShipments.reduce((sum, s) => sum + (s.profit || 0), 0) + shoppingOrdersTrueProfit;
+
   const totalExpensesAmount = filteredExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
   const netProfit = totalProfit - totalExpensesAmount;
   const totalWeight = filteredShipments.reduce((sum, s) => sum + (s.weight_kg || 0), 0);
   const avgOrderValue = totalRevenue / (filteredShipments.length + filteredOrders.length) || 0;
 
   // Revenue by service type
-  const revenueByService = filteredShipments.reduce((acc, s) => {
+  const revenueByService = new Map();
+  filteredShipments.forEach((s) => {
     const type = s.service_type || 'other';
-    acc[type] = (acc[type] || 0) + (s.total_amount || 0);
-    return acc;
-  }, {});
+    revenueByService.set(type, (revenueByService.get(type) || 0) + (s.total_amount || 0));
+  });
 
-  const serviceChartData = Object.entries(revenueByService).map(([name, value]) => ({
+  const serviceChartData = Array.from(revenueByService.entries()).map(([name, value]) => ({
     name: name.replace('_', ' '),
     value,
   }));
@@ -395,13 +406,13 @@ export default function Reports() {
   }));
 
   // Expenses by category
-  const expensesByCategory = filteredExpenses.reduce((acc, e) => {
+  const expensesByCategoryMap = new Map();
+  filteredExpenses.forEach((e) => {
     const cat = e.category || 'other';
-    acc[cat] = (acc[cat] || 0) + (e.amount || 0);
-    return acc;
-  }, {});
+    expensesByCategoryMap.set(cat, (expensesByCategoryMap.get(cat) || 0) + (e.amount || 0));
+  });
 
-  const expenseChartData = Object.entries(expensesByCategory).map(([name, value]) => ({
+  const expenseChartData = Array.from(expensesByCategoryMap.entries()).map(([name, value]) => ({
     name: name.replace('_', ' '),
     value,
   }));
@@ -602,6 +613,35 @@ export default function Reports() {
                     </div>
                     <div className="p-2 sm:p-3 bg-emerald-100 rounded-xl">
                       <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600" />
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+              <Card className="border-0 shadow-sm col-span-2 sm:col-span-1">
+                <CardContent className="p-3 sm:p-5">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-[10px] sm:text-sm text-slate-500">Shopping Revenue</p>
+                      <p className="text-lg sm:text-2xl font-bold text-slate-900">
+                        ฿{shoppingOrdersTotalRevenue.toLocaleString()}
+                      </p>
+                    </div>
+                    <div className="p-2 sm:p-3 bg-purple-100 rounded-xl">
+                      <ShoppingBag className="w-4 h-4 sm:w-5 sm:h-5 text-purple-600" />
+                    </div>
+                  </div>
+                  <div className="mt-3 text-xs text-slate-500 space-y-1 border-t pt-2">
+                    <div className="flex justify-between">
+                      <span>Vendor Paid:</span>
+                      <span className="text-rose-600">฿{shoppingOrdersTotalVendorCost.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between">
+                      <span>Cargo Paid:</span>
+                      <span className="text-rose-600">฿{shoppingOrdersTotalCargoCost.toLocaleString()}</span>
+                    </div>
+                    <div className="flex justify-between font-medium">
+                      <span>True Profit:</span>
+                      <span className="text-emerald-600">฿{shoppingOrdersTrueProfit.toLocaleString()}</span>
                     </div>
                   </div>
                 </CardContent>
@@ -1251,8 +1291,8 @@ export default function Reports() {
                         <div
                           key={i}
                           className={`p-3 rounded-lg ${rec.priority === 'high'
-                              ? 'bg-rose-50 border border-rose-100'
-                              : 'bg-blue-50 border border-blue-100'
+                            ? 'bg-rose-50 border border-rose-100'
+                            : 'bg-blue-50 border border-blue-100'
                             }`}
                         >
                           <div className="flex items-start justify-between">

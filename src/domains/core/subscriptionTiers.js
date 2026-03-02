@@ -90,12 +90,17 @@ export const TIER_LIST = [TIERS.free, TIERS.pro, TIERS.enterprise];
 export function resolveTier(status, tierOverride) {
   // If the subscription is active or trialing, use the stored tier
   const activeLike = ['active', 'trialing'];
+  const safeOverride =
+    tierOverride && Object.prototype.hasOwnProperty.call(TIERS, tierOverride)
+      ? tierOverride
+      : 'pro';
+
   if (activeLike.includes(status)) {
-    return TIERS[tierOverride] || TIERS.pro;
+    return TIERS[safeOverride];
   }
   // Past due: still allow access but flag it
   if (status === 'past_due') {
-    return TIERS[tierOverride] || TIERS.pro;
+    return TIERS[safeOverride];
   }
   // Everything else: free
   return TIERS.free;
@@ -110,6 +115,9 @@ export function resolveTier(status, tierOverride) {
  * @returns {{ allowed: boolean, remaining: number|boolean, limit: number|boolean }}
  */
 export function checkLimit(tier, limitKey, currentUsage = 0) {
+  if (!tier || !tier.limits || !Object.prototype.hasOwnProperty.call(tier.limits, limitKey)) {
+    return { allowed: false, remaining: 0, limit: 0 };
+  }
   const limit = tier.limits[limitKey];
   if (typeof limit === 'boolean') {
     return { allowed: limit, remaining: limit, limit };

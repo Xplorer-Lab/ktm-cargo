@@ -22,8 +22,8 @@ import { format } from 'date-fns';
 const STATUS_CONFIG = {
   pending: { label: 'Pending', color: 'bg-amber-100 text-amber-700', icon: Clock },
   paid: { label: 'Paid', color: 'bg-emerald-100 text-emerald-700', icon: CheckCircle },
+  partially_paid: { label: 'Partially Paid', color: 'bg-blue-100 text-blue-700', icon: Clock },
   overdue: { label: 'Overdue', color: 'bg-red-100 text-red-700', icon: AlertTriangle },
-  partially_paid: { label: 'Partial', color: 'bg-blue-100 text-blue-700', icon: Clock },
   cancelled: { label: 'Cancelled', color: 'bg-slate-100 text-slate-500', icon: AlertTriangle },
 };
 
@@ -273,7 +273,12 @@ export default function CustomerInvoices({ customer, companySettings }) {
                     <div className="flex items-center gap-4">
                       <div className="text-right">
                         <p className="font-bold">฿{Number(invoice.total_amount || 0).toLocaleString()}</p>
-                        <Badge className={status.color}>{status.label}</Badge>
+                        {invoice.displayStatus === 'partially_paid' && invoice.balance_due > 0 && (
+                          <p className="text-xs text-rose-600 font-medium">
+                            Due: ฿{Number(invoice.balance_due).toLocaleString()}
+                          </p>
+                        )}
+                        <Badge className={`mt-1 ${status.color}`}>{status.label}</Badge>
                       </div>
                       <div className="flex gap-1">
                         <Button
@@ -383,11 +388,21 @@ export default function CustomerInvoices({ customer, companySettings }) {
                 </div>
               )}
 
-              <div className="pt-4 border-t">
-                <div className="flex justify-between items-center">
-                  <span className="text-lg font-medium">Total Amount</span>
+              <div className="pt-4 border-t space-y-2">
+                <div className="flex justify-between items-center text-slate-600">
+                  <span>Subtotal</span>
+                  <span>฿{Number(selectedInvoice.total_amount || 0).toLocaleString()}</span>
+                </div>
+                {selectedInvoice.amount_paid > 0 && (
+                  <div className="flex justify-between items-center text-emerald-600">
+                    <span>Already Paid</span>
+                    <span>-฿{Number(selectedInvoice.amount_paid).toLocaleString()}</span>
+                  </div>
+                )}
+                <div className="flex justify-between items-center pt-2 border-t">
+                  <span className="text-lg font-medium">Balance Due</span>
                   <span className="text-2xl font-bold text-blue-600">
-                    ฿{Number(selectedInvoice.total_amount || 0).toLocaleString()}
+                    ฿{(selectedInvoice.balance_due !== undefined ? Number(selectedInvoice.balance_due) : Number(selectedInvoice.total_amount || 0)).toLocaleString()}
                   </span>
                 </div>
               </div>

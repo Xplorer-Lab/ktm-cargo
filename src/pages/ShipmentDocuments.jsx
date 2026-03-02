@@ -86,7 +86,7 @@ export default function ShipmentDocuments() {
   const [searchQuery, setSearchQuery] = useState('');
   const [statusFilter, setStatusFilter] = useState('all');
   const [selectedShipments, setSelectedShipments] = useState([]);
-  const [generatedDocs, setGeneratedDocs] = useState({});
+  const [generatedDocs, setGeneratedDocs] = useState(new Map());
 
   const { handleError } = useErrorHandler();
 
@@ -133,7 +133,7 @@ export default function ShipmentDocuments() {
   const stats = useMemo(() => {
     const total = eligibleShipments.length;
     const needsDocs = eligibleShipments.filter(
-      (s) => !generatedDocs[s.id] || Object.keys(generatedDocs[s.id]).length < 4
+      (s) => !generatedDocs.get(s.id) || generatedDocs.get(s.id).size < 4
     ).length;
     const inTransit = eligibleShipments.filter((s) => s.status === 'in_transit').length;
     const customs = eligibleShipments.filter((s) => s.status === 'customs').length;
@@ -141,14 +141,14 @@ export default function ShipmentDocuments() {
   }, [eligibleShipments, generatedDocs]);
 
   const handlePrintDocument = (docType, shipment) => {
-    const templates = {
-      commercial_invoice: CommercialInvoiceTemplate,
-      packing_list: PackingListTemplate,
-      air_waybill: AWBTemplate,
-      customs_declaration: CustomsDeclarationTemplate,
-    };
+    const templates = new Map([
+      ['commercial_invoice', CommercialInvoiceTemplate],
+      ['packing_list', PackingListTemplate],
+      ['air_waybill', AWBTemplate],
+      ['customs_declaration', CustomsDeclarationTemplate],
+    ]);
 
-    const Component = templates[docType];
+    const Component = templates.get(docType);
     if (Component) {
       printDocument(Component, {
         data: { shipment },
@@ -160,25 +160,22 @@ export default function ShipmentDocuments() {
   };
 
   const handleGenerateDoc = (shipmentId, docType) => {
-    setGeneratedDocs((prev) => ({
-      ...prev,
-      [shipmentId]: {
-        ...(prev[shipmentId] || {}),
-        [docType]: true,
-      },
-    }));
+    setGeneratedDocs((prev) => {
+      const nextMap = new Map(prev);
+      const currentDocs = nextMap.get(shipmentId) || new Set();
+      nextMap.set(shipmentId, new Set([...currentDocs, docType]));
+      return nextMap;
+    });
     toast.success(`${DOCUMENT_TYPES.find((d) => d.id === docType)?.label} generated`);
   };
 
   const handleGenerateAllDocs = (shipmentId) => {
-    const allDocs = {};
-    DOCUMENT_TYPES.forEach((doc) => {
-      allDocs[doc.id] = true;
+    const allDocs = new Set(DOCUMENT_TYPES.map((doc) => doc.id));
+    setGeneratedDocs((prev) => {
+      const nextMap = new Map(prev);
+      nextMap.set(shipmentId, allDocs);
+      return nextMap;
     });
-    setGeneratedDocs((prev) => ({
-      ...prev,
-      [shipmentId]: allDocs,
-    }));
     toast.success('All documents generated');
   };
 
@@ -211,8 +208,8 @@ export default function ShipmentDocuments() {
   };
 
   const getDocStatus = (shipmentId) => {
-    const docs = generatedDocs[shipmentId] || {};
-    const count = Object.keys(docs).length;
+    const docs = generatedDocs.get(shipmentId);
+    const count = docs ? docs.size : 0;
     if (count === 0) return { label: 'Not Generated', color: 'bg-slate-100 text-slate-600' };
     if (count < 4) return { label: `${count}/4 Docs`, color: 'bg-amber-100 text-amber-800' };
     return { label: 'Complete', color: 'bg-emerald-100 text-emerald-800' };
@@ -367,11 +364,10 @@ export default function ShipmentDocuments() {
                     return (
                       <div
                         key={shipment.id}
-                        className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${
-                          isSelected
-                            ? 'border-blue-500 bg-blue-50'
-                            : 'border-slate-200 hover:border-blue-200'
-                        }`}
+                        className={`p-3 rounded-lg border-2 cursor-pointer transition-all ${isSelected
+                          ? 'border-blue-500 bg-blue-50'
+                          : 'border-slate-200 hover:border-blue-200'
+                          }`}
                       >
                         <div className="flex items-start gap-3">
                           <Checkbox
@@ -466,19 +462,19 @@ export default function ShipmentDocuments() {
                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                   {DOCUMENT_TYPES.map((doc) => {
                     const Icon = doc.icon;
-                    const isGenerated = generatedDocs[selectedShipment.id]?.[doc.id];
+                    const shipmentDocs = generatedDocs.get(selectedShipment.id);
+                    const isGenerated = shipmentDocs ? shipmentDocs.has(doc.id) : false;
                     const isActive = activeDoc === doc.id;
 
                     return (
                       <Card
                         key={doc.id}
-                        className={`border-2 cursor-pointer transition-all ${
-                          isActive
-                            ? 'border-blue-500 bg-blue-50'
-                            : isGenerated
-                              ? 'border-emerald-300 bg-emerald-50'
-                              : 'border-slate-200 hover:border-blue-200'
-                        }`}
+                        className={`border-2 cursor-pointer transition-all ${isActive
+                          ? 'border-blue-500 bg-blue-50'
+                          : isGenerated
+                            ? 'border-emerald-300 bg-emerald-50'
+                            : 'border-slate-200 hover:border-blue-200'
+                          }`}
                         onClick={() => setActiveDoc(doc.id)}
                       >
                         <CardContent className="p-3">

@@ -64,29 +64,29 @@ export function getVendorsByPerformance(vendors, orders) {
 }
 
 export function getVendorSpendingByType(orders) {
-  const spending = {};
+  const spending = new Map();
   orders
     .filter((o) => o.status === 'completed')
     .forEach((o) => {
       const type = o.order_type || 'other';
-      spending[type] = (spending[type] || 0) + (o.amount || 0);
+      spending.set(type, (spending.get(type) || 0) + (o.amount || 0));
     });
-  return Object.entries(spending).map(([type, amount]) => ({
+  return Array.from(spending.entries()).map(([type, amount]) => ({
     type: type.replace('_', ' '),
     amount,
   }));
 }
 
 export function getMonthlyVendorSpending(orders) {
-  const monthly = {};
+  const monthly = new Map();
   orders
     .filter((o) => o.status === 'completed')
     .forEach((o) => {
       if (!o.created_date) return;
       const month = o.created_date.substring(0, 7);
-      monthly[month] = (monthly[month] || 0) + (o.amount || 0);
+      monthly.set(month, (monthly.get(month) || 0) + (o.amount || 0));
     });
-  return Object.entries(monthly)
+  return Array.from(monthly.entries())
     .sort((a, b) => a[0].localeCompare(b[0]))
     .slice(-6)
     .map(([month, amount]) => ({ month, amount }));

@@ -42,51 +42,51 @@ import { toast } from 'sonner';
 import { format, isPast, isToday, addDays } from 'date-fns';
 import { triggerTaskAssignedAlert } from '@/components/notifications/NotificationService';
 
-const phaseConfig = {
-  pre_launch: {
+const phaseConfig = new Map([
+  ['pre_launch', {
     label: 'Pre-Launch',
     icon: Rocket,
     color: 'bg-purple-100 text-purple-800',
     gradient: 'from-purple-500 to-purple-600',
-  },
-  registration: {
+  }],
+  ['registration', {
     label: 'Registration',
     icon: Building,
     color: 'bg-blue-100 text-blue-800',
     gradient: 'from-blue-500 to-blue-600',
-  },
-  infrastructure: {
+  }],
+  ['infrastructure', {
     label: 'Infrastructure',
     icon: Globe,
     color: 'bg-cyan-100 text-cyan-800',
     gradient: 'from-cyan-500 to-cyan-600',
-  },
-  partnership: {
+  }],
+  ['partnership', {
     label: 'Partnership',
     icon: Users,
     color: 'bg-amber-100 text-amber-800',
     gradient: 'from-amber-500 to-amber-600',
-  },
-  marketing: {
+  }],
+  ['marketing', {
     label: 'Marketing',
     icon: Megaphone,
     color: 'bg-pink-100 text-pink-800',
     gradient: 'from-pink-500 to-pink-600',
-  },
-  operations: {
+  }],
+  ['operations', {
     label: 'Operations',
     icon: Settings,
     color: 'bg-emerald-100 text-emerald-800',
     gradient: 'from-emerald-500 to-emerald-600',
-  },
-};
+  }],
+]);
 
-const priorityConfig = {
-  low: { label: 'Low', color: 'bg-slate-100 text-slate-700', dot: 'bg-slate-400' },
-  medium: { label: 'Medium', color: 'bg-blue-100 text-blue-700', dot: 'bg-blue-500' },
-  high: { label: 'High', color: 'bg-amber-100 text-amber-700', dot: 'bg-amber-500' },
-  critical: { label: 'Critical', color: 'bg-rose-100 text-rose-700', dot: 'bg-rose-500' },
-};
+const priorityConfig = new Map([
+  ['low', { label: 'Low', color: 'bg-slate-100 text-slate-700', dot: 'bg-slate-400' }],
+  ['medium', { label: 'Medium', color: 'bg-blue-100 text-blue-700', dot: 'bg-blue-500' }],
+  ['high', { label: 'High', color: 'bg-amber-100 text-amber-700', dot: 'bg-amber-500' }],
+  ['critical', { label: 'Critical', color: 'bg-rose-100 text-rose-700', dot: 'bg-rose-500' }],
+]);
 
 export default function Tasks() {
   const [showForm, setShowForm] = useState(false);
@@ -208,17 +208,17 @@ export default function Tasks() {
 
   const groupedByPhase = filteredTasks.reduce((acc, task) => {
     const phase = task.phase || 'pre_launch';
-    if (!acc[phase]) acc[phase] = [];
-    acc[phase].push(task);
+    if (!acc.has(phase)) acc.set(phase, []);
+    acc.get(phase).push(task);
     return acc;
-  }, {});
+  }, new Map());
 
   const groupedByPriority = filteredTasks.reduce((acc, task) => {
     const priority = task.priority || 'medium';
-    if (!acc[priority]) acc[priority] = [];
-    acc[priority].push(task);
+    if (!acc.has(priority)) acc.set(priority, []);
+    acc.get(priority).push(task);
     return acc;
-  }, {});
+  }, new Map());
 
   const completedCount = tasks.filter((t) => t.status === 'completed').length;
   const progress = tasks.length > 0 ? (completedCount / tasks.length) * 100 : 0;
@@ -589,8 +589,8 @@ export default function Tasks() {
           </Card>
         ) : viewMode === 'phase' ? (
           <div className="space-y-6">
-            {Object.entries(groupedByPhase).map(([phase, phaseTasks]) => {
-              const config = phaseConfig[phase];
+            {Array.from(groupedByPhase.entries()).map(([phase, phaseTasks]) => {
+              const config = phaseConfig.get(phase) || phaseConfig.get('pre_launch');
               const completedInPhase = phaseTasks.filter((t) => t.status === 'completed').length;
               const phaseProgress =
                 phaseTasks.length > 0 ? (completedInPhase / phaseTasks.length) * 100 : 0;
@@ -647,9 +647,9 @@ export default function Tasks() {
         ) : (
           <div className="space-y-6">
             {['critical', 'high', 'medium', 'low'].map((priority) => {
-              const priorityTasks = groupedByPriority[priority] || [];
+              const priorityTasks = groupedByPriority.get(priority) || [];
               if (priorityTasks.length === 0) return null;
-              const config = priorityConfig[priority];
+              const config = priorityConfig.get(priority) || priorityConfig.get('medium');
 
               return (
                 <Card key={priority} className="border-0 shadow-sm">
@@ -821,13 +821,12 @@ function TaskItem({ task, onToggle, onEdit, onDelete, showPhase = false }) {
 
   return (
     <div
-      className={`group flex items-start gap-3 p-4 rounded-xl border transition-all cursor-pointer ${
-        task.status === 'completed'
-          ? 'bg-slate-50 border-slate-100 opacity-70'
-          : isOverdue
-            ? 'bg-rose-50 border-rose-200 hover:border-rose-300'
-            : 'bg-white border-slate-200 hover:border-blue-200 hover:shadow-sm'
-      }`}
+      className={`group flex items-start gap-3 p-4 rounded-xl border transition-all cursor-pointer ${task.status === 'completed'
+        ? 'bg-slate-50 border-slate-100 opacity-70'
+        : isOverdue
+          ? 'bg-rose-50 border-rose-200 hover:border-rose-300'
+          : 'bg-white border-slate-200 hover:border-blue-200 hover:shadow-sm'
+        }`}
       onClick={() => onEdit(task)}
     >
       <button

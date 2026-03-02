@@ -209,20 +209,34 @@ describe('recordPayment', () => {
     });
 
     await expect(recordPayment('inv-draft')).rejects.toThrow(
-      'Payment can only be recorded for issued or sent invoices'
+      'Payment can only be recorded for issued, sent, or partially paid invoices'
     );
   });
 
-  test('rejects partial payment amounts', async () => {
+  test('records partial payment and keeps invoice partially paid', async () => {
     __mocks.getMock.mockResolvedValueOnce({
       id: 'inv-partial',
       status: 'sent',
       total_amount: 100,
     });
+    __mocks.updateMock.mockResolvedValueOnce({
+      id: 'inv-partial',
+      status: 'partially_paid',
+      amount_paid: 50,
+      balance_due: 50,
+    });
 
-    await expect(recordPayment('inv-partial', { amount: 50 })).rejects.toThrow(
-      'Partial payments are not supported by this action'
+    const result = await recordPayment('inv-partial', { amount: 50 });
+
+    expect(__mocks.updateMock).toHaveBeenCalledWith(
+      'inv-partial',
+      expect.objectContaining({
+        status: 'partially_paid',
+        amount_paid: 50,
+        balance_due: 50,
+      })
     );
+    expect(result.status).toBe('partially_paid');
   });
 
   test('records full payment and marks invoice paid', async () => {

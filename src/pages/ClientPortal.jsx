@@ -25,6 +25,7 @@ import {
   Mail,
   Lock,
   Phone,
+  ShoppingBag,
 } from 'lucide-react';
 import CustomerPortalDashboard from '@/components/portal/CustomerPortalDashboard';
 import CustomerShipmentTracker from '@/components/portal/CustomerShipmentTracker';
@@ -33,6 +34,7 @@ import CustomerNewOrder from '@/components/portal/CustomerNewOrder';
 import CustomerInvoices from '@/components/portal/CustomerInvoices';
 import CustomerSupport from '@/components/portal/CustomerSupport';
 import CustomerProfile from '@/components/portal/CustomerProfile';
+import CustomerShoppingOrders from '@/components/portal/CustomerShoppingOrders';
 import VendorPortalDashboard from '@/components/portal/VendorPortalDashboard';
 import VendorOrders from '@/components/portal/VendorOrders';
 import VendorInvoices from '@/components/portal/VendorInvoices';
@@ -389,26 +391,26 @@ export default function ClientPortal() {
   const handleSignIn = async (e) => {
     e.preventDefault();
     setIsAuthLoading(true);
-    
+
     // Client-side validation
     if (!email || !email.trim()) {
       toast.error('Please enter your email address');
       setIsAuthLoading(false);
       return;
     }
-    
+
     if (!password) {
       toast.error('Please enter your password');
       setIsAuthLoading(false);
       return;
     }
-    
+
     try {
       const { error } = await supabase.auth.signInWithPassword({
         email: email.trim(),
         password,
       });
-      
+
       if (error) {
         // Handle specific Supabase auth errors
         if (error.message.includes('Invalid login credentials')) {
@@ -419,7 +421,7 @@ export default function ClientPortal() {
         }
         throw error;
       }
-      
+
       toast.success('Signed in successfully');
     } catch (error) {
       console.error('Sign in error:', error);
@@ -432,26 +434,26 @@ export default function ClientPortal() {
   const handleSignUp = async (e) => {
     e.preventDefault();
     setIsAuthLoading(true);
-    
+
     // Client-side validation
     if (!email || !email.trim()) {
       toast.error('Please enter your email address');
       setIsAuthLoading(false);
       return;
     }
-    
+
     if (!password || password.length < 6) {
       toast.error('Password must be at least 6 characters');
       setIsAuthLoading(false);
       return;
     }
-    
+
     if (!fullName || !fullName.trim()) {
       toast.error('Please enter your full name');
       setIsAuthLoading(false);
       return;
     }
-    
+
     try {
       const { data, error } = await supabase.auth.signUp({
         email: email.trim(),
@@ -463,7 +465,7 @@ export default function ClientPortal() {
           },
         },
       });
-      
+
       if (error) {
         // Handle specific Supabase auth errors
         if (error.message.includes('Anonymous sign-ins are disabled')) {
@@ -477,13 +479,13 @@ export default function ClientPortal() {
         }
         throw error;
       }
-      
+
       // Check if email confirmation is required
       if (data?.user?.identities?.length === 0) {
         toast.error('This email is already registered. Please sign in instead.');
         return;
       }
-      
+
       toast.success('Account created! Please check your email to confirm.');
     } catch (error) {
       console.error('Signup error:', error);
@@ -845,6 +847,9 @@ export default function ClientPortal() {
               <TabsTrigger value="history" className="gap-1">
                 <History className="w-4 h-4" /> History
               </TabsTrigger>
+              <TabsTrigger value="shopping-orders" className="gap-1">
+                <ShoppingBag className="w-4 h-4" /> Shop Orders
+              </TabsTrigger>
               <TabsTrigger value="invoices" className="gap-1">
                 <FileText className="w-4 h-4" /> Invoices
               </TabsTrigger>
@@ -874,6 +879,9 @@ export default function ClientPortal() {
             </TabsContent>
             <TabsContent value="history">
               <CustomerOrderHistory customer={clientData} />
+            </TabsContent>
+            <TabsContent value="shopping-orders">
+              <CustomerShoppingOrders customer={clientData} />
             </TabsContent>
             <TabsContent value="invoices">
               <CustomerInvoices customer={clientData} companySettings={companySettings} />

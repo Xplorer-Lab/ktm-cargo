@@ -318,34 +318,34 @@ export default function Invoices() {
     const { action, invoice } = actionDialog;
     if (!action || !invoice) return {};
 
-    const actions = {
-      issue: {
+    const actions = new Map([
+      ['issue', {
         title: 'Issue Invoice',
         description: `Are you sure you want to issue invoice ${invoice.invoice_number}? This will finalize the invoice and set the issue date.`,
         confirmText: 'Issue Invoice',
         confirmClass: 'bg-blue-600 hover:bg-blue-700',
-      },
-      send: {
+      }],
+      ['send', {
         title: 'Mark as Sent',
         description: `Mark invoice ${invoice.invoice_number} as sent to customer?`,
         confirmText: 'Mark as Sent',
         confirmClass: 'bg-purple-600 hover:bg-purple-700',
-      },
-      pay: {
+      }],
+      ['pay', {
         title: 'Record Payment',
         description: `Record payment received for invoice ${invoice.invoice_number} (฿${invoice.total_amount?.toLocaleString()})?`,
         confirmText: 'Record Payment',
         confirmClass: 'bg-emerald-600 hover:bg-emerald-700',
-      },
-      void: {
+      }],
+      ['void', {
         title: 'Void Invoice',
         description: `Are you sure you want to void invoice ${invoice.invoice_number}? This action cannot be undone.`,
         confirmText: 'Void Invoice',
         confirmClass: 'bg-rose-600 hover:bg-rose-700',
-      },
-    };
+      }]
+    ]);
 
-    return actions[action] || {};
+    return actions.get(action) || {};
   };
 
   const dialogContent = getActionDialogContent();

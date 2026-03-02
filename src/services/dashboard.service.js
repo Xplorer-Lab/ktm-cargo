@@ -7,19 +7,34 @@ import { STATUSES } from '@/config/constants';
 // Business Logic Functions (Pure functions, easy to test)
 // ---------------------------------------------------------------------------
 
-export const calculateFinancials = (shipments = [], expenses = []) => {
-    const totalRevenue = shipments.reduce((sum, s) => sum + (Number(s.total_amount) || 0), 0);
-    const totalProfit = shipments.reduce((sum, s) => sum + (Number(s.profit) || 0), 0);
+export const calculateFinancials = (shipments = [], shoppingOrders = [], expenses = []) => {
+    // Total Collected: all revenue from Shipments and Shopping Orders
+    const shipmentRevenue = shipments.reduce((sum, s) => sum + (Number(s.total_amount) || 0), 0);
+    const orderRevenue = shoppingOrders.reduce((sum, o) => sum + (Number(o.total_amount) || 0), 0);
+    const totalCollected = shipmentRevenue + orderRevenue;
+
+    // Total Vendor Paid
+    const totalVendorPaid = shoppingOrders.reduce((sum, o) => {
+        if (o.vendor_payment_status === 'PAID') {
+            return sum + (Number(o.vendor_cost) || Number(o.actual_product_cost) || Number(o.estimated_product_cost) || 0);
+        }
+        return sum;
+    }, 0);
+
+    // Total Cargo Paid (Expenses)
+    const totalCargoPaid = expenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
+
+    // Net Profit
+    const netProfit = totalCollected - totalVendorPaid - totalCargoPaid;
+
     const totalWeight = shipments.reduce((sum, s) => sum + (Number(s.weight_kg) || 0), 0);
-    const totalExpenses = expenses.reduce((sum, e) => sum + (Number(e.amount) || 0), 0);
-    const netProfit = totalProfit - totalExpenses;
 
     return {
-        totalRevenue,
-        totalProfit,
-        totalWeight,
-        totalExpenses,
+        totalCollected,
+        totalVendorPaid,
+        totalCargoPaid,
         netProfit,
+        totalWeight,
     };
 };
 
@@ -74,8 +89,8 @@ export const useDashboardData = () => {
 
     // Memoized aggregations
     const financials = useMemo(
-        () => calculateFinancials(shipments, expenses),
-        [shipments, expenses]
+        () => calculateFinancials(shipments, shoppingOrders, expenses),
+        [shipments, shoppingOrders, expenses]
     );
 
     const shipmentCategories = useMemo(
