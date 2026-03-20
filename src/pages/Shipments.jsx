@@ -1,6 +1,11 @@
 import { useState, useEffect } from 'react';
 import { useLocation } from 'react-router-dom';
 import { db } from '@/api/db';
+import {
+  createShipmentWithPoRebalance,
+  deleteShipmentWithPoRebalance,
+  updateShipmentWithPoRebalance,
+} from '@/api/shipmentAllocationRpc';
 import { shipmentSchema } from '@/domains/core/schemas';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import ShipmentCard from '@/components/shipments/ShipmentCard';
@@ -82,13 +87,6 @@ import { startTour } from '@/components/common/TourGuide';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { useUser } from '@/components/auth/UserContext';
 import { hasPermission } from '@/components/auth/RolePermissions';
-import {
-  applyPORebalanceOperations,
-  assertPORebalanceCapacity,
-  buildPORebalanceOperations,
-  getShipmentAllocationWeight,
-  rollbackPORebalanceOperations,
-} from '@/lib/poAllocation';
 
 export default function Shipments() {
   const [showForm, setShowForm] = useState(false);
@@ -102,55 +100,6 @@ export default function Shipments() {
   const { handleError } = useErrorHandler();
   const { user } = useUser();
   const location = useLocation();
-
-  const updatePurchaseOrderAllocation = (poId, data) => db.purchaseOrders.update(poId, data);
-  const fetchPurchaseOrder = async (poId) => {
-    if (!poId) return null;
-    return db.purchaseOrders.get(poId);
-  };
-  const fetchShipment = async (shipmentId) => {
-    if (!shipmentId) throw new Error('Shipment ID is required');
-    return db.shipments.get(shipmentId);
-  };
-
-  const buildFreshRebalanceContext = async ({
-    shipmentId = null,
-    nextShipmentData = null,
-  } = {}) => {
-    const previousShipment = shipmentId ? await fetchShipment(shipmentId) : null;
-    if (shipmentId && !previousShipment) {
-      throw new Error('Unable to load the latest shipment snapshot');
-    }
-
-    const nextShipment = previousShipment
-      ? { ...previousShipment, ...(nextShipmentData || {}) }
-      : nextShipmentData || {};
-
-    const previousPoId = previousShipment?.vendor_po_id ?? null;
-    const nextPoId = nextShipment.vendor_po_id ?? null;
-
-    const [previousPo, nextPo] = await Promise.all([
-      fetchPurchaseOrder(previousPoId),
-      nextPoId === previousPoId ? fetchPurchaseOrder(previousPoId) : fetchPurchaseOrder(nextPoId),
-    ]);
-
-    const operations = buildPORebalanceOperations({
-      previousPo,
-      nextPo,
-      previousWeight: getShipmentAllocationWeight(previousShipment),
-      nextWeight: getShipmentAllocationWeight(nextShipment),
-    });
-
-    assertPORebalanceCapacity(operations);
-
-    return {
-      previousShipment,
-      nextShipment,
-      previousPo,
-      nextPo,
-      operations,
-    };
-  };
 
   useEffect(() => {
     if (location.state?.createFromShoppingOrder) {
@@ -208,23 +157,9 @@ export default function Shipments() {
   const createMutation = useMutation({
     mutationFn: async (data) => {
       const validatedData = shipmentSchema.parse(data);
-      const nextPo = await fetchPurchaseOrder(validatedData.vendor_po_id);
-      const operations = buildPORebalanceOperations({
-        nextPo,
-        nextWeight: getShipmentAllocationWeight(validatedData),
-      });
-      assertPORebalanceCapacity(operations);
-
-      await applyPORebalanceOperations(updatePurchaseOrderAllocation, operations);
-
-      try {
-        return await db.shipments.create(validatedData);
-      } catch (error) {
-        await rollbackPORebalanceOperations(updatePurchaseOrderAllocation, operations);
-        throw error;
-      }
+      return createShipmentWithPoRebalance(validatedData);
     },
-    onSuccess: (newShipment) => {
+    onSuccess: ({ shipment: newShipment }) => {
       queryClient.invalidateQueries({ queryKey: ['shipments'] });
       queryClient.invalidateQueries({ queryKey: ['purchase-orders'] });
       setShowForm(false);
@@ -245,19 +180,7 @@ export default function Shipments() {
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }) => {
       const validatedData = shipmentSchema.partial().parse(data);
-      const { operations } = await buildFreshRebalanceContext({
-        shipmentId: id,
-        nextShipmentData: validatedData,
-      });
-
-      await applyPORebalanceOperations(updatePurchaseOrderAllocation, operations);
-
-      try {
-        return await db.shipments.update(id, validatedData);
-      } catch (error) {
-        await rollbackPORebalanceOperations(updatePurchaseOrderAllocation, operations);
-        throw error;
-      }
+      return updateShipmentWithPoRebalance(id, validatedData);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['shipments'] });
@@ -276,19 +199,7 @@ export default function Shipments() {
       if (!hasPermission(user, 'manage_shipments')) {
         throw new Error('You do not have permission to delete shipments');
       }
-
-      const { operations } = await buildFreshRebalanceContext({
-        shipmentId: id,
-      });
-
-      await applyPORebalanceOperations(updatePurchaseOrderAllocation, operations);
-
-      try {
-        return await db.shipments.delete(id);
-      } catch (error) {
-        await rollbackPORebalanceOperations(updatePurchaseOrderAllocation, operations);
-        throw error;
-      }
+      return deleteShipmentWithPoRebalance(id);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['shipments'] });

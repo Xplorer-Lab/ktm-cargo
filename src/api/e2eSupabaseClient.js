@@ -800,6 +800,138 @@ function createTableClient(state, tableName) {
   return builder;
 }
 
+function findRowById(state, tableName, id) {
+  return (state.tables[tableName] || []).find((row) => row?.id === id) || null;
+}
+
+function updateRowById(state, tableName, id, updates) {
+  let updatedRow = null;
+  state.tables[tableName] = (state.tables[tableName] || []).map((row) => {
+    if (row?.id !== id) return row;
+    updatedRow = { ...row, ...updates, updated_date: DEFAULT_TIMESTAMP };
+    return updatedRow;
+  });
+  return updatedRow;
+}
+
+function deleteRowById(state, tableName, id) {
+  const rows = state.tables[tableName] || [];
+  const existing = rows.find((row) => row?.id === id) || null;
+  state.tables[tableName] = rows.filter((row) => row?.id !== id);
+  return existing;
+}
+
+function applyPurchaseOrderDelta(state, poId, delta) {
+  if (!poId) return null;
+  const po = findRowById(state, 'purchase_orders', poId);
+  if (!po) {
+    throw new Error(`Linked purchase order not found: ${poId}`);
+  }
+
+  const total = Math.max(0, Number(po.total_weight_kg) || 0);
+  const allocated = Math.max(0, Number(po.allocated_weight_kg) || 0);
+  const nextAllocated = Math.max(0, allocated + (Number(delta) || 0));
+
+  if (total > 0 && nextAllocated > total) {
+    throw new Error(
+      `Shipment exceeds available purchase order capacity for ${po.po_number || po.id}`
+    );
+  }
+
+  const nextRemaining = total > 0 ? Math.max(0, total - nextAllocated) : po.remaining_weight_kg;
+
+  return updateRowById(state, 'purchase_orders', poId, {
+    allocated_weight_kg: nextAllocated,
+    remaining_weight_kg: nextRemaining,
+  });
+}
+
+function createShipmentRpcHandlers(state) {
+  return {
+    create_shipment_with_po_rebalance: ({ args }) => {
+      const payload = { ...(args?.p_payload || {}) };
+      const shipment = {
+        id: payload.id || `shipment-${Date.now()}`,
+        created_date: payload.created_date || DEFAULT_TIMESTAMP,
+        updated_date: DEFAULT_TIMESTAMP,
+        ...payload,
+      };
+
+      state.tables.shipments = [...(state.tables.shipments || []), shipment];
+
+      const purchaseOrders = [];
+      if (payload.vendor_po_id) {
+        const updatedPo = applyPurchaseOrderDelta(
+          state,
+          payload.vendor_po_id,
+          Number(payload.weight_kg) || 0
+        );
+        if (updatedPo) purchaseOrders.push(updatedPo);
+      }
+
+      return { shipment, purchase_orders: purchaseOrders };
+    },
+    update_shipment_with_po_rebalance: ({ args }) => {
+      const shipmentId = args?.p_shipment_id;
+      const updates = { ...(args?.p_updates || {}) };
+      const existingShipment = findRowById(state, 'shipments', shipmentId);
+      if (!existingShipment) {
+        throw new Error(`Shipment not found: ${shipmentId}`);
+      }
+
+      const nextShipment = { ...existingShipment, ...updates };
+      const previousPoId = existingShipment.vendor_po_id || null;
+      const nextPoId = nextShipment.vendor_po_id || null;
+      const previousWeight = Math.max(0, Number(existingShipment.weight_kg) || 0);
+      const nextWeight = Math.max(0, Number(nextShipment.weight_kg) || 0);
+
+      const purchaseOrders = [];
+      if (previousPoId && nextPoId && previousPoId === nextPoId) {
+        const updatedPo = applyPurchaseOrderDelta(state, previousPoId, nextWeight - previousWeight);
+        if (updatedPo) purchaseOrders.push(updatedPo);
+      } else {
+        if (previousPoId && previousWeight > 0) {
+          const releasedPo = applyPurchaseOrderDelta(state, previousPoId, -previousWeight);
+          if (releasedPo) purchaseOrders.push(releasedPo);
+        }
+        if (nextPoId && nextWeight > 0) {
+          const allocatedPo = applyPurchaseOrderDelta(state, nextPoId, nextWeight);
+          if (allocatedPo) purchaseOrders.push(allocatedPo);
+        }
+      }
+
+      const updatedShipment = updateRowById(state, 'shipments', shipmentId, updates);
+      return {
+        shipment: updatedShipment,
+        purchase_orders: purchaseOrders,
+      };
+    },
+    delete_shipment_with_po_rebalance: ({ args }) => {
+      const shipmentId = args?.p_shipment_id;
+      const existingShipment = findRowById(state, 'shipments', shipmentId);
+      if (!existingShipment) {
+        throw new Error(`Shipment not found: ${shipmentId}`);
+      }
+
+      const purchaseOrders = [];
+      if (existingShipment.vendor_po_id && Number(existingShipment.weight_kg) > 0) {
+        const updatedPo = applyPurchaseOrderDelta(
+          state,
+          existingShipment.vendor_po_id,
+          -(Number(existingShipment.weight_kg) || 0)
+        );
+        if (updatedPo) purchaseOrders.push(updatedPo);
+      }
+
+      const deletedShipment = deleteRowById(state, 'shipments', shipmentId);
+      return {
+        shipment: deletedShipment,
+        purchase_orders: purchaseOrders,
+      };
+    },
+  };
+}
+
 export function getE2EFixtureFromLocation() {
   if (typeof window === 'undefined') return '';
 
@@ -815,6 +947,7 @@ export function createE2ESupabaseClient(fixtureName) {
   const fixture = getFixture(fixtureName);
   const listeners = new Set();
   let session = fixture.initialSession !== undefined ? fixture.initialSession : fixture.session;
+  const shipmentRpcHandlers = createShipmentRpcHandlers(fixture);
 
   const emitAuthChange = (event) => {
     for (const listener of listeners) {
@@ -863,7 +996,21 @@ export function createE2ESupabaseClient(fixtureName) {
     from(tableName) {
       return createTableClient(fixture, tableName);
     },
-    rpc(name) {
+    rpc(name, args) {
+      if (shipmentRpcHandlers[name]) {
+        try {
+          return Promise.resolve({
+            data: shipmentRpcHandlers[name]({ args, session, tables: fixture.tables }),
+            error: null,
+          });
+        } catch (error) {
+          return Promise.resolve({
+            data: null,
+            error,
+          });
+        }
+      }
+
       const rpcValue = fixture.rpc?.[name];
       if (rpcValue === undefined) {
         return Promise.resolve({
@@ -874,7 +1021,9 @@ export function createE2ESupabaseClient(fixtureName) {
 
       return Promise.resolve({
         data:
-          typeof rpcValue === 'function' ? rpcValue({ session, tables: fixture.tables }) : rpcValue,
+          typeof rpcValue === 'function'
+            ? rpcValue({ args, session, tables: fixture.tables })
+            : rpcValue,
         error: null,
       });
     },
