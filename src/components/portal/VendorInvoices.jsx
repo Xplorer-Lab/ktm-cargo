@@ -22,11 +22,14 @@ const STATUS_CONFIG = {
 };
 
 export default function VendorInvoices({ vendor }) {
-  const { data: payments = [] } = useQuery({
-    queryKey: ['vendor-payments-list', vendor?.id],
+  const { data: bills = [] } = useQuery({
+    queryKey: ['vendor-bills-list', vendor?.id],
     queryFn: async () => {
       if (vendor?.id) {
-        return db.vendorPayments.filter({ vendor_id: vendor.id }, '-created_date');
+        return db.customerInvoices.filter(
+          { vendor_id: vendor.id, invoice_type: 'vendor_bill' },
+          '-created_date'
+        );
       }
       return [];
     },
@@ -34,19 +37,21 @@ export default function VendorInvoices({ vendor }) {
   });
 
   // Enrich with overdue status
-  const enrichedPayments = payments.map((p) => ({
-    ...p,
+  const enrichedBills = bills.map((bill) => ({
+    ...bill,
     status:
-      p.status === 'pending' && p.due_date && isPast(new Date(p.due_date)) ? 'overdue' : p.status,
+      bill.status === 'pending' && bill.due_date && isPast(new Date(bill.due_date))
+        ? 'overdue'
+        : bill.status,
   }));
 
-  const pendingAmount = enrichedPayments
+  const pendingAmount = enrichedBills
     .filter((p) => ['pending', 'scheduled'].includes(p.status))
     .reduce((sum, p) => sum + (p.total_amount || 0), 0);
-  const paidAmount = enrichedPayments
+  const paidAmount = enrichedBills
     .filter((p) => p.status === 'paid')
     .reduce((sum, p) => sum + (p.total_amount || 0), 0);
-  const overdueAmount = enrichedPayments
+  const overdueAmount = enrichedBills
     .filter((p) => p.status === 'overdue')
     .reduce((sum, p) => sum + (p.total_amount || 0), 0);
 
@@ -95,20 +100,20 @@ export default function VendorInvoices({ vendor }) {
         </Card>
       </div>
 
-      {/* Payments List */}
+      {/* Bills List */}
       <Card className="border-0 shadow-sm">
         <CardHeader>
-          <CardTitle className="text-lg">Payment History</CardTitle>
+          <CardTitle className="text-lg">Vendor Bills</CardTitle>
         </CardHeader>
         <CardContent>
-          {enrichedPayments.length > 0 ? (
+          {enrichedBills.length > 0 ? (
             <div className="space-y-3">
-              {enrichedPayments.map((payment) => {
-                const status = STATUS_CONFIG[payment.status] || STATUS_CONFIG.pending;
+              {enrichedBills.map((bill) => {
+                const status = STATUS_CONFIG[bill.status] || STATUS_CONFIG.pending;
                 const StatusIcon = status.icon;
                 return (
                   <div
-                    key={payment.id}
+                    key={bill.id}
                     className="flex items-center justify-between p-4 border rounded-xl"
                   >
                     <div className="flex items-center gap-4">
@@ -117,22 +122,23 @@ export default function VendorInvoices({ vendor }) {
                       </div>
                       <div>
                         <p className="font-medium">
-                          {payment.reference_number || `PAY-${payment.id?.slice(-6)}`}
+                          {bill.invoice_number || `BILL-${bill.id?.slice(-6)}`}
                         </p>
                         <div className="flex items-center gap-3 text-sm text-slate-500">
-                          {payment.due_date && (
-                            <span>Due: {format(new Date(payment.due_date), 'MMM d, yyyy')}</span>
+                          {bill.po_number && <span>PO: {bill.po_number}</span>}
+                          {bill.due_date && (
+                            <span>Due: {format(new Date(bill.due_date), 'MMM d, yyyy')}</span>
                           )}
-                          {payment.payment_date && (
+                          {bill.payment_date && (
                             <span className="text-emerald-600">
-                              Paid: {format(new Date(payment.payment_date), 'MMM d, yyyy')}
+                              Paid: {format(new Date(bill.payment_date), 'MMM d, yyyy')}
                             </span>
                           )}
                         </div>
                       </div>
                     </div>
                     <div className="text-right">
-                      <p className="text-xl font-bold">฿{payment.total_amount?.toLocaleString()}</p>
+                      <p className="text-xl font-bold">฿{bill.total_amount?.toLocaleString()}</p>
                       <Badge className={status.color}>{status.label}</Badge>
                     </div>
                   </div>
@@ -142,7 +148,7 @@ export default function VendorInvoices({ vendor }) {
           ) : (
             <div className="text-center py-12 text-slate-500">
               <DollarSign className="w-12 h-12 mx-auto mb-3 text-slate-300" />
-              <p>No payment history</p>
+              <p>No vendor bills</p>
             </div>
           )}
         </CardContent>

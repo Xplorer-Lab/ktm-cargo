@@ -242,15 +242,50 @@ export default function Shipments() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => {
+    mutationFn: async (id) => {
       // Check permission before deleting
       if (!hasPermission(user, 'manage_shipments')) {
         throw new Error('You do not have permission to delete shipments');
       }
-      return db.shipments.delete(id);
+
+      const shipment = shipments.find((item) => item.id === id);
+      const linkedPoId = shipment?.vendor_po_id || null;
+      const weight = Number(shipment?.weight_kg) || 0;
+      const linkedPo = linkedPoId
+        ? purchaseOrders.find((po) => po.id === linkedPoId) || null
+        : null;
+
+      let originalPoState = null;
+      if (linkedPo && weight > 0) {
+        originalPoState = {
+          allocated_weight_kg: Number(linkedPo.allocated_weight_kg) || 0,
+          remaining_weight_kg: Number(linkedPo.remaining_weight_kg) || 0,
+          total_weight_kg: Number(linkedPo.total_weight_kg) || 0,
+        };
+
+        const nextAllocated = Math.max(0, originalPoState.allocated_weight_kg - weight);
+        const nextRemaining = Math.max(0, originalPoState.total_weight_kg - nextAllocated);
+        await db.purchaseOrders.update(linkedPoId, {
+          allocated_weight_kg: nextAllocated,
+          remaining_weight_kg: nextRemaining,
+        });
+      }
+
+      try {
+        return await db.shipments.delete(id);
+      } catch (error) {
+        if (linkedPo && originalPoState) {
+          await db.purchaseOrders.update(linkedPoId, {
+            allocated_weight_kg: originalPoState.allocated_weight_kg,
+            remaining_weight_kg: originalPoState.remaining_weight_kg,
+          });
+        }
+        throw error;
+      }
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['shipments'] });
+      queryClient.invalidateQueries({ queryKey: ['purchase-orders'] });
       setSelectedShipment(null);
       setShipmentToDelete(null);
       toast.success('Shipment deleted successfully');

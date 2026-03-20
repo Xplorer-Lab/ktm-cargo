@@ -54,6 +54,7 @@ import {
   createInvoiceFromShipment,
   recordPayment,
 } from '@/components/invoices/InvoiceService';
+import { generateInvoiceFromReceipt } from '@/components/procurement/InvoiceService.jsx';
 
 import { __mocks } from '@/api/db';
 
@@ -213,6 +214,50 @@ describe('createInvoiceFromShipment', () => {
     expect(arg.insurance_amount).toBe(50);
     expect(arg.packaging_fee).toBe(100);
     expect(arg.subtotal).toBe(1100); // 950 + 50 + 100
+  });
+});
+
+describe('generateInvoiceFromReceipt', () => {
+  afterEach(() => jest.clearAllMocks());
+
+  test('creates a vendor bill from a goods receipt', async () => {
+    __mocks.createMock.mockResolvedValueOnce({
+      id: 'bill-1',
+      invoice_number: 'BILL-202603-0001',
+      status: 'pending',
+    });
+
+    const result = await generateInvoiceFromReceipt(
+      {
+        id: 'po-1',
+        po_number: 'PO-202603-0001',
+        vendor_id: 'vendor-1',
+        vendor_name: 'Carrier Co',
+        total_amount: 504,
+      },
+      {
+        id: 'receipt-1',
+        receipt_number: 'GR-202603-0001',
+        received_date: '2026-03-20',
+        total_value: 504,
+        items_received: JSON.stringify([{ item_name: 'Cargo', received_qty: 1 }]),
+      },
+      {
+        id: 'vendor-1',
+        name: 'Carrier Co',
+        payment_terms: 'net_30',
+      }
+    );
+
+    expect(result.status).toBe('created');
+    expect(result.invoice.invoice_number).toBe('BILL-202603-0001');
+
+    const arg = __mocks.createMock.mock.calls[0][0];
+    expect(arg.invoice_type).toBe('vendor_bill');
+    expect(arg.po_number).toBe('PO-202603-0001');
+    expect(arg.receipt_number).toBe('GR-202603-0001');
+    expect(arg.vendor_name).toBe('Carrier Co');
+    expect(arg.total_amount).toBe(504);
   });
 });
 

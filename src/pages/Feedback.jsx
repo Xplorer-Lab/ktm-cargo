@@ -12,6 +12,8 @@ import { toast } from 'sonner';
 export default function Feedback() {
   const urlParams = new URLSearchParams(window.location.search);
   const shipmentId = urlParams.get('shipment');
+  const journeyId = urlParams.get('journey');
+  const shoppingOrderId = urlParams.get('shopping_order');
 
   const [ratings, setRatings] = useState({
     overall: 0,
@@ -24,23 +26,49 @@ export default function Feedback() {
   const [submitted, setSubmitted] = useState(false);
 
   const { data: shipment } = useQuery({
-    queryKey: ['shipment', shipmentId],
+    queryKey: ['shipment-feedback', shipmentId, journeyId, shoppingOrderId],
     queryFn: async () => {
-      if (!shipmentId) return null;
-      const shipments = await db.shipments.filter({ id: shipmentId });
-      return shipments[0] || null;
+      if (shipmentId) {
+        const shipments = await db.shipments.filter({ id: shipmentId });
+        return shipments[0] || null;
+      }
+
+      if (journeyId) {
+        const shipments = await db.shipments.filter({ journey_id: journeyId });
+        return shipments[0] || null;
+      }
+
+      if (shoppingOrderId) {
+        const shipments = await db.shipments.filter({ shopping_order_id: shoppingOrderId });
+        return shipments[0] || null;
+      }
+
+      return null;
     },
-    enabled: !!shipmentId,
+    enabled: !!(shipmentId || journeyId || shoppingOrderId),
   });
 
   const { data: existingFeedback } = useQuery({
-    queryKey: ['feedback', shipmentId],
+    queryKey: ['feedback', shipmentId, journeyId, shoppingOrderId],
     queryFn: async () => {
-      if (!shipmentId) return null;
-      const feedbacks = await db.feedback.filter({ shipment_id: shipmentId });
-      return feedbacks[0] || null;
+      if (shipmentId) {
+        const feedbacks = await db.feedback.filter({ shipment_id: shipmentId });
+        return feedbacks[0] || null;
+      }
+
+      if (journeyId) {
+        const feedbacks = await db.feedback.filter({ journey_id: journeyId });
+        return feedbacks[0] || null;
+      }
+
+      if (shoppingOrderId) {
+        const feedbacks = await db.feedback.filter({ order_reference_id: shoppingOrderId });
+        return feedbacks[0] || null;
+      }
+
+      return null;
     },
-    enabled: !!shipmentId,
+    enabled: !!(shipmentId || journeyId || shoppingOrderId),
   });
 
   const submitMutation = useMutation({
@@ -63,7 +91,9 @@ export default function Feedback() {
     }
 
     submitMutation.mutate({
-      shipment_id: shipmentId,
+      shipment_id: shipmentId || shipment?.id || null,
+      journey_id: journeyId || shipment?.journey_id || null,
+      shopping_order_id: shoppingOrderId || shipment?.shopping_order_id || null,
       customer_name: shipment?.customer_name || 'Customer',
       rating: ratings.overall,
       service_rating: ratings.service,
@@ -72,11 +102,23 @@ export default function Feedback() {
       comment,
       service_type: shipment?.service_type,
       would_recommend: wouldRecommend,
+      order_reference_type:
+        shoppingOrderId || shipment?.shopping_order_id
+          ? 'shopping_order'
+          : journeyId || shipment?.journey_id
+            ? 'journey'
+            : 'shipment',
+      order_reference_id:
+        shoppingOrderId ||
+        shipment?.shopping_order_id ||
+        journeyId ||
+        shipment?.journey_id ||
+        shipmentId,
       status: 'submitted',
     });
   };
 
-  if (!shipmentId) {
+  if (!shipmentId && !journeyId && !shoppingOrderId) {
     return (
       <div className="min-h-screen bg-slate-50 flex items-center justify-center p-4">
         <Card className="max-w-md w-full border-0 shadow-lg">

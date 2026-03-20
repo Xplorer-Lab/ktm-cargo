@@ -6,7 +6,9 @@ routing and the client portal workflow.
 - Script: `scripts/playwright/client_portal_workflow.sh`
 - Runner: Codex Playwright wrapper (`$PWCLI`)
 - Artifacts: `output/playwright/client-portal-workflow/`
-- Deterministic regression suite: `e2e/routing-smoke.spec.js`
+- Deterministic regression suites:
+  - `e2e/routing-smoke.spec.js`
+  - `e2e/workflow-slice.spec.js`
 
 ## Run steps
 
@@ -38,7 +40,7 @@ npm run test:e2e
 
 ## Optional environment variables
 
-- `APP_URL` (default: `http://localhost:5173`)
+- `APP_URL` (default: `http://localhost:4173`)
 - `HEADED` (`true` or `false`, default: `false`)
 - `PLAYWRIGHT_CLI_SESSION` (default: auto-generated session name)
 - `RESET_SESSION` (`true` or `false`, default: `true`)

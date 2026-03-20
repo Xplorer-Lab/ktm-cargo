@@ -19,7 +19,7 @@ if [[ ! -x "$PWCLI" ]]; then
   exit 1
 fi
 
-APP_URL="${APP_URL:-http://localhost:5173}"
+APP_URL="${APP_URL:-http://localhost:4173}"
 SESSION_NAME_RAW="${PLAYWRIGHT_CLI_SESSION:-kcpw-$(date +%H%M%S)}"
 SESSION_NAME="$(printf '%s' "$SESSION_NAME_RAW" | tr -cd '[:alnum:]_-' | cut -c1-24)"
 SESSION_NAME="${SESSION_NAME:-kcpw}"

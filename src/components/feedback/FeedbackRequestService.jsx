@@ -4,7 +4,15 @@ import { sendMessengerNotification } from '@/api/integrations';
 export async function sendFeedbackRequest(shipment, customer) {
   if (!customer?.email) return false;
 
-  const feedbackLink = `${window.location.origin}/Feedback?shipment=${shipment.id}`;
+  const feedbackUrl = new URL('/Feedback', window.location.origin);
+  feedbackUrl.searchParams.set('shipment', shipment.id);
+  if (shipment.journey_id) {
+    feedbackUrl.searchParams.set('journey', shipment.journey_id);
+  }
+  if (shipment.shopping_order_id) {
+    feedbackUrl.searchParams.set('shopping_order', shipment.shopping_order_id);
+  }
+  const feedbackLink = feedbackUrl.toString();
 
   const message = `Dear ${customer.name || shipment.customer_name},\n\nYour shipment ${shipment.tracking_number} has been delivered! 🎉\n\nRate your experience here: ${feedbackLink}`;
 
@@ -19,13 +27,18 @@ export async function sendFeedbackRequest(shipment, customer) {
     await db.feedback.create({
       shipment_id: shipment.id,
       journey_id: shipment.journey_id || null,
+      shopping_order_id: shipment.shopping_order_id || null,
       customer_id: customer.id || '',
       customer_name: customer.name || shipment.customer_name,
       customer_email: customer.email,
       service_type: shipment.service_type,
       feedback_kind: 'delivery_feedback',
-      order_reference_type: 'shipment',
-      order_reference_id: shipment.id,
+      order_reference_type: shipment.shopping_order_id
+        ? 'shopping_order'
+        : shipment.journey_id
+          ? 'journey'
+          : 'shipment',
+      order_reference_id: shipment.shopping_order_id || shipment.journey_id || shipment.id,
       status: 'pending',
     });
 

@@ -96,10 +96,34 @@ export async function recordVendorBill(billData) {
  * Vendor bills should be recorded manually when received
  */
 export async function generateInvoiceFromReceipt(purchaseOrder, goodsReceipt, vendor) {
-  console.warn(
-    'generateInvoiceFromReceipt is deprecated. Record vendor bills manually when received.'
-  );
-  return { status: 'skipped', message: 'Auto-generation disabled. Record vendor bills manually.' };
+  const receiptItems = Array.isArray(goodsReceipt?.items_received)
+    ? goodsReceipt.items_received
+    : (() => {
+        try {
+          return JSON.parse(goodsReceipt?.items_received || '[]');
+        } catch {
+          return [];
+        }
+      })();
+
+  const totalAmount = Number(goodsReceipt?.total_value || purchaseOrder?.total_amount || 0);
+
+  const invoice = await recordVendorBill({
+    po_id: purchaseOrder?.id,
+    po_number: purchaseOrder?.po_number,
+    receipt_id: goodsReceipt?.id,
+    receipt_number: goodsReceipt?.receipt_number,
+    vendor_id: vendor?.id || purchaseOrder?.vendor_id,
+    vendor_name: vendor?.name || purchaseOrder?.vendor_name,
+    bill_date: goodsReceipt?.received_date || format(new Date(), 'yyyy-MM-dd'),
+    payment_terms: vendor?.payment_terms || 'net_30',
+    items: receiptItems,
+    subtotal: totalAmount,
+    total_amount: totalAmount,
+    notes: `Auto-created from goods receipt ${goodsReceipt?.receipt_number || ''}`.trim(),
+  });
+
+  return { status: 'created', invoice };
 }
 
 /**
