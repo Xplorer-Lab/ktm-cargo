@@ -36,17 +36,17 @@ describe('shoppingOrderFilters', () => {
     },
   ];
 
-  it('identifies unpaid orders using status and payment status', () => {
+  it('identifies unpaid follow-up orders using status and payment status', () => {
     expect(isUnpaidShoppingOrder(sampleOrders[0])).toBe(true);
-    expect(isUnpaidShoppingOrder(sampleOrders[1])).toBe(false);
+    expect(isUnpaidShoppingOrder(sampleOrders[1])).toBe(true);
     expect(isUnpaidShoppingOrder(sampleOrders[2])).toBe(false);
     expect(isUnpaidShoppingOrder(sampleOrders[3])).toBe(false);
   });
 
-  it('unpaid tab shows only truly unpaid non-cancelled orders', () => {
+  it('unpaid tab shows unpaid and deposit-paid non-cancelled orders that still need follow-up', () => {
     const result = filterShoppingOrders(sampleOrders, { activeTab: 'unpaid' });
 
-    expect(result.map((o) => o.id)).toEqual(['1']);
+    expect(result.map((o) => o.id)).toEqual(['1', '2']);
   });
 
   it('supports search and status filters in combination', () => {

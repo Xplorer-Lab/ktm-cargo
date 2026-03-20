@@ -62,6 +62,7 @@ import { toast } from 'sonner';
 import { sendShoppingOrderNotification } from '@/components/notifications/ShippingNotificationService';
 
 import { filterShoppingOrders, isUnpaidShoppingOrder } from '@/pages/shoppingOrderFilters';
+import { appendE2EFixture } from '@/lib/e2e';
 const STATUS_CONFIG = {
   pending: { label: 'Pending', color: 'bg-amber-100 text-amber-800', icon: Clock },
 
@@ -78,6 +79,8 @@ const PAYMENT_CONFIG = {
   deposit_paid: { label: 'Deposit Paid', color: 'bg-amber-100 text-amber-800' },
   paid: { label: 'Paid', color: 'bg-emerald-100 text-emerald-800' },
 };
+
+const SHIPMENT_ELIGIBLE_ORDER_STATUSES = new Set(['purchased', 'received', 'shipping']);
 
 export default function ShoppingOrders() {
   const [showForm, setShowForm] = useState(false);
@@ -301,6 +304,12 @@ export default function ShoppingOrders() {
     if (!order.vendor_po_id) return null;
     return purchaseOrders.find((po) => po.id === order.vendor_po_id);
   };
+
+  const canConvertOrderToShipment = (order) =>
+    Boolean(order) &&
+    SHIPMENT_ELIGIBLE_ORDER_STATUSES.has(order.status) &&
+    Boolean(order.vendor_po_id) &&
+    !order.tracking_number;
 
   return (
     <div className="min-h-screen bg-slate-50 p-4 md:p-8">
@@ -672,18 +681,23 @@ export default function ShoppingOrders() {
                         <Receipt className="w-4 h-4 mr-2" /> Review Invoice Flow
                       </Button>
                     )}
-                  {selectedOrder.status !== 'cancelled' && (
+                  {canConvertOrderToShipment(selectedOrder) && (
                     <Button
                       className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
                       onClick={() => {
                         setShowDetails(false);
-                        navigate('/shipments', {
+                        navigate(appendE2EFixture('/Shipments', window.location.search), {
                           state: { createFromShoppingOrder: selectedOrder },
                         });
                       }}
                     >
                       <Truck className="w-4 h-4 mr-2" /> Convert to Shipment
                     </Button>
+                  )}
+                  {!canConvertOrderToShipment(selectedOrder) && (
+                    <div className="flex-1 rounded-lg border border-slate-200 bg-slate-50 px-3 py-2 text-sm text-slate-500">
+                      Shipment draft becomes available after purchase receiving and PO allocation.
+                    </div>
                   )}
                 </div>
               </div>

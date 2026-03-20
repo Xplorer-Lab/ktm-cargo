@@ -183,7 +183,7 @@ export async function sendShoppingOrderNotification(order, newStatus, customerEm
       type: 'shipment_status',
       title: `Order ${data.order_number} - ${newStatus}`,
       message: `Notification sent to ${customerEmail}`,
-      reference_type: 'shipment',
+      reference_type: 'shopping_order',
       reference_id: order.id,
       recipient_email: customerEmail,
       status: 'read',

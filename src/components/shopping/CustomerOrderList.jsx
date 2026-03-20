@@ -172,7 +172,7 @@ export default function CustomerOrderList({
               </div>
 
               {/* Action Buttons */}
-              <div className="flex gap-2 mt-3 pt-3 border-t border-slate-100 opacity-0 group-hover:opacity-100 transition-opacity">
+              <div className="mt-3 flex gap-2 border-t border-slate-100 pt-3 opacity-100 transition-opacity md:opacity-0 md:group-hover:opacity-100 md:group-focus-within:opacity-100">
                 <Button
                   size="sm"
                   variant="outline"

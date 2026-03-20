@@ -49,6 +49,11 @@ const STATUS_INDEX = {
   delivered: 5,
   cancelled: -1,
 };
+
+function getTrackingStatusIndex(status) {
+  const index = STATUS_INDEX[status];
+  return typeof index === 'number' ? index : 0;
+}
 import { Dialog, DialogContent, DialogTitle, DialogDescription } from '@/components/ui/dialog';
 import {
   AlertDialog,
@@ -318,6 +323,9 @@ export default function Shipments() {
 
     // Update shipment first
     await db.shipments.update(shipment.id, { status: newStatus });
+    setSelectedShipment((current) =>
+      current?.id === shipment.id ? { ...current, status: newStatus } : current
+    );
     queryClient.invalidateQueries({ queryKey: ['shipments'] });
 
     // Trigger status change notification
@@ -366,6 +374,9 @@ export default function Shipments() {
   const handlePaymentChange = async (shipment, newPaymentStatus) => {
     // Update shipment first
     await db.shipments.update(shipment.id, { payment_status: newPaymentStatus });
+    setSelectedShipment((current) =>
+      current?.id === shipment.id ? { ...current, payment_status: newPaymentStatus } : current
+    );
     queryClient.invalidateQueries({ queryKey: ['shipments'] });
 
     // Trigger payment received notification
@@ -575,7 +586,7 @@ export default function Shipments() {
                 <div className="relative pt-2 pb-4 sm:px-4">
                   <div className="flex items-center justify-between mb-8 relative z-10">
                     {TRACKING_STEPS.map((step, idx) => {
-                      const currentIdx = STATUS_INDEX[selectedShipment.status] || 0;
+                      const currentIdx = getTrackingStatusIndex(selectedShipment.status);
                       const isComplete = idx <= currentIdx;
                       const isCurrent = idx === currentIdx;
                       const StepIcon = step.icon;
@@ -605,17 +616,17 @@ export default function Shipments() {
                   {/* Progress Line */}
                   <div className="absolute top-6 sm:top-7 left-8 right-8 h-0.5 bg-slate-200 z-0 hidden sm:block">
                     <div
-                      className="h-full bg-blue-600 transition-all"
+                      className={`h-full transition-all ${selectedShipment.status === 'cancelled' ? 'bg-slate-400' : 'bg-blue-600'}`}
                       style={{
-                        width: `${(Math.max(0, STATUS_INDEX[selectedShipment.status]) / 5) * 100}%`,
+                        width: `${(Math.max(0, getTrackingStatusIndex(selectedShipment.status)) / 5) * 100}%`,
                       }}
                     />
                   </div>
                   <div className="absolute top-[1.125rem] left-6 right-6 h-0.5 bg-slate-200 z-0 sm:hidden">
                     <div
-                      className="h-full bg-blue-600 transition-all"
+                      className={`h-full transition-all ${selectedShipment.status === 'cancelled' ? 'bg-slate-400' : 'bg-blue-600'}`}
                       style={{
-                        width: `${(Math.max(0, STATUS_INDEX[selectedShipment.status]) / 5) * 100}%`,
+                        width: `${(Math.max(0, getTrackingStatusIndex(selectedShipment.status)) / 5) * 100}%`,
                       }}
                     />
                   </div>

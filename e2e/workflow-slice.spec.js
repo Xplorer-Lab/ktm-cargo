@@ -39,6 +39,36 @@ test.describe('KTM workflow slice', () => {
     ).toBeVisible();
   });
 
+  test('shopping orders can launch a shipment draft from the current workflow record', async ({
+    page,
+  }) => {
+    await page.goto('/ShoppingOrders?__e2e=workflow-staff');
+
+    await page.getByRole('button', { name: /View/i }).first().click();
+    await expect(page.getByRole('heading', { name: /Order Details/i })).toBeVisible();
+
+    await page.getByRole('button', { name: /Convert to Shipment/i }).click();
+    await expect(page).toHaveURL(/\/Shipments\?__e2e=workflow-staff$/);
+    await expect(page.getByRole('heading', { name: /^Edit Shipment$/i })).toBeVisible();
+    await expect(page.getByRole('combobox').first()).toContainText(/Mya Mya/i);
+  });
+
+  test('shipment detail actions update lifecycle state in place', async ({ page }) => {
+    await page.goto('/Shipments?__e2e=workflow-staff');
+
+    await page.getByText('SHP-202603-0002').click();
+    await expect(page.getByText(/Shipment Details/i)).toBeVisible();
+
+    await page.getByRole('combobox').nth(0).click();
+    await page.getByRole('option', { name: /Delivered/i }).click();
+    await expect(page.getByText(/^delivered$/i).first()).toBeVisible();
+    await expect(page.getByRole('button', { name: /Request Feedback/i })).toBeVisible();
+
+    await page.getByRole('combobox').nth(1).click();
+    await page.getByRole('option', { name: /^Paid$/i }).click();
+    await expect(page.getByText(/^paid$/i).first()).toBeVisible();
+  });
+
   test('public client portal reads as a brochure only', async ({ page }) => {
     await page.goto('/ClientPortal?__e2e=public');
 

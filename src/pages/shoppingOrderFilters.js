@@ -1,5 +1,7 @@
 export function isUnpaidShoppingOrder(order) {
-  return order?.payment_status === 'unpaid' && order?.status !== 'cancelled';
+  return (
+    ['unpaid', 'deposit_paid'].includes(order?.payment_status) && order?.status !== 'cancelled'
+  );
 }
 
 export function filterShoppingOrders(
