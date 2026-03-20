@@ -52,12 +52,13 @@ Order matters — later migrations depend on objects created by earlier ones.
 | #   | File                                                     | Purpose                                                                     |
 | --- | -------------------------------------------------------- | --------------------------------------------------------------------------- |
 | 21  | `add_order_journey_spine_and_contract_normalization.sql` | Canonical journey spine, nullable journey links, and contract normalization |
+| 22  | `add_shipment_po_allocation_rpcs.sql`                    | Atomic shipment create/update/delete RPCs for PO allocation rebalance       |
 
 ### Phase 5 — Monetization (optional, if using Stripe)
 
 | #   | File                          | Purpose                                                                          |
 | --- | ----------------------------- | -------------------------------------------------------------------------------- |
-| 22  | `add_subscription_fields.sql` | Add `stripe_customer_id`, `subscription_status`, `subscription_tier` to profiles |
+| 23  | `add_subscription_fields.sql` | Add `stripe_customer_id`, `subscription_status`, `subscription_tier` to profiles |
 
 ### Verification
 
@@ -96,6 +97,7 @@ npm run dev
 - Keep `.env` out of version control (`.gitignore` already excludes it).
 - After each migration, verify in the Supabase Dashboard that the expected
   tables / functions / triggers exist.
+- The shipment allocation RPC migration is the current integrity hardening path for shipment write operations. Apply it before switching the frontend away from client-coordinated PO writes.
 - Remaining alignment / audit migrations (`align_db_with_json.sql`,
   `master_schema_alignment.sql`, `complete_schema_fix.sql`, etc.) are
   one-time fixes; apply only if your schema is behind the canonical JSON
