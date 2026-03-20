@@ -1,7 +1,7 @@
-# Client Portal Workflow Smoke Test
+# Public Workflow Smoke Test
 
-This is the repo's lightweight browser smoke path for validating public portal
-routing and the client portal workflow.
+This is the repo's lightweight browser smoke path for validating public brochure
+routing, typo redirects, and the staff workflow entry points.
 
 - Script: `scripts/playwright/client_portal_workflow.sh`
 - Runner: Codex Playwright wrapper (`$PWCLI`)
@@ -24,7 +24,7 @@ npm run dev
 npm run playwright:client-portal
 ```
 
-3. To include sign-in and post-login navigation, provide credentials:
+3. If you want to exercise legacy portal login behavior in older environments, provide credentials:
 
 ```bash
 PORTAL_EMAIL="you@example.com" \
@@ -49,4 +49,4 @@ npm run test:e2e
 ## Notes
 
 - Keep the output directory local-only; it is ignored by git.
-- Use this smoke path before broader e2e coverage when routing or portal flows change.
+- Use this smoke path before broader e2e coverage when routing, brochure pages, or staff entry flows change.

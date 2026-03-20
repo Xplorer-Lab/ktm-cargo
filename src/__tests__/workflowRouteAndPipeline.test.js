@@ -77,6 +77,9 @@ describe('Workflow route and pipeline contracts', () => {
         '/Shipments',
         '/Invoices',
         '/FeedbackQueue',
+        '/shipment',
+        '/operation',
+        '/invoice',
       ])
     );
   });

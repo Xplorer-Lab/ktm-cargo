@@ -42,6 +42,20 @@ test.describe('KTM route and workflow smoke', () => {
     await expect(page.getByRole('heading', { name: /KTM Cargo Workflow Spine/i })).toBeVisible();
   });
 
+  test('common typo aliases redirect to canonical staff routes', async ({ page }) => {
+    await page.goto('/shipment?__e2e=workflow-staff');
+    await page.waitForURL(/\/Shipments\?__e2e=workflow-staff$/);
+    await expect(page.getByRole('heading', { name: /Shipments/i })).toBeVisible();
+
+    await page.goto('/operation?__e2e=workflow-staff');
+    await page.waitForURL(/\/Operations\?__e2e=workflow-staff$/);
+    await expect(page.getByRole('heading', { name: /KTM Cargo Workflow Spine/i })).toBeVisible();
+
+    await page.goto('/invoice?__e2e=workflow-staff');
+    await page.waitForURL(/\/Invoices\?__e2e=workflow-staff$/);
+    await expect(page.getByRole('heading', { name: /Invoices/i })).toBeVisible();
+  });
+
   test('public feedback link bypasses the app layout', async ({ page }) => {
     await page.goto('/Feedback?shipment=ship-123&__e2e=public');
 

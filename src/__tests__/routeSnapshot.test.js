@@ -40,12 +40,15 @@ const EXPECTED_ROUTES = [
   '/FeedbackQueue',
   '/FeedbackAnalytics',
   '/Inventory',
+  '/invoice',
   '/Invoices',
+  '/operation',
   '/Operations',
   '/PriceCalculator',
   '/Procurement',
   '/Reports',
   '/Settings',
+  '/shipment',
   '/ShipmentDocuments',
   '/Shipments',
   '/ShoppingOrders',
@@ -62,11 +65,11 @@ describe('Route snapshot protection', () => {
     expect(actual).toEqual(EXPECTED_ROUTES);
   });
 
-  it('has exactly 22 routes (5 public + 16 protected + 1 catch-all)', () => {
+  it('has exactly 25 routes including typo aliases and catch-all', () => {
     const source = fs.readFileSync(indexPath, 'utf-8');
     const actual = extractRoutePaths(source);
 
-    expect(actual).toHaveLength(22);
+    expect(actual).toHaveLength(25);
   });
 
   it('public routes are not wrapped in ProtectedRoute', () => {

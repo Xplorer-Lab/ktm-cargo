@@ -62,8 +62,10 @@ npm run build
 ## Post-deploy checks
 
 - App loads with Supabase credentials present
-- Auth routes work for staff, customer, and vendor users
-- The client portal opens and can resolve the current user profile
+- Staff routes load from `/Operations`
+- Public brochure pages load from `/` and `/ClientPortal`
+- Public feedback form loads from `/Feedback?shipment=<id>` without the app layout
+- Typo redirects such as `/shipment` and `/operation` resolve to the canonical staff routes
 - Preview and production URLs match the branch being deployed
 
 ## Rollback
