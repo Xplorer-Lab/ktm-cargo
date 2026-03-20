@@ -139,12 +139,11 @@ jobs:
           args: --severity-threshold=high
 
   # ============================================================================
-  # Bundle Analysis (only on main)
+  # Bundle Analysis
   # ============================================================================
   analyze:
     name: Bundle Analysis
     runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main'
     needs: build
     steps:
       - name: Checkout code
