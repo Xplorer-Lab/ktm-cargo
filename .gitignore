@@ -31,3 +31,4 @@ docs
 *.sw?
 .docs
 .env
+.vercel
