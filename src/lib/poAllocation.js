@@ -58,6 +58,8 @@ function buildPOOperation(po, nextAllocatedWeight) {
 
   return {
     poId: po.id,
+    poNumber: po.po_number || null,
+    totalWeightKg: previousPatch.total_weight_kg,
     previousPatch: {
       allocated_weight_kg: previousPatch.allocated_weight_kg,
       remaining_weight_kg: previousPatch.remaining_weight_kg,
@@ -110,6 +112,21 @@ export async function applyPORebalanceOperations(updatePO, operations = []) {
 export async function rollbackPORebalanceOperations(updatePO, operations = []) {
   for (const operation of [...operations].reverse()) {
     await updatePO(operation.poId, operation.previousPatch);
+  }
+}
+
+export function assertPORebalanceCapacity(operations = []) {
+  for (const operation of operations) {
+    if (!operation) continue;
+    if (toNonNegative(operation.totalWeightKg) <= 0) continue;
+
+    if (
+      toNonNegative(operation.nextPatch?.allocated_weight_kg) >
+      toNonNegative(operation.totalWeightKg)
+    ) {
+      const poLabel = operation.poNumber || operation.poId;
+      throw new Error(`Shipment exceeds available purchase order capacity for ${poLabel}`);
+    }
   }
 }
 

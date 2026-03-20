@@ -94,6 +94,9 @@ The system supports three operating modes:
 - Invoice behavior is distinguished by `invoice_type`, not by separate tables.
 - Customer invoices are created by staff when needed; vendor bills are recorded manually when received.
 - Procurement invoice views must filter to `invoice_type === 'vendor_bill'`.
+- Shipment PO allocation is currently enforced with client-side fresh-row reads, mutation-side capacity guards, and rollback helpers.
+- That shipment integrity path is safer than the earlier cache-only version, but it is still not fully atomic because shipment and PO writes happen as separate Supabase requests.
+- The future robust path is a Supabase RPC or transaction wrapper that updates shipment and PO weights together.
 - Route access is role-aware:
   - guests can use the public pages, company profile, and feedback form
   - staff/admin users sign in through `/StaffLogin` and are routed into `/Operations`
@@ -126,6 +129,7 @@ The system supports three operating modes:
 - Do not treat `Dashboard` as the canonical business hub; it is a legacy alias.
 - Keep `FeedbackQueue` staff-only and reserve `/Feedback` for customer submission links.
 - Keep invoice creation manual unless a service explicitly says otherwise.
+- Keep shipment/PO allocation helpers centralized until the RPC phase replaces the client-coordinated write flow.
 - Use the migration runbook for schema changes; do not guess table state from UI behavior.
 
 ## 7. Supporting Docs

@@ -4,6 +4,8 @@
 
 This repo now deploys to **Vercel only** for preview and production. Supabase provides auth and data.
 
+Shipment allocation writes are still coordinated from the client for now. The hardened path uses fresh-row reads, mutation-side capacity checks, and rollback helpers, but it is not a true transaction yet. The next durability upgrade is a Supabase RPC or transactional write path that updates shipment and PO weights together.
+
 ## Prerequisites
 
 - Node.js 20+
@@ -67,6 +69,7 @@ npm run build
 - Public brochure pages load from `/` and `/ClientPortal`
 - Public feedback form loads from `/Feedback?shipment=<id>` without the app layout
 - Typo redirects such as `/shipment` and `/operation` resolve to the canonical staff routes
+- Shipment create/update/delete should preserve PO allocation on the client, but do not treat that as transaction-safe until the RPC phase lands
 - Preview and production URLs match the branch being deployed
 
 ## Rollback

@@ -2,6 +2,8 @@
 
 KTM Cargo Express is the staff-led logistics operating system for the business. It supports inquiry handling, shopping proxy orders, cargo shipments, procurement, invoicing, after-sales follow-up, and the internal workflow that connects them.
 
+Shipment allocation is currently hardened on the client side with fresh-row reads, mutation-side capacity checks, and rollback helpers. The next integrity step is a Supabase RPC or transaction-based shipment/PO write path.
+
 ## Start Here
 
 - [System Spec](./SYSTEM_SPEC.md)
