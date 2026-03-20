@@ -10,6 +10,7 @@ const ShoppingOrders = lazy(() => import('./ShoppingOrders'));
 const Tasks = lazy(() => import('./Tasks'));
 const Reports = lazy(() => import('./Reports'));
 const PriceCalculator = lazy(() => import('./PriceCalculator'));
+const StaffLogin = lazy(() => import('./StaffLogin'));
 const CustomerSegments = lazy(() => import('./CustomerSegments'));
 const ShipmentDocuments = lazy(() => import('./ShipmentDocuments'));
 const Feedback = lazy(() => import('./Feedback'));
@@ -33,6 +34,7 @@ const PAGES = {
   Tasks,
   Reports,
   PriceCalculator,
+  StaffLogin,
   CustomerSegments,
   ShipmentDocuments,
   Feedback,
@@ -98,6 +100,7 @@ function PagesContent() {
           <Route path="/" element={<LandingPage />} />
           <Route path="/ClientPortal" element={<ClientPortal />} />
           <Route path="/Feedback" element={<Feedback />} />
+          <Route path="/StaffLogin" element={<StaffLogin />} />
           <Route
             path="/operation"
             element={<Navigate to={appendE2EFixture('/Operations', location.search)} replace />}

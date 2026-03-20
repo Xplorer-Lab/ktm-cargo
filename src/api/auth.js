@@ -1,4 +1,5 @@
 import { supabase } from './supabaseClient';
+import { buildStaffLoginPath, STAFF_HOME_PATH } from '@/lib/staffAuthRouting';
 
 export const auth = {
   isAuthenticated: async () => {
@@ -114,7 +115,7 @@ export const auth = {
     window.location.href = '/';
   },
 
-  redirectToLogin: () => {
-    window.location.href = '/';
+  redirectToLogin: (nextPath = STAFF_HOME_PATH) => {
+    window.location.href = buildStaffLoginPath(nextPath);
   },
 };

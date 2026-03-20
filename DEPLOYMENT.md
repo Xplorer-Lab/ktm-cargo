@@ -62,6 +62,7 @@ npm run build
 ## Post-deploy checks
 
 - App loads with Supabase credentials present
+- Staff login loads from `/StaffLogin` and returns staff users to their requested module
 - Staff routes load from `/Operations`
 - Public brochure pages load from `/` and `/ClientPortal`
 - Public feedback form loads from `/Feedback?shipment=<id>` without the app layout

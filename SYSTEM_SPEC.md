@@ -46,6 +46,7 @@ The system supports three operating modes:
 | `/PriceCalculator`    | Public price estimate and quote entry                       |
 | `/ClientPortal`       | Public company profile / brochure page                      |
 | `/Feedback`           | Public delivery-feedback submission page from emailed links |
+| `/StaffLogin`         | Dedicated email/password entry for staff and admin users    |
 | `/VendorRegistration` | Vendor onboarding / registration                            |
 
 ### Staff operations
@@ -95,8 +96,8 @@ The system supports three operating modes:
 - Procurement invoice views must filter to `invoice_type === 'vendor_bill'`.
 - Route access is role-aware:
   - guests can use the public pages, company profile, and feedback form
-  - staff/admin users are routed into `/Operations`
-  - unauthorized users are redirected back to `/`
+  - staff/admin users sign in through `/StaffLogin` and are routed into `/Operations`
+  - unauthorized staff-route access is redirected into `/StaffLogin?next=...`
 - Profile creation is self-healing for new auth users, so a missing profile does not block first sign-in.
 
 ## 5. Role Usage Notes
@@ -120,7 +121,8 @@ The system supports three operating modes:
 
 ## 6. Usage Rules
 
-- Keep public routing simple: landing page, price calculator, company profile, feedback form, and vendor registration are the only intentional public entry points.
+- Keep public routing simple: landing page, price calculator, company profile, feedback form, vendor registration, and staff login are the only intentional public entry points.
+- Keep `/StaffLogin` as the only public auth entry for internal staff work.
 - Do not treat `Dashboard` as the canonical business hub; it is a legacy alias.
 - Keep `FeedbackQueue` staff-only and reserve `/Feedback` for customer submission links.
 - Keep invoice creation manual unless a service explicitly says otherwise.
