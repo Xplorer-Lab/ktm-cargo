@@ -99,6 +99,18 @@ function PagesContent() {
           <Route path="/ClientPortal" element={<ClientPortal />} />
           <Route path="/Feedback" element={<Feedback />} />
           <Route
+            path="/operation"
+            element={<Navigate to={appendE2EFixture('/Operations', location.search)} replace />}
+          />
+          <Route
+            path="/shipment"
+            element={<Navigate to={appendE2EFixture('/Shipments', location.search)} replace />}
+          />
+          <Route
+            path="/invoice"
+            element={<Navigate to={appendE2EFixture('/Invoices', location.search)} replace />}
+          />
+          <Route
             path="/VendorRegistration"
             element={
               <GuestOnlyRoute>

@@ -1,6 +1,6 @@
 # KTM Cargo Express
 
-KTM Cargo Express is the logistics, shopping proxy, procurement, invoicing, and customer/vendor portal system for the business.
+KTM Cargo Express is the staff-led logistics operating system for the business. It supports inquiry handling, shopping proxy orders, cargo shipments, procurement, invoicing, after-sales follow-up, and the internal workflow that connects them.
 
 ## Start Here
 
@@ -20,10 +20,10 @@ KTM Cargo Express is the logistics, shopping proxy, procurement, invoicing, and 
 
 ## What the system does
 
-- Public intake: landing page, price calculator, client portal, vendor registration
-- Staff operations: dashboard, operations hub, shipments, shopping orders, procurement, invoices, customers, vendors, inventory, reports, tasks, shipment documents, feedback, and settings
-- Portals: customer and vendor views for tracking, orders, invoices, support, and profile management
+- Public pages: landing page, price calculator, brochure-style company profile, customer feedback form, and vendor registration
+- Staff operations: operations hub, shipments, shopping orders, procurement, invoices, customers, vendors, inventory, reports, tasks, shipment documents, feedback queue, feedback analytics, and settings
+- Workflow spine: `Inquiry -> Quote -> Confirm -> Buy/Collect -> Consolidate -> Transit -> Deliver -> Reconcile`
 
 ## Notes
 
-The master workflow and module contract reference is `SYSTEM_SPEC.md`.
+The canonical workflow and module contract reference is `SYSTEM_SPEC.md`.
