@@ -3,6 +3,8 @@ import { useQuery } from '@tanstack/react-query';
 import { useMemo } from 'react';
 import { STATUSES } from '@/config/constants';
 
+const EMPTY_ARRAY = [];
+
 // ---------------------------------------------------------------------------
 // Business Logic Functions (Pure functions, easy to test)
 // ---------------------------------------------------------------------------
@@ -15,7 +17,7 @@ export const calculateFinancials = (shipments = [], shoppingOrders = [], expense
 
     // Total Vendor Paid
     const totalVendorPaid = shoppingOrders.reduce((sum, o) => {
-        if (o.vendor_payment_status === 'PAID') {
+        if (String(o.vendor_payment_status || '').toLowerCase() === 'paid') {
             return sum + (Number(o.vendor_cost) || Number(o.actual_product_cost) || Number(o.estimated_product_cost) || 0);
         }
         return sum;
@@ -82,10 +84,10 @@ export const useDashboardData = () => {
     const isLoading = shipmentsLoading || customersLoading || ordersLoading || expensesLoading;
 
     // Golden Rule 6: Using safe response wrapper check
-    const shipments = shipmentsRes?.success ? shipmentsRes.data : [];
-    const customers = customersRes?.success ? customersRes.data : [];
-    const shoppingOrders = ordersRes?.success ? ordersRes.data : [];
-    const expenses = expensesRes?.success ? expensesRes.data : [];
+    const shipments = shipmentsRes?.success ? shipmentsRes.data : EMPTY_ARRAY;
+    const customers = customersRes?.success ? customersRes.data : EMPTY_ARRAY;
+    const shoppingOrders = ordersRes?.success ? ordersRes.data : EMPTY_ARRAY;
+    const expenses = expensesRes?.success ? expensesRes.data : EMPTY_ARRAY;
 
     // Memoized aggregations
     const financials = useMemo(

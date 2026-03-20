@@ -199,6 +199,10 @@ export const db = {
   vendorPayouts: createEntityClient('vendor_payouts', '*'),
   companySettings: createEntityClient('company_settings', '*'),
   notificationTemplates: createEntityClient('notification_templates', '*'),
+  orderJourneys: createEntityClient('order_journeys', '*'),
+  journeyEvents: createEntityClient('journey_events', '*'),
+  supportTickets: createEntityClient('support_tickets', '*'),
+  proofOfDelivery: createEntityClient('proof_of_delivery', '*'),
 };
 
 export const api = {
@@ -231,4 +235,8 @@ export const api = {
   vendorPayouts: createSafeEntityClient('vendor_payouts', '*'),
   companySettings: createSafeEntityClient('company_settings', '*'),
   notificationTemplates: createSafeEntityClient('notification_templates', '*'),
+  orderJourneys: createSafeEntityClient('order_journeys', '*'),
+  journeyEvents: createSafeEntityClient('journey_events', '*'),
+  supportTickets: createSafeEntityClient('support_tickets', '*'),
+  proofOfDelivery: createSafeEntityClient('proof_of_delivery', '*'),
 };

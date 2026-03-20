@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { feedbackSchema } from '@/domains/core/schemas';
+import { supportTicketSchema } from '@/domains/core/schemas';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { db } from '@/api/db';
 import { sendMessengerNotification } from '@/api/integrations';
@@ -25,7 +25,6 @@ import {
   Phone,
   Mail,
   Clock,
-  CheckCircle,
   HelpCircle,
   AlertTriangle,
   FileQuestion,
@@ -47,7 +46,7 @@ export default function CustomerSupport({ customer, user }) {
   const { handleError, handleValidationError } = useErrorHandler();
   
   const form = useForm({
-    resolver: zodResolver(feedbackSchema.partial()),
+    resolver: zodResolver(supportTicketSchema.partial()),
     defaultValues: {
       category: '',
       comment: '',
@@ -63,9 +62,9 @@ export default function CustomerSupport({ customer, user }) {
     queryKey: ['support-tickets', customer?.id, user?.email],
     queryFn: async () => {
       if (customer?.id) {
-        return db.feedback.filter({ customer_id: customer.id }, '-created_date');
+        return db.supportTickets.filter({ customer_id: customer.id }, '-created_date');
       } else if (user?.email) {
-        return db.feedback.filter({ customer_email: user.email }, '-created_date');
+        return db.supportTickets.filter({ customer_email: user.email }, '-created_date');
       }
       return [];
     },
@@ -83,18 +82,18 @@ export default function CustomerSupport({ customer, user }) {
           customer_name: customer?.name || user?.full_name,
           customer_email: customer?.email || user?.email,
           category: issueType,
-          comment: `${trackingNumber ? `Tracking: ${trackingNumber}\n\n` : ''}${message}`,
+          message: `${trackingNumber ? `Tracking: ${trackingNumber}\n\n` : ''}${message}`,
+          subject,
+          priority: issueType === 'delivery' ? 'high' : 'medium',
           status: 'pending',
+          source: 'portal',
         };
         
-        const validatedData = feedbackSchema.partial().parse(ticketData);
+        const validatedData = supportTicketSchema.partial().parse(ticketData);
 
-        // Create feedback/ticket
-        await db.feedback.create({
+        // Create support ticket
+        await db.supportTickets.create({
           ...validatedData,
-          feedback_type: issueType,
-          subject: subject,
-          message: ticketData.comment,
           ticket_number: ticketNumber,
         });
 

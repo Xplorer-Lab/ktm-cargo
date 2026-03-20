@@ -31,23 +31,51 @@ import { canAccessPage, getUserRoleLabel, ROLE_COLORS } from '@/components/auth/
 import { shouldBypassAppLayout } from '@/pages/layoutRouteGuards';
 import { startTour, hasTour } from '@/components/common/TourGuide';
 
-const navItems = [
-  { name: 'Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
-  { name: 'Shipments', icon: Package, page: 'Shipments' },
-  { name: 'Documents', icon: FileText, page: 'ShipmentDocuments' },
-  { name: 'Shopping Orders', icon: ShoppingBag, page: 'ShoppingOrders' },
-  { name: 'Invoices', icon: FileText, page: 'Invoices' },
-  { name: 'Customers', icon: Users, page: 'Customers' },
-  { name: 'Segments & Campaigns', icon: Target, page: 'CustomerSegments' },
-  { name: 'Feedback', icon: Star, page: 'FeedbackAnalytics' },
-  { name: 'Inventory', icon: ClipboardList, page: 'Inventory', feature: 'enableInventory' },
-  { name: 'Procurement', icon: Package, page: 'Procurement', feature: 'enableProcurement' },
-  { name: 'Vendors', icon: Users, page: 'Vendors' },
-  { name: 'Tasks', icon: ClipboardList, page: 'Tasks', feature: 'enableTasks' },
-  { name: 'Reports', icon: BarChart3, page: 'Reports' },
-  { name: 'Calculator', icon: Calculator, page: 'PriceCalculator' },
-  { name: 'Client Portal', icon: Users, page: 'ClientPortal' },
-  { name: 'Settings', icon: Settings, page: 'Settings' },
+const navSections = [
+  {
+    title: 'Primary Areas',
+    items: [
+      {
+        name: 'Operations Console',
+        icon: LayoutDashboard,
+        page: 'Dashboard',
+        href: createPageUrl('Operations'),
+        activePages: ['Operations'],
+      },
+      { name: 'Client Portal', icon: Users, page: 'ClientPortal' },
+      { name: 'Settings', icon: Settings, page: 'Settings' },
+    ],
+  },
+  {
+    title: 'Workflow Stages',
+    items: [
+      { name: 'Inquiry & Quotes', icon: Calculator, page: 'PriceCalculator' },
+      { name: 'Shopping Intake', icon: ShoppingBag, page: 'ShoppingOrders' },
+      {
+        name: 'Consolidation & Booking',
+        icon: Package,
+        page: 'Procurement',
+        feature: 'enableProcurement',
+      },
+      { name: 'Transit & Delivery', icon: Plane, page: 'Shipments' },
+      { name: 'Invoice & Reconcile', icon: FileText, page: 'Invoices' },
+      { name: 'Feedback Analytics', icon: Star, page: 'FeedbackAnalytics' },
+    ],
+  },
+  {
+    title: 'Supporting Modules',
+    items: [
+      { name: 'Feedback Queue', icon: Star, page: 'Feedback' },
+      { name: 'Shipment Documents', icon: FileText, page: 'ShipmentDocuments' },
+      { name: 'Customers', icon: Users, page: 'Customers' },
+      { name: 'Vendors', icon: Users, page: 'Vendors' },
+      { name: 'Inventory', icon: ClipboardList, page: 'Inventory', feature: 'enableInventory' },
+      { name: 'Segments & Campaigns', icon: Target, page: 'CustomerSegments' },
+      { name: 'Reports', icon: BarChart3, page: 'Reports' },
+      { name: 'Tasks', icon: ClipboardList, page: 'Tasks', feature: 'enableTasks' },
+      { name: 'Legacy Dashboard', icon: LayoutDashboard, page: 'Dashboard' },
+    ],
+  },
 ];
 
 export default function Layout({ children, currentPageName }) {
@@ -129,33 +157,49 @@ export default function Layout({ children, currentPageName }) {
           </div>
 
           {/* Navigation */}
-          <nav className="flex-1 px-4 py-6 space-y-1 overflow-y-auto mt-16 lg:mt-0">
-            {navItems
-              .filter((item) => canAccessPage(user, item.page))
-              .filter((item) => !item.feature || user?.features?.[item.feature])
-              .map((item) => {
-                const isActive = currentPageName === item.page;
-                return (
-                  <Link
-                    key={item.page}
-                    to={createPageUrl(item.page)}
-                    onClick={() => setSidebarOpen(false)}
-                    className={`
-                    flex items-center gap-3 px-4 py-3 rounded-xl transition-all
-                    ${isActive
-                        ? 'bg-blue-50 text-blue-700 font-medium'
-                        : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
-                      }
-                  `}
-                  >
-                    <item.icon
-                      className={`w-5 h-5 ${isActive ? 'text-blue-600' : 'text-slate-400'}`}
-                    />
-                    <span>{item.name}</span>
-                    {isActive && <ChevronRight className="w-4 h-4 ml-auto text-blue-400" />}
-                  </Link>
-                );
-              })}
+          <nav className="flex-1 px-4 py-6 space-y-4 overflow-y-auto mt-16 lg:mt-0">
+            {navSections.map((section) => {
+              const visibleItems = section.items
+                .filter((item) => canAccessPage(user, item.page))
+                .filter((item) => !item.feature || user?.features?.[item.feature]);
+
+              if (visibleItems.length === 0) return null;
+
+              return (
+                <div key={section.title}>
+                  <p className="px-4 pb-2 text-[11px] font-semibold uppercase tracking-wider text-slate-400">
+                    {section.title}
+                  </p>
+                  <div className="space-y-1">
+                    {visibleItems.map((item) => {
+                      const isActive = item.activePages
+                        ? item.activePages.includes(currentPageName)
+                        : currentPageName === item.page;
+                      return (
+                        <Link
+                          key={`${section.title}-${item.name}`}
+                          to={item.href || createPageUrl(item.page)}
+                          onClick={() => setSidebarOpen(false)}
+                          className={`
+                          flex items-center gap-3 px-4 py-3 rounded-xl transition-all
+                          ${isActive
+                              ? 'bg-blue-50 text-blue-700 font-medium'
+                              : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'
+                            }
+                        `}
+                        >
+                          <item.icon
+                            className={`w-5 h-5 ${isActive ? 'text-blue-600' : 'text-slate-400'}`}
+                          />
+                          <span>{item.name}</span>
+                          {isActive && <ChevronRight className="w-4 h-4 ml-auto text-blue-400" />}
+                        </Link>
+                      );
+                    })}
+                  </div>
+                </div>
+              );
+            })}
           </nav>
 
           {/* User Section */}

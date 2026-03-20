@@ -4,6 +4,7 @@ import { BrowserRouter as Router, Route, Routes, useLocation, Navigate } from 'r
 import { Loader2 } from 'lucide-react';
 
 const Dashboard = lazy(() => import('./Dashboard'));
+const Operations = lazy(() => import('./Operations'));
 const Shipments = lazy(() => import('./Shipments'));
 const Customers = lazy(() => import('./Customers'));
 const ShoppingOrders = lazy(() => import('./ShoppingOrders'));
@@ -26,6 +27,7 @@ const NotFound = lazy(() => import('./NotFound'));
 
 const PAGES = {
   Dashboard,
+  Operations,
   Shipments,
   Customers,
   ShoppingOrders,
@@ -76,7 +78,7 @@ function GuestOnlyRoute({ children }) {
   const { user, loading } = useUser();
   if (loading) return null;
   if (user && (user.role === 'staff' || user.role === 'admin')) {
-    return <Navigate to="/Dashboard" replace />;
+    return <Navigate to="/Operations" replace />;
   }
   return children;
 }
@@ -97,6 +99,14 @@ function PagesContent() {
           <Route path="/PriceCalculator" element={<PriceCalculator />} />
 
           {/* Protected Routes */}
+          <Route
+            path="/Operations"
+            element={
+              <ProtectedRoute pageName="Dashboard">
+                <Operations />
+              </ProtectedRoute>
+            }
+          />
           <Route
             path="/Dashboard"
             element={

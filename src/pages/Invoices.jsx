@@ -77,6 +77,11 @@ const TYPE_CONFIG = {
     color: 'bg-purple-100 text-purple-800',
     icon: ShoppingBag,
   },
+  vendor_bill: {
+    label: 'Vendor Bill',
+    color: 'bg-amber-100 text-amber-800',
+    icon: FileText,
+  },
 };
 
 export default function Invoices() {
@@ -230,9 +235,8 @@ export default function Invoices() {
     return invoices.filter((invoice) => {
       // Type filter — treat null/undefined invoice_type as 'shipment'
       if (typeFilter !== 'all') {
-        const isShoppingOrder = invoice.invoice_type === 'shopping_order';
-        if (typeFilter === 'shipment' && isShoppingOrder) return false;
-        if (typeFilter === 'shopping_order' && !isShoppingOrder) return false;
+        const invoiceType = invoice.invoice_type || 'shipment';
+        if (invoiceType !== typeFilter) return false;
       }
 
       // Status filter
@@ -478,6 +482,7 @@ export default function Invoices() {
                   <SelectItem value="all">All Types</SelectItem>
                   <SelectItem value="shipment">Shipment</SelectItem>
                   <SelectItem value="shopping_order">Shopping</SelectItem>
+                  <SelectItem value="vendor_bill">Vendor Bill</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -536,7 +541,6 @@ export default function Invoices() {
             {filteredInvoices.map((invoice) => {
               const statusConfig = STATUS_CONFIG[invoice.status] || STATUS_CONFIG.draft;
               const typeConfig = TYPE_CONFIG[invoice.invoice_type] || TYPE_CONFIG.shipment;
-              const StatusIcon = statusConfig.icon;
               const TypeIcon = typeConfig.icon;
               const isOverdue = invoice.due_date && new Date(invoice.due_date) < new Date() &&
                 invoice.status !== 'draft' && invoice.status !== 'paid' && invoice.status !== 'void';
@@ -740,4 +744,3 @@ export default function Invoices() {
     </div>
   );
 }
-
