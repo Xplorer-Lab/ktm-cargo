@@ -6,6 +6,7 @@ routing and the client portal workflow.
 - Script: `scripts/playwright/client_portal_workflow.sh`
 - Runner: Codex Playwright wrapper (`$PWCLI`)
 - Artifacts: `output/playwright/client-portal-workflow/`
+- Deterministic regression suite: `e2e/routing-smoke.spec.js`
 
 ## Run steps
 
@@ -27,6 +28,12 @@ npm run playwright:client-portal
 PORTAL_EMAIL="you@example.com" \
 PORTAL_PASSWORD="your-password" \
 npm run playwright:client-portal
+```
+
+4. To run the deterministic regression smoke suite:
+
+```bash
+npm run test:e2e
 ```
 
 ## Optional environment variables

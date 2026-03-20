@@ -2,9 +2,12 @@ const LAYOUT_BYPASS_EXACT_PATHS = new Set(['/', '/PriceCalculator']);
 const LAYOUT_BYPASS_PREFIXES = ['/ClientPortal', '/VendorRegistration'];
 
 export function shouldBypassAppLayout(pathname = '') {
-  if (LAYOUT_BYPASS_EXACT_PATHS.has(pathname)) {
+  const normalizedPathname =
+    pathname.length > 1 && pathname.endsWith('/') ? pathname.slice(0, -1) : pathname;
+
+  if (LAYOUT_BYPASS_EXACT_PATHS.has(normalizedPathname)) {
     return true;
   }
 
-  return LAYOUT_BYPASS_PREFIXES.some((prefix) => pathname.startsWith(prefix));
+  return LAYOUT_BYPASS_PREFIXES.some((prefix) => normalizedPathname.startsWith(prefix));
 }

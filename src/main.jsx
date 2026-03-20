@@ -3,6 +3,10 @@ import '@/index.css';
 import * as Sentry from '@sentry/react';
 import LogRocket from 'logrocket';
 
+const e2eFixture =
+  typeof window !== 'undefined'
+    ? new URL(window.location.href).searchParams.get('__e2e')?.trim() || ''
+    : '';
 const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL || '').trim();
 const supabaseAnonKey = (import.meta.env.VITE_SUPABASE_ANON_KEY || '').trim();
 const hasSupabaseEnv =
@@ -11,6 +15,7 @@ const hasSupabaseEnv =
   (supabaseUrl.startsWith('https://') || supabaseUrl.startsWith('http://')) &&
   !supabaseUrl.includes('your_project_url') &&
   !supabaseAnonKey.includes('your_anon_key');
+const canBootApp = Boolean(hasSupabaseEnv || e2eFixture);
 
 function SetupRequired() {
   return (
@@ -119,7 +124,7 @@ if (
 
 const root = ReactDOM.createRoot(document.getElementById('root'));
 
-if (!hasSupabaseEnv) {
+if (!canBootApp) {
   root.render(<SetupRequired />);
 } else {
   import('@/App.jsx').then(({ default: App }) => {
