@@ -1,150 +1,78 @@
-# Deployment Guide — KTM Cargo Express
+# Deployment Guide
+
+## What this guide covers
+
+This repo now deploys to **Vercel only** for preview and production. Supabase provides auth and data.
 
 ## Prerequisites
 
 - Node.js 20+
 - npm
-- Supabase project (with database, auth, and optionally Edge Functions)
-- Hosting platform (Vercel, Netlify, Fly.io, or static hosting)
+- A Supabase project
+- A Vercel project linked to this repository
 
-## Required Secrets / Environment Variables
+## Runtime environment variables
 
-| Variable                      | Where                          | Description                                                |
-| ----------------------------- | ------------------------------ | ---------------------------------------------------------- |
-| `VITE_SUPABASE_URL`           | Frontend build                 | Supabase project URL                                       |
-| `VITE_SUPABASE_ANON_KEY`      | Frontend build                 | Supabase anon/publishable key (browser-safe)               |
-| `VITE_SENTRY_DSN`             | Frontend build                 | Sentry DSN for error tracking (optional)                   |
-| `VITE_LOGROCKET_APP_ID`       | Frontend build                 | LogRocket app ID (optional)                                |
-| `VITE_STRIPE_PUBLISHABLE_KEY` | Frontend build                 | Stripe publishable key `pk_live_…` (optional, for billing) |
-| `STRIPE_SECRET_KEY`           | Supabase Edge Function secrets | Stripe secret key `sk_live_…` — **never in frontend**      |
-| `STRIPE_WEBHOOK_SECRET`       | Supabase Edge Function secrets | Stripe webhook signing secret `whsec_…`                    |
-| `SUPABASE_SERVICE_ROLE_KEY`   | Migration scripts only         | For running migrations programmatically                    |
+Set these in Vercel and in any local `.env` file:
 
-> **Security:** `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, and `SUPABASE_SERVICE_ROLE_KEY`
-> must **never** appear in the frontend build or in the repository.
+| Variable                 | Required | Purpose                  |
+| ------------------------ | -------- | ------------------------ |
+| `VITE_SUPABASE_URL`      | Yes      | Supabase project URL     |
+| `VITE_SUPABASE_ANON_KEY` | Yes      | Supabase anon/public key |
+| `VITE_SENTRY_DSN`        | No       | Frontend error tracking  |
+| `VITE_LOGROCKET_APP_ID`  | No       | Session replay           |
 
-## Step-by-step Deployment
+If monetization is enabled, keep the Stripe values in Supabase Edge Function secrets only:
 
-### 1. Apply database migrations
+| Variable                | Required | Purpose                         |
+| ----------------------- | -------- | ------------------------------- |
+| `STRIPE_SECRET_KEY`     | No       | Stripe secret key               |
+| `STRIPE_WEBHOOK_SECRET` | No       | Stripe webhook signature secret |
 
-Follow the ordered runbook in [`migrations/README.md`](migrations/README.md).
-At minimum, apply the **Phase 3 (P0)** security migrations, including
-`add_portal_auth_identity_links.sql` and `add_client_portal_rls.sql` for
-customer/vendor portal access.
+## GitHub Actions and Vercel secrets
 
-Verify with:
+For PR previews and production deploys through GitHub Actions, set:
 
-```bash
-node scripts/verify_p0_migrations.mjs
-```
+- `VERCEL_TOKEN`
+- `VERCEL_ORG_ID`
+- `VERCEL_PROJECT_ID`
 
-If monetization is enabled, also apply:
+Optional workflow secrets:
 
-```bash
-# In Supabase SQL Editor:
-migrations/add_subscription_fields.sql
-```
+- `SLACK_WEBHOOK_URL`
+- `SENTRY_AUTH_TOKEN`
+- `SENTRY_ORG`
+- `SENTRY_PROJECT`
 
-### 2. Deploy Supabase Edge Functions (if using Stripe)
+## Deploy flow
 
-```bash
-# Install Supabase CLI if not already
-npm i -g supabase
-
-# Link to your project
-supabase link --project-ref <your-project-ref>
-
-# Set secrets
-supabase secrets set STRIPE_SECRET_KEY=sk_live_…
-supabase secrets set STRIPE_WEBHOOK_SECRET=whsec_…
-
-# Deploy functions
-supabase functions deploy create-checkout
-supabase functions deploy create-portal
-supabase functions deploy stripe-webhook
-```
-
-Then configure Stripe to send webhooks to:
-
-```
-https://<your-project-ref>.supabase.co/functions/v1/stripe-webhook
-```
-
-Events to enable:
-
-- `checkout.session.completed`
-- `customer.subscription.created`
-- `customer.subscription.updated`
-- `customer.subscription.deleted`
-- `invoice.payment_succeeded`
-- `invoice.payment_failed`
-
-### 3. Build the frontend
+1. Apply database migrations using [`migrations/README.md`](migrations/README.md).
+2. Confirm the runtime env vars are present in Vercel.
+3. Build locally:
 
 ```bash
 npm ci
 npm run build
 ```
 
-The output is in `dist/` — a static SPA.
+4. Deploy through Vercel or by pushing to GitHub:
+   - Pull requests create preview deployments.
+   - `main` creates production deployments.
 
-### 4. Deploy to hosting
+## Post-deploy checks
 
-**Vercel (recommended):**
-
-```bash
-npx vercel --prod
-```
-
-Or connect the GitHub repo in the Vercel dashboard. Set the env vars above in
-Vercel → Settings → Environment Variables.
-
-**Netlify:**
-
-```bash
-npx netlify deploy --prod --dir=dist
-```
-
-**Static hosting / Docker:**
-
-Serve the `dist/` folder with any HTTP server. For SPA routing, configure
-all paths to fall back to `index.html`.
-
-### 5. Post-deploy verification
-
-1. Open the app and confirm Supabase connection works (login screen loads)
-2. Sign in and verify profile creation (auth self-heal)
-3. Check Sentry for any errors
-4. If Stripe is enabled: test a checkout flow with Stripe test mode
-
-## CI / CD
-
-GitHub Actions workflows are in `.github/workflows/`:
-
-| Workflow       | Trigger                   | What it does                                      |
-| -------------- | ------------------------- | ------------------------------------------------- |
-| `ci.yml`       | Push & PR to main/develop | Lint, test, build, security scan, bundle analysis |
-| `pr-check.yml` | PR opened/updated         | PR size labels, commit lint, build preview        |
-| `deploy.yml`   | (configure as needed)     | Production deployment                             |
-| `release.yml`  | (configure as needed)     | Release automation                                |
-
-All workflows require these GitHub Secrets:
-
-- `VITE_SUPABASE_URL`
-- `VITE_SUPABASE_ANON_KEY`
-- `CODECOV_TOKEN` (optional, for coverage)
-- `SNYK_TOKEN` (optional, for security scan)
-- `VERCEL_TOKEN`, `VERCEL_ORG_ID`, `VERCEL_PROJECT_ID` (optional, for preview deploys)
+- App loads with Supabase credentials present
+- Auth routes work for staff, customer, and vendor users
+- The client portal opens and can resolve the current user profile
+- Preview and production URLs match the branch being deployed
 
 ## Rollback
 
-1. Vercel/Netlify: Redeploy a previous commit from the dashboard
-2. Database: Migrations are additive (no destructive changes); to undo, write a reverse migration
-3. Edge Functions: `supabase functions deploy <name>` with the previous version
+- Vercel: redeploy a previous successful commit
+- Supabase: apply a reverse migration only if you truly need to undo schema changes
 
-## Monitoring
+## Related docs
 
-- **Sentry** — Error tracking and performance (configured via `VITE_SENTRY_DSN`)
-- **LogRocket** — Session replay (configured via `VITE_LOGROCKET_APP_ID`)
-- **Supabase Dashboard** — Database, auth, and edge function logs
-- **Stripe Dashboard** — Payment and webhook event logs
+- [`SYSTEM_SPEC.md`](SYSTEM_SPEC.md)
+- [`migrations/README.md`](migrations/README.md)
+- [`scripts/playwright/README.md`](scripts/playwright/README.md)

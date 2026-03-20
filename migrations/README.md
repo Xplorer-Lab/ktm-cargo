@@ -4,6 +4,10 @@
 > environment or restoring from backup. Run each file in the
 > **Supabase SQL Editor** (Dashboard → SQL Editor → New query).
 
+> **Canonical workflow contract:** The active order-flow spine lives in
+> `add_order_journey_spine_and_contract_normalization.sql`. It is part of the
+> current system model, not a one-off repair script.
+
 ## Migration order (full)
 
 Order matters — later migrations depend on objects created by earlier ones.
@@ -43,11 +47,17 @@ Order matters — later migrations depend on objects created by earlier ones.
 | 19  | `add_portal_auth_identity_links.sql`       | Add `auth_user_id` linkage + uniqueness for customers/vendors                        |
 | 20  | `add_client_portal_rls.sql`                | **Customer + Vendor portal self-access policies** (required for Client Portal flows) |
 
-### Phase 4 — Monetization (optional, if using Stripe)
+### Phase 4 — Workflow spine & contract normalization (CURRENT MODEL)
+
+| #   | File                                                     | Purpose                                                                     |
+| --- | -------------------------------------------------------- | --------------------------------------------------------------------------- |
+| 21  | `add_order_journey_spine_and_contract_normalization.sql` | Canonical journey spine, nullable journey links, and contract normalization |
+
+### Phase 5 — Monetization (optional, if using Stripe)
 
 | #   | File                          | Purpose                                                                          |
 | --- | ----------------------------- | -------------------------------------------------------------------------------- |
-| 21  | `add_subscription_fields.sql` | Add `stripe_customer_id`, `subscription_status`, `subscription_tier` to profiles |
+| 22  | `add_subscription_fields.sql` | Add `stripe_customer_id`, `subscription_status`, `subscription_tier` to profiles |
 
 ### Verification
 
@@ -65,13 +75,13 @@ critical P0 objects exist, including portal helpers (`my_customer_id`,
 
 ```bash
 # 1. Clone repo and install
-git clone <repo> && cd ktm-cargo-express && npm install
+git clone <repo> && cd ktm-cargo && npm install
 
 # 2. Copy env and fill in Supabase URL + anon key
 cp .env.example .env
 
 # 3. Apply all migrations in order (Supabase SQL Editor)
-#    → Paste each .sql file from Phase 1 → 2 → 3 in sequence
+#    → Paste each .sql file from Phase 1 → 4 in sequence
 
 # 4. Verify P0 migrations
 node scripts/verify_p0_migrations.mjs
@@ -87,5 +97,6 @@ npm run dev
 - After each migration, verify in the Supabase Dashboard that the expected
   tables / functions / triggers exist.
 - Remaining alignment / audit migrations (`align_db_with_json.sql`,
-  `master_schema_alignment.sql`, etc.) are one-time fixes; apply only if
-  your schema is behind the canonical JSON definition.
+  `master_schema_alignment.sql`, `complete_schema_fix.sql`, etc.) are
+  one-time fixes; apply only if your schema is behind the canonical JSON
+  definition or you are recovering an older database.

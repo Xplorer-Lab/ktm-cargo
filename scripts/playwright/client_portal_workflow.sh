@@ -93,10 +93,17 @@ async (page) => {
   await page.waitForLoadState('domcontentloaded');
   await page.waitForTimeout(400);
 
-  const brand = page.getByText(/KTM Cargo/i).first();
-  const brandVisible = await brand.isVisible().catch(() => false);
-  if (!brandVisible) {
-    throw new Error('Landing page did not render KTM Cargo branding.');
+  const setupRequired = page.getByRole('heading', { name: /^Setup required$/i }).first();
+  if (await setupRequired.isVisible().catch(() => false)) {
+    throw new Error(
+      'The app is showing the setup-required screen. Set VITE_SUPABASE_URL and VITE_SUPABASE_ANON_KEY before running the smoke test.'
+    );
+  }
+
+  const signInLink = page.getByRole('link', { name: /^Sign In$/i }).first();
+  const signInVisible = await signInLink.isVisible().catch(() => false);
+  if (!signInVisible) {
+    throw new Error('Landing page did not render the public Sign In entry point.');
   }
 
   await page.screenshot({ path: '01-landing.png', fullPage: true });
@@ -122,7 +129,7 @@ async (page) => {
   }
 
   if (!clicked) {
-    await page.goto(new URL('/ClientPortal', page.url()).toString(), {
+    await page.goto(`${page.url().replace(/\/$/, '')}/ClientPortal`, {
       waitUntil: 'domcontentloaded',
     });
   }
