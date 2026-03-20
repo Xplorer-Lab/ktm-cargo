@@ -14,7 +14,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -58,8 +64,20 @@ const staffFormSchema = z.object({
 });
 
 const roleOptions = [
-  { value: 'finance_lead', label: 'Finance Lead', description: 'Financial operations & reporting', icon: TrendingUp, color: 'from-emerald-500 to-teal-600' },
-  { value: 'marketing_manager', label: 'Marketing Manager', description: 'Customer relations & campaigns', icon: Users, color: 'from-blue-500 to-indigo-600' },
+  {
+    value: 'finance_lead',
+    label: 'Finance Lead',
+    description: 'Financial operations & reporting',
+    icon: TrendingUp,
+    color: 'from-emerald-500 to-teal-600',
+  },
+  {
+    value: 'marketing_manager',
+    label: 'Marketing Manager',
+    description: 'Customer relations & campaigns',
+    icon: Users,
+    color: 'from-blue-500 to-indigo-600',
+  },
 ];
 
 export default function StaffManagement() {
@@ -125,7 +143,10 @@ export default function StaffManagement() {
       !searchTerm ||
       user.full_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
       user.email?.toLowerCase().includes(searchTerm.toLowerCase());
-    const matchesRole = filterRole === 'all' || user.staff_role === filterRole || (filterRole === 'admin' && user.role === 'admin');
+    const matchesRole =
+      filterRole === 'all' ||
+      user.staff_role === filterRole ||
+      (filterRole === 'admin' && user.role === 'admin');
     return matchesSearch && matchesRole;
   });
 
@@ -255,7 +276,8 @@ export default function StaffManagement() {
                 const roleColor =
                   user.role === 'admin'
                     ? 'bg-gradient-to-r from-purple-100 to-indigo-100 text-purple-800 dark:from-purple-900/50 dark:to-indigo-900/50 dark:text-purple-300'
-                    : ROLE_COLORS[user.staff_role] || 'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300';
+                    : ROLE_COLORS[user.staff_role] ||
+                      'bg-slate-100 text-slate-800 dark:bg-slate-700 dark:text-slate-300';
                 const roleLabel =
                   user.role === 'admin'
                     ? 'Managing Director'
@@ -265,19 +287,21 @@ export default function StaffManagement() {
                   <div
                     key={user.id}
                     className={cn(
-                      "flex items-center justify-between p-4 rounded-xl border transition-all hover:shadow-md group",
+                      'flex items-center justify-between p-4 rounded-xl border transition-all hover:shadow-md group',
                       user.is_active === false
                         ? 'bg-slate-50 dark:bg-slate-800/50 opacity-60 border-slate-200 dark:border-slate-700'
                         : 'bg-white dark:bg-slate-800 border-slate-100 dark:border-slate-700'
                     )}
                   >
                     <div className="flex items-center gap-4">
-                      <div className={cn(
-                        "w-12 h-12 rounded-xl flex items-center justify-center text-lg font-semibold transition-transform group-hover:scale-105",
-                        user.role === 'admin'
-                          ? 'bg-gradient-to-br from-purple-500 to-indigo-600 text-white'
-                          : 'bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600 text-slate-600 dark:text-slate-300'
-                      )}>
+                      <div
+                        className={cn(
+                          'w-12 h-12 rounded-xl flex items-center justify-center text-lg font-semibold transition-transform group-hover:scale-105',
+                          user.role === 'admin'
+                            ? 'bg-gradient-to-br from-purple-500 to-indigo-600 text-white'
+                            : 'bg-gradient-to-br from-slate-100 to-slate-200 dark:from-slate-700 dark:to-slate-600 text-slate-600 dark:text-slate-300'
+                        )}
+                      >
                         {user.full_name?.charAt(0) || user.email?.charAt(0)?.toUpperCase()}
                       </div>
                       <div>
@@ -285,7 +309,7 @@ export default function StaffManagement() {
                           <p className="font-semibold text-slate-900 dark:text-white">
                             {user.full_name || 'No Name'}
                           </p>
-                          <Badge className={cn("font-medium", roleColor)}>
+                          <Badge className={cn('font-medium', roleColor)}>
                             {user.role === 'admin' && <Crown className="w-3 h-3 mr-1" />}
                             {roleLabel}
                           </Badge>
@@ -334,10 +358,10 @@ export default function StaffManagement() {
                             onClick={() => handleToggleActive(user)}
                             title={user.is_active === false ? 'Activate' : 'Deactivate'}
                             className={cn(
-                              "transition-colors",
+                              'transition-colors',
                               user.is_active === false
-                                ? "hover:bg-emerald-50 dark:hover:bg-emerald-900/30"
-                                : "hover:bg-amber-50 dark:hover:bg-amber-900/30"
+                                ? 'hover:bg-emerald-50 dark:hover:bg-emerald-900/30'
+                                : 'hover:bg-amber-50 dark:hover:bg-amber-900/30'
                             )}
                           >
                             {user.is_active === false ? (
@@ -369,7 +393,9 @@ export default function StaffManagement() {
                 <Users className="w-8 h-8 text-slate-400" />
               </div>
               <p className="text-slate-500 mb-4">
-                {searchTerm || filterRole !== 'all' ? 'No users match your filters' : 'No staff members yet'}
+                {searchTerm || filterRole !== 'all'
+                  ? 'No users match your filters'
+                  : 'No staff members yet'}
               </p>
               <Button onClick={() => setShowInviteForm(true)}>
                 <UserPlus className="w-4 h-4 mr-2" />
@@ -388,9 +414,7 @@ export default function StaffManagement() {
               <UserPlus className="w-5 h-5 text-blue-600" />
               Invite New Staff
             </DialogTitle>
-            <DialogDescription>
-              Send an invitation to add a new team member
-            </DialogDescription>
+            <DialogDescription>Send an invitation to add a new team member</DialogDescription>
           </DialogHeader>
           <InviteForm
             onSubmit={async (data) => {
@@ -398,7 +422,7 @@ export default function StaffManagement() {
                 await sendMessengerNotification({
                   to: data.email,
                   message: `Welcome to BKK-YGN Cargo Portal\n\nHello ${data.full_name},\nYou have been invited to join as ${ROLE_LABELS[data.staff_role]}.`,
-                  platform: 'Telegram'
+                  platform: 'Telegram',
                 });
                 AuditActions.userInvited(data.email, data.full_name, data.staff_role);
                 toast.success(`Invitation sent to ${data.email}`);
@@ -418,16 +442,14 @@ export default function StaffManagement() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete User Account?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete the user account for "
-              {userToDelete?.full_name}" ({userToDelete?.email}) and remove their access to the system. This action cannot be undone.
+              This will permanently delete the user account for "{userToDelete?.full_name}" (
+              {userToDelete?.email}) and remove their access to the system. This action cannot be
+              undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
             <AlertDialogCancel>Cancel</AlertDialogCancel>
-            <AlertDialogAction
-              onClick={handleDeleteUser}
-              className="bg-red-600 hover:bg-red-700"
-            >
+            <AlertDialogAction onClick={handleDeleteUser} className="bg-red-600 hover:bg-red-700">
               Delete User
             </AlertDialogAction>
           </AlertDialogFooter>
@@ -456,11 +478,13 @@ function InviteForm({ onSubmit, onCancel }) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 mt-4">
       <div className="space-y-2">
-        <Label>Full Name <span className="text-rose-500">*</span></Label>
+        <Label>
+          Full Name <span className="text-rose-500">*</span>
+        </Label>
         <Input
           {...register('full_name')}
           placeholder="John Doe"
-          className={cn("h-11", errors.full_name && "border-rose-500")}
+          className={cn('h-11', errors.full_name && 'border-rose-500')}
         />
         {errors.full_name && (
           <p className="text-xs text-rose-500 flex items-center gap-1">
@@ -471,12 +495,14 @@ function InviteForm({ onSubmit, onCancel }) {
       </div>
 
       <div className="space-y-2">
-        <Label>Email Address <span className="text-rose-500">*</span></Label>
+        <Label>
+          Email Address <span className="text-rose-500">*</span>
+        </Label>
         <Input
           type="email"
           {...register('email')}
           placeholder="john@company.com"
-          className={cn("h-11", errors.email && "border-rose-500")}
+          className={cn('h-11', errors.email && 'border-rose-500')}
         />
         {errors.email && (
           <p className="text-xs text-rose-500 flex items-center gap-1">
@@ -487,7 +513,9 @@ function InviteForm({ onSubmit, onCancel }) {
       </div>
 
       <div className="space-y-3">
-        <Label>Role <span className="text-rose-500">*</span></Label>
+        <Label>
+          Role <span className="text-rose-500">*</span>
+        </Label>
         <div className="grid grid-cols-1 gap-3">
           {roleOptions.map((role) => {
             const Icon = role.icon;
@@ -502,7 +530,7 @@ function InviteForm({ onSubmit, onCancel }) {
                   value={role.value}
                   className="sr-only"
                 />
-                <div className={cn("p-2.5 rounded-xl bg-gradient-to-br text-white", role.color)}>
+                <div className={cn('p-2.5 rounded-xl bg-gradient-to-br text-white', role.color)}>
                   <Icon className="w-5 h-5" />
                 </div>
                 <div className="flex-1">
@@ -517,11 +545,7 @@ function InviteForm({ onSubmit, onCancel }) {
 
       <div className="space-y-2">
         <Label>Department (Optional)</Label>
-        <Input
-          {...register('department')}
-          placeholder="e.g. Operations"
-          className="h-11"
-        />
+        <Input {...register('department')} placeholder="e.g. Operations" className="h-11" />
       </div>
 
       <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-xl border border-blue-200 dark:border-blue-800">

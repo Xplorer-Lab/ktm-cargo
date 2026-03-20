@@ -614,43 +614,43 @@ export default function WeightAllocationManager({
               {/* Profit Summary */}
               {(getLinkedShipments(selectedPO.id).length > 0 ||
                 getLinkedShoppingOrders(selectedPO.id).length > 0) && (
-                  <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
-                    <h4 className="font-medium text-emerald-800 mb-2">Profit Summary for this PO</h4>
-                    {(() => {
-                      const profitData = calculatePOProfit(selectedPO);
-                      const margin =
-                        profitData.revenue > 0
-                          ? ((profitData.profit / profitData.revenue) * 100).toFixed(1)
-                          : 0;
-                      return (
-                        <div className="grid grid-cols-4 gap-4 text-sm">
-                          <div>
-                            <p className="text-emerald-600">Total Revenue</p>
-                            <p className="font-bold text-emerald-900">
-                              ฿{profitData.revenue.toLocaleString()}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-emerald-600">Vendor Cost</p>
-                            <p className="font-bold text-rose-600">
-                              ฿{profitData.cost.toLocaleString()}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-emerald-600">Net Profit</p>
-                            <p className="font-bold text-emerald-900">
-                              ฿{profitData.profit.toLocaleString()}
-                            </p>
-                          </div>
-                          <div>
-                            <p className="text-emerald-600">Margin</p>
-                            <p className="font-bold text-emerald-900">{margin}%</p>
-                          </div>
+                <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
+                  <h4 className="font-medium text-emerald-800 mb-2">Profit Summary for this PO</h4>
+                  {(() => {
+                    const profitData = calculatePOProfit(selectedPO);
+                    const margin =
+                      profitData.revenue > 0
+                        ? ((profitData.profit / profitData.revenue) * 100).toFixed(1)
+                        : 0;
+                    return (
+                      <div className="grid grid-cols-4 gap-4 text-sm">
+                        <div>
+                          <p className="text-emerald-600">Total Revenue</p>
+                          <p className="font-bold text-emerald-900">
+                            ฿{profitData.revenue.toLocaleString()}
+                          </p>
                         </div>
-                      );
-                    })()}
-                  </div>
-                )}
+                        <div>
+                          <p className="text-emerald-600">Vendor Cost</p>
+                          <p className="font-bold text-rose-600">
+                            ฿{profitData.cost.toLocaleString()}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-emerald-600">Net Profit</p>
+                          <p className="font-bold text-emerald-900">
+                            ฿{profitData.profit.toLocaleString()}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-emerald-600">Margin</p>
+                          <p className="font-bold text-emerald-900">{margin}%</p>
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+              )}
 
               <div className="flex gap-3">
                 <Button variant="outline" onClick={() => setSelectedPO(null)} className="flex-1">
@@ -750,16 +750,16 @@ export default function WeightAllocationManager({
                     <SelectContent>
                       {allocationType === 'shipment'
                         ? unallocatedShipments.map((s) => (
-                          <SelectItem key={s.id} value={s.id}>
-                            {s.tracking_number} - {s.customer_name} ({s.weight_kg} kg)
-                          </SelectItem>
-                        ))
+                            <SelectItem key={s.id} value={s.id}>
+                              {s.tracking_number} - {s.customer_name} ({s.weight_kg} kg)
+                            </SelectItem>
+                          ))
                         : unallocatedShoppingOrders.map((s) => (
-                          <SelectItem key={s.id} value={s.id}>
-                            {s.order_number} - {s.customer_name} (
-                            {s.actual_weight || s.estimated_weight} kg)
-                          </SelectItem>
-                        ))}
+                            <SelectItem key={s.id} value={s.id}>
+                              {s.order_number} - {s.customer_name} (
+                              {s.actual_weight || s.estimated_weight} kg)
+                            </SelectItem>
+                          ))}
                     </SelectContent>
                   </Select>
                 )}

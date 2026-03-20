@@ -35,7 +35,9 @@ export function getStripe() {
  * @returns {Promise<void>}
  */
 export async function redirectToCheckout(priceId, successUrl, cancelUrl) {
-  const { data: { session } } = await supabase.auth.getSession();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
   if (!session) throw new Error('You must be logged in to subscribe.');
 
   const { data, error } = await supabase.functions.invoke('create-checkout', {
@@ -58,7 +60,9 @@ export async function redirectToCheckout(priceId, successUrl, cancelUrl) {
  * @returns {Promise<void>}
  */
 export async function redirectToCustomerPortal() {
-  const { data: { session } } = await supabase.auth.getSession();
+  const {
+    data: { session },
+  } = await supabase.auth.getSession();
   if (!session) throw new Error('You must be logged in to manage your subscription.');
 
   const { data, error } = await supabase.functions.invoke('create-portal', {
@@ -80,7 +84,9 @@ export async function redirectToCustomerPortal() {
  * @returns {Promise<{ tier: string, status: string, currentPeriodEnd: string|null }>}
  */
 export async function getSubscriptionStatus() {
-  const { data: { user } } = await supabase.auth.getUser();
+  const {
+    data: { user },
+  } = await supabase.auth.getUser();
   if (!user) return { tier: 'free', status: 'none', currentPeriodEnd: null };
 
   const { data: profile } = await supabase

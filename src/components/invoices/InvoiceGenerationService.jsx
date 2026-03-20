@@ -1,6 +1,6 @@
 /**
  * Invoice Generation Utilities
- * 
+ *
  * These are helper functions for creating invoices from shipments and orders.
  * Invoices should be created manually by staff, not auto-generated.
  */
@@ -29,6 +29,8 @@ export async function generateVendorPayout(_shipment, _invoice, _vendorOrder, _v
  * Invoices should be created manually through the Invoices page
  */
 export async function processShipmentForInvoicing(shipment, customers, vendorOrders, vendors) {
-  console.warn('processShipmentForInvoicing is deprecated. Create invoices manually from the Invoices page.');
+  console.warn(
+    'processShipmentForInvoicing is deprecated. Create invoices manually from the Invoices page.'
+  );
   return { invoice: null, payout: null, skipped: true };
 }

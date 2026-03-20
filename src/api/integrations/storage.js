@@ -11,7 +11,7 @@ import * as Sentry from '@sentry/react';
 export const uploadFile = async (fileOrObject, bucket = 'uploads', folder = '') => {
   // Handle both direct file and object with file property
   const file = fileOrObject?.file || fileOrObject;
-  
+
   if (!file) {
     const error = new Error('No file provided');
     Sentry.captureException(error, { tags: { component: 'uploadFile' } });
@@ -22,9 +22,9 @@ export const uploadFile = async (fileOrObject, bucket = 'uploads', folder = '') 
   const maxSize = 10 * 1024 * 1024; // 10MB
   if (file.size > maxSize) {
     const error = new Error(`File size exceeds ${maxSize / 1024 / 1024}MB limit`);
-    Sentry.captureException(error, { 
+    Sentry.captureException(error, {
       tags: { component: 'uploadFile' },
-      extra: { fileSize: file.size, fileName: file.name }
+      extra: { fileSize: file.size, fileName: file.name },
     });
     throw error;
   }
@@ -33,9 +33,9 @@ export const uploadFile = async (fileOrObject, bucket = 'uploads', folder = '') 
   const allowedImageTypes = ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/webp'];
   if (file.type && !allowedImageTypes.includes(file.type) && bucket === 'logos') {
     const error = new Error('Invalid file type. Only images (JPEG, PNG, GIF, WebP) are allowed.');
-    Sentry.captureException(error, { 
+    Sentry.captureException(error, {
       tags: { component: 'uploadFile' },
-      extra: { fileType: file.type, fileName: file.name }
+      extra: { fileType: file.type, fileName: file.name },
     });
     throw error;
   }

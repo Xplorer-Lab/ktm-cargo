@@ -41,7 +41,9 @@ try {
   if (!result2.success) {
     testResults.passed.push('✅ Zod: Invalid data correctly rejected');
     if (result2.error.errors.length > 0) {
-      testResults.passed.push(`✅ Zod: Error messages provided (${result2.error.errors.length} errors)`);
+      testResults.passed.push(
+        `✅ Zod: Error messages provided (${result2.error.errors.length} errors)`
+      );
     }
   } else {
     testResults.failed.push('❌ Zod: Invalid data was accepted');
@@ -61,12 +63,13 @@ try {
     isInitialized = client !== undefined;
   } catch (_e) {
     // Fallback: check if DSN is configured
-    isInitialized = process.env.VITE_SENTRY_DSN && !process.env.VITE_SENTRY_DSN.includes('your_sentry_dsn');
+    isInitialized =
+      process.env.VITE_SENTRY_DSN && !process.env.VITE_SENTRY_DSN.includes('your_sentry_dsn');
   }
-  
+
   if (isInitialized) {
     testResults.passed.push('✅ Sentry: Client initialized');
-    
+
     // Test capturing an error
     try {
       Sentry.captureException(new Error('Test error from integration test'), {
@@ -89,7 +92,9 @@ try {
       testResults.failed.push(`❌ Sentry: captureMessage() failed: ${error.message}`);
     }
   } else {
-    testResults.warnings.push('⚠️  Sentry: Client not initialized (VITE_SENTRY_DSN may not be set)');
+    testResults.warnings.push(
+      '⚠️  Sentry: Client not initialized (VITE_SENTRY_DSN may not be set)'
+    );
     testResults.warnings.push('⚠️  Sentry: This is expected if DSN is not configured in .env');
   }
 } catch (error) {
@@ -102,10 +107,10 @@ try {
   // Check if useErrorHandler exists
   const fs = await import('fs');
   const errorHandlerPath = 'src/hooks/useErrorHandler.js';
-  
+
   if (fs.existsSync(errorHandlerPath)) {
     const content = fs.readFileSync(errorHandlerPath, 'utf-8');
-    
+
     if (content.includes('Sentry.captureException')) {
       testResults.passed.push('✅ Error Handler: Uses Sentry.captureException');
     } else {
@@ -135,18 +140,22 @@ console.log('\n📚 Test 4: Schema Integration');
 try {
   const fs = await import('fs');
   const schemasPath = 'src/lib/schemas.js';
-  
+
   if (fs.existsSync(schemasPath)) {
     const content = fs.readFileSync(schemasPath, 'utf-8');
-    
+
     // Check for common schemas
     const requiredSchemas = ['customerSchema', 'shipmentSchema'];
-    const foundSchemas = requiredSchemas.filter(schema => content.includes(schema));
-    
+    const foundSchemas = requiredSchemas.filter((schema) => content.includes(schema));
+
     if (foundSchemas.length === requiredSchemas.length) {
-      testResults.passed.push(`✅ Schemas: All required schemas found (${foundSchemas.join(', ')})`);
+      testResults.passed.push(
+        `✅ Schemas: All required schemas found (${foundSchemas.join(', ')})`
+      );
     } else {
-      testResults.warnings.push(`⚠️  Schemas: Missing some schemas (found: ${foundSchemas.join(', ')})`);
+      testResults.warnings.push(
+        `⚠️  Schemas: Missing some schemas (found: ${foundSchemas.join(', ')})`
+      );
     }
 
     // Check for exports
@@ -167,22 +176,22 @@ console.log('\n🎨 Test 5: Component Usage');
 try {
   const fs = await import('fs');
   const path = await import('path');
-  
+
   // Check if components use the integrations
   const componentsPath = 'src/components';
   const pagesPath = 'src/pages';
-  
+
   let componentsWithSentry = 0;
   let componentsWithZod = 0;
   let componentsWithErrorHandler = 0;
-  
+
   function checkDirectory(dir) {
     try {
       const files = fs.readdirSync(dir);
-      files.forEach(file => {
+      files.forEach((file) => {
         const filePath = path.join(dir, file);
         const stat = fs.statSync(filePath);
-        
+
         if (stat.isDirectory() && !file.startsWith('.') && file !== 'node_modules') {
           checkDirectory(filePath);
         } else if (file.endsWith('.jsx') || file.endsWith('.js')) {
@@ -206,26 +215,26 @@ try {
       // Skip directories that can't be read
     }
   }
-  
+
   if (fs.existsSync(componentsPath)) {
     checkDirectory(componentsPath);
   }
   if (fs.existsSync(pagesPath)) {
     checkDirectory(pagesPath);
   }
-  
+
   if (componentsWithSentry > 0) {
     testResults.passed.push(`✅ Components: ${componentsWithSentry} files use Sentry`);
   } else {
     testResults.warnings.push('⚠️  Components: No components use Sentry directly');
   }
-  
+
   if (componentsWithZod > 0) {
     testResults.passed.push(`✅ Components: ${componentsWithZod} files use Zod`);
   } else {
     testResults.warnings.push('⚠️  Components: No components use Zod directly');
   }
-  
+
   if (componentsWithErrorHandler > 0) {
     testResults.passed.push(`✅ Components: ${componentsWithErrorHandler} files use error handler`);
   } else {
@@ -241,16 +250,16 @@ console.log('📊 TEST RESULTS');
 console.log('='.repeat(80));
 
 console.log('\n✅ PASSED:');
-testResults.passed.forEach(test => console.log(`  ${test}`));
+testResults.passed.forEach((test) => console.log(`  ${test}`));
 
 if (testResults.warnings.length > 0) {
   console.log('\n⚠️  WARNINGS:');
-  testResults.warnings.forEach(warning => console.log(`  ${warning}`));
+  testResults.warnings.forEach((warning) => console.log(`  ${warning}`));
 }
 
 if (testResults.failed.length > 0) {
   console.log('\n❌ FAILED:');
-  testResults.failed.forEach(failure => console.log(`  ${failure}`));
+  testResults.failed.forEach((failure) => console.log(`  ${failure}`));
 }
 
 // Summary
@@ -262,9 +271,7 @@ console.log(`⚠️  Warnings: ${testResults.warnings.length}`);
 console.log(`❌ Failed: ${testResults.failed.length}`);
 
 const totalTests = testResults.passed.length + testResults.failed.length;
-const passRate = totalTests > 0 
-  ? Math.round((testResults.passed.length / totalTests) * 100)
-  : 0;
+const passRate = totalTests > 0 ? Math.round((testResults.passed.length / totalTests) * 100) : 0;
 
 console.log(`\n📊 Pass Rate: ${passRate}%`);
 
@@ -286,10 +293,6 @@ const report = {
 };
 
 const fs = await import('fs');
-fs.writeFileSync(
-  'SENTRY_ZOD_TEST_RESULTS.json',
-  JSON.stringify(report, null, 2)
-);
+fs.writeFileSync('SENTRY_ZOD_TEST_RESULTS.json', JSON.stringify(report, null, 2));
 
 console.log('📄 Test results saved to: SENTRY_ZOD_TEST_RESULTS.json\n');
-

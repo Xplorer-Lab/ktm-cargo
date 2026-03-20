@@ -35,7 +35,7 @@ export async function createNotification({
       await sendMessengerNotification({
         to: recipientEmail,
         message: `[${priority.toUpperCase()}] ${title}\n\n${message}`,
-        platform: 'line'
+        platform: 'line',
       });
       await db.notifications.update(notification.id, { email_sent: true });
     } catch (error) {

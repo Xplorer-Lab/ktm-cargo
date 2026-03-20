@@ -36,8 +36,7 @@ function validateStep(step, form) {
     if (!form.contact_name?.trim()) errors.contact_name = 'Contact name is required';
     if (!form.phone?.trim()) errors.phone = 'Phone is required';
     if (!form.email?.trim()) errors.email = 'Email is required';
-    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email))
-      errors.email = 'Invalid email format';
+    else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(form.email)) errors.email = 'Invalid email format';
   } else if (step === 2) {
     if (!form.tax_id?.trim()) errors.tax_id = 'Tax ID is required';
     if (!form.bank_name?.trim()) errors.bank_name = 'Bank name is required';
@@ -159,12 +158,7 @@ describe('VendorRegistration mutation paths', () => {
     });
 
     it('clears existing error for that field', () => {
-      const { errors } = updateFormField(
-        { name: '' },
-        { name: 'Required' },
-        'name',
-        'Fixed'
-      );
+      const { errors } = updateFormField({ name: '' }, { name: 'Required' }, 'name', 'Fixed');
       expect(errors.name).toBeUndefined();
     });
 
@@ -189,17 +183,23 @@ describe('VendorRegistration mutation paths', () => {
     });
 
     it('returns expired for expired status', () => {
-      expect(resolveInvitationStatus({ status: 'expired', expires_at: '2020-01-01' })).toBe('expired');
+      expect(resolveInvitationStatus({ status: 'expired', expires_at: '2020-01-01' })).toBe(
+        'expired'
+      );
     });
 
     it('returns expired when past expiry date', () => {
-      expect(resolveInvitationStatus({ status: 'pending', expires_at: '2020-01-01' })).toBe('expired');
+      expect(resolveInvitationStatus({ status: 'pending', expires_at: '2020-01-01' })).toBe(
+        'expired'
+      );
     });
 
     it('returns valid for active invitation with future expiry', () => {
       const future = new Date();
       future.setFullYear(future.getFullYear() + 1);
-      expect(resolveInvitationStatus({ status: 'pending', expires_at: future.toISOString() })).toBe('valid');
+      expect(resolveInvitationStatus({ status: 'pending', expires_at: future.toISOString() })).toBe(
+        'valid'
+      );
     });
   });
 

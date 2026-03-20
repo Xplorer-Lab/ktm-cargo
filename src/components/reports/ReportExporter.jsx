@@ -119,12 +119,12 @@ export function generatePDFHTML(data, columns, title) {
         </thead>
         <tbody>
           ${data
-      .map(
-        (item) => `
+            .map(
+              (item) => `
             <tr>${columns.map((col) => `<td>${item[col] ?? ''}</td>`).join('')}</tr>
           `
-      )
-      .join('')}
+            )
+            .join('')}
         </tbody>
       </table>
       <div class="footer">BKK-YGN Cargo & Shopping Services</div>
@@ -217,15 +217,15 @@ export async function sendReportEmail(report, data, recipients) {
       </thead>
       <tbody>
         ${data
-      .slice(0, 50)
-      .map(
-        (item, i) => `
+          .slice(0, 50)
+          .map(
+            (item, i) => `
           <tr style="background:${i % 2 === 0 ? '#fff' : '#f8fafc'};">
             ${columns.map((col) => `<td style="padding:8px;border:1px solid #e2e8f0;">${item[col] ?? ''}</td>`).join('')}
           </tr>
         `
-      )
-      .join('')}
+          )
+          .join('')}
       </tbody>
     </table>
     ${data.length > 50 ? `<p style="color:#64748b;font-size:12px;">Showing first 50 of ${data.length} records.</p>` : ''}
@@ -255,7 +255,7 @@ export async function sendReportEmail(report, data, recipients) {
     await sendMessengerNotification({
       to: recipient,
       message: `[Report] ${title} - ${format(new Date(), 'MMM d, yyyy')}\n\nReport generated and ready for view. (HTML content omitted for Messenger)`,
-      platform: 'Telegram'
+      platform: 'Telegram',
     });
   }
 

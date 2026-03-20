@@ -40,7 +40,10 @@ serve(async (req: Request) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser(token);
     if (authError || !user) throw new Error('Unauthorized');
 
     // Get Stripe customer ID

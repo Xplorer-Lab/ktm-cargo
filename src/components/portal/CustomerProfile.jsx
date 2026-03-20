@@ -15,7 +15,7 @@ import { toast } from 'sonner';
 
 export default function CustomerProfile({ customer, onUpdate }) {
   const { handleError, handleValidationError } = useErrorHandler();
-  
+
   const form = useForm({
     resolver: zodResolver(customerSchema.partial()),
     defaultValues: {
@@ -93,10 +93,7 @@ export default function CustomerProfile({ customer, onUpdate }) {
           <form onSubmit={form.handleSubmit(handleFormSubmit)} className="space-y-6">
             <div className="space-y-2">
               <Label>Full Name</Label>
-              <Input
-                {...form.register('name')}
-                placeholder="Your full name"
-              />
+              <Input {...form.register('name')} placeholder="Your full name" />
               {form.formState.errors.name && (
                 <p className="text-xs text-rose-600 mt-1">{form.formState.errors.name.message}</p>
               )}
@@ -108,12 +105,11 @@ export default function CustomerProfile({ customer, onUpdate }) {
                   <Phone className="w-4 h-4 text-slate-400" />
                   Phone Number
                 </Label>
-                <Input
-                  {...form.register('phone')}
-                  placeholder="+66..."
-                />
+                <Input {...form.register('phone')} placeholder="+66..." />
                 {form.formState.errors.phone && (
-                  <p className="text-xs text-rose-600 mt-1">{form.formState.errors.phone.message}</p>
+                  <p className="text-xs text-rose-600 mt-1">
+                    {form.formState.errors.phone.message}
+                  </p>
                 )}
               </div>
               <div className="space-y-2">
@@ -121,13 +117,11 @@ export default function CustomerProfile({ customer, onUpdate }) {
                   <Mail className="w-4 h-4 text-slate-400" />
                   Email
                 </Label>
-                <Input
-                  {...form.register('email')}
-                  type="email"
-                  placeholder="your@email.com"
-                />
+                <Input {...form.register('email')} type="email" placeholder="your@email.com" />
                 {form.formState.errors.email && (
-                  <p className="text-xs text-rose-600 mt-1">{form.formState.errors.email.message}</p>
+                  <p className="text-xs text-rose-600 mt-1">
+                    {form.formState.errors.email.message}
+                  </p>
                 )}
               </div>
             </div>

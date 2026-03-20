@@ -1,11 +1,11 @@
 /**
  * Vendor Bill/Invoice Service
- * 
+ *
  * This manages vendor invoices (bills) - invoices WE RECEIVE from vendors
  * for goods and services purchased. This is Accounts Payable.
- * 
+ *
  * NOT to be confused with Customer Invoices which are invoices WE ISSUE.
- * 
+ *
  * Real-World Flow:
  * 1. Create Purchase Order (PO)
  * 2. Receive Goods (Goods Receipt / GR)
@@ -33,7 +33,9 @@ function generateBillNumber() {
   const prefix = 'BILL';
   const year = date.getFullYear();
   const month = String(date.getMonth() + 1).padStart(2, '0');
-  const random = Math.floor(Math.random() * 10000).toString().padStart(4, '0');
+  const random = Math.floor(Math.random() * 10000)
+    .toString()
+    .padStart(4, '0');
   return `${prefix}-${year}${month}-${random}`;
 }
 
@@ -56,21 +58,21 @@ export async function recordVendorBill(billData) {
   const bill = await db.customerInvoices.create({
     invoice_number: billData.vendor_invoice_number || generateBillNumber(),
     invoice_type: 'vendor_bill',
-    
+
     // Link to PO and Receipt
     po_id: billData.po_id,
     po_number: billData.po_number,
     receipt_id: billData.receipt_id,
     receipt_number: billData.receipt_number,
-    
+
     // Vendor details
     vendor_id: billData.vendor_id,
     vendor_name: billData.vendor_name,
-    
+
     // Dates
     invoice_date: billDate,
     due_date: billData.due_date || calculateDueDate(billDate, paymentTerms),
-    
+
     // Amount details
     items: billData.items || '[]',
     subtotal: billData.subtotal || 0,
@@ -78,11 +80,11 @@ export async function recordVendorBill(billData) {
     tax_amount: billData.tax_amount || 0,
     shipping_cost: billData.shipping_cost || 0,
     total_amount: billData.total_amount || 0,
-    
+
     // Payment info
     payment_terms: paymentTerms,
     status: 'pending',
-    
+
     notes: billData.notes || '',
   });
 
@@ -94,7 +96,9 @@ export async function recordVendorBill(billData) {
  * Vendor bills should be recorded manually when received
  */
 export async function generateInvoiceFromReceipt(purchaseOrder, goodsReceipt, vendor) {
-  console.warn('generateInvoiceFromReceipt is deprecated. Record vendor bills manually when received.');
+  console.warn(
+    'generateInvoiceFromReceipt is deprecated. Record vendor bills manually when received.'
+  );
   return { status: 'skipped', message: 'Auto-generation disabled. Record vendor bills manually.' };
 }
 
@@ -127,9 +131,9 @@ export async function approveForPayment(invoiceId, approverEmail) {
  * Check for overdue vendor bills
  */
 export async function checkOverdueInvoices() {
-  const pendingInvoices = await db.customerInvoices.filter({ 
+  const pendingInvoices = await db.customerInvoices.filter({
     status: 'pending',
-    invoice_type: 'vendor_bill'
+    invoice_type: 'vendor_bill',
   });
   const today = new Date();
   const overdue = [];
@@ -162,8 +166,7 @@ export function getVendorBillSummary(bills) {
 
   bills.forEach((bill) => {
     const amount = bill.total_amount || 0;
-    const isOverdue = bill.due_date && new Date(bill.due_date) < today && 
-      bill.status !== 'paid';
+    const isOverdue = bill.due_date && new Date(bill.due_date) < today && bill.status !== 'paid';
 
     switch (bill.status) {
       case 'pending':

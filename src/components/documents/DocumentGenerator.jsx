@@ -147,11 +147,15 @@ function generateDocumentHTML(docType, shipment) {
   const paymentStatus = escapeHtml(shipment?.payment_status?.toUpperCase() || 'PENDING');
   const weightKg = shipment?.weight_kg != null ? String(shipment.weight_kg) : '';
   const pricePerKg = shipment?.price_per_kg != null ? Number(shipment.price_per_kg) : 95;
-  const insuranceAmount = (shipment?.insurance_amount ?? 0);
+  const insuranceAmount = shipment?.insurance_amount ?? 0;
   const packagingFee = Number(shipment?.packaging_fee) || 0;
-  const totalAmount = (shipment?.total_amount ?? 0);
-  const pickupDateStr = shipment?.pickup_date ? format(new Date(shipment.pickup_date), 'MMM d, yyyy') : 'TBD';
-  const refNo = escapeHtml(shipment?.tracking_number ? `CD-${shipment.tracking_number}` : `CD-${Date.now()}`);
+  const totalAmount = shipment?.total_amount ?? 0;
+  const pickupDateStr = shipment?.pickup_date
+    ? format(new Date(shipment.pickup_date), 'MMM d, yyyy')
+    : 'TBD';
+  const refNo = escapeHtml(
+    shipment?.tracking_number ? `CD-${shipment.tracking_number}` : `CD-${Date.now()}`
+  );
 
   const baseStyles = `
     <style>

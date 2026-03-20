@@ -126,7 +126,8 @@ export default function VendorRegistration() {
       if (!form.bank_name.trim()) newErrors.set('bank_name', 'Bank name is required');
       if (!form.bank_account_number.trim())
         newErrors.set('bank_account_number', 'Account number is required');
-      if (!form.bank_account_name.trim()) newErrors.set('bank_account_name', 'Account name is required');
+      if (!form.bank_account_name.trim())
+        newErrors.set('bank_account_name', 'Account name is required');
     }
 
     setErrors(newErrors);
@@ -170,7 +171,7 @@ export default function VendorRegistration() {
         await sendMessengerNotification({
           to: invitation.invited_by,
           message: `New Vendor Registration: ${form.name}\n\nVendor ${form.name} (${form.vendor_type}) has completed registration.\nContact: ${form.contact_name} (${form.email})`,
-          platform: 'Telegram'
+          platform: 'Telegram',
         });
       } catch (_e) {
         console.error('Failed to notify admin', _e);
@@ -258,12 +259,13 @@ export default function VendorRegistration() {
               <div key={s.id} className="flex items-center">
                 <div className={`flex items-center gap-2 ${idx > 0 ? 'ml-4' : ''}`}>
                   <div
-                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${isComplete
-                      ? 'bg-emerald-500 text-white'
-                      : isActive
-                        ? 'bg-blue-600 text-white'
-                        : 'bg-slate-200 text-slate-400'
-                      }`}
+                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-colors ${
+                      isComplete
+                        ? 'bg-emerald-500 text-white'
+                        : isActive
+                          ? 'bg-blue-600 text-white'
+                          : 'bg-slate-200 text-slate-400'
+                    }`}
                   >
                     {isComplete ? (
                       <CheckCircle className="w-5 h-5" />
@@ -311,7 +313,9 @@ export default function VendorRegistration() {
                     placeholder="Your Company Ltd."
                     className={errors instanceof Map && errors.has('name') ? 'border-rose-500' : ''}
                   />
-                  {errors instanceof Map && errors.has('name') && <p className="text-xs text-rose-500">{errors.get('name')}</p>}
+                  {errors instanceof Map && errors.has('name') && (
+                    <p className="text-xs text-rose-500">{errors.get('name')}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label>Vendor Type *</Label>
@@ -319,7 +323,11 @@ export default function VendorRegistration() {
                     value={form.vendor_type}
                     onValueChange={(v) => updateForm('vendor_type', v)}
                   >
-                    <SelectTrigger className={errors instanceof Map && errors.has('vendor_type') ? 'border-rose-500' : ''}>
+                    <SelectTrigger
+                      className={
+                        errors instanceof Map && errors.has('vendor_type') ? 'border-rose-500' : ''
+                      }
+                    >
                       <SelectValue />
                     </SelectTrigger>
                     <SelectContent>
@@ -352,7 +360,9 @@ export default function VendorRegistration() {
                     value={form.contact_name}
                     onChange={(e) => updateForm('contact_name', e.target.value)}
                     placeholder="John Doe"
-                    className={errors instanceof Map && errors.has('contact_name') ? 'border-rose-500' : ''}
+                    className={
+                      errors instanceof Map && errors.has('contact_name') ? 'border-rose-500' : ''
+                    }
                   />
                   {errors instanceof Map && errors.has('contact_name') && (
                     <p className="text-xs text-rose-500">{errors.get('contact_name')}</p>
@@ -365,9 +375,13 @@ export default function VendorRegistration() {
                       value={form.phone}
                       onChange={(e) => updateForm('phone', e.target.value)}
                       placeholder="+66 xxx xxx xxxx"
-                      className={errors instanceof Map && errors.has('phone') ? 'border-rose-500' : ''}
+                      className={
+                        errors instanceof Map && errors.has('phone') ? 'border-rose-500' : ''
+                      }
                     />
-                    {errors instanceof Map && errors.has('phone') && <p className="text-xs text-rose-500">{errors.get('phone')}</p>}
+                    {errors instanceof Map && errors.has('phone') && (
+                      <p className="text-xs text-rose-500">{errors.get('phone')}</p>
+                    )}
                   </div>
                   <div className="space-y-2">
                     <Label>Email *</Label>
@@ -376,9 +390,13 @@ export default function VendorRegistration() {
                       value={form.email}
                       onChange={(e) => updateForm('email', e.target.value)}
                       placeholder="contact@company.com"
-                      className={errors instanceof Map && errors.has('email') ? 'border-rose-500' : ''}
+                      className={
+                        errors instanceof Map && errors.has('email') ? 'border-rose-500' : ''
+                      }
                     />
-                    {errors instanceof Map && errors.has('email') && <p className="text-xs text-rose-500">{errors.get('email')}</p>}
+                    {errors instanceof Map && errors.has('email') && (
+                      <p className="text-xs text-rose-500">{errors.get('email')}</p>
+                    )}
                   </div>
                 </div>
               </>
@@ -393,9 +411,13 @@ export default function VendorRegistration() {
                     value={form.tax_id}
                     onChange={(e) => updateForm('tax_id', e.target.value)}
                     placeholder="1234567890123"
-                    className={errors instanceof Map && errors.has('tax_id') ? 'border-rose-500' : ''}
+                    className={
+                      errors instanceof Map && errors.has('tax_id') ? 'border-rose-500' : ''
+                    }
                   />
-                  {errors instanceof Map && errors.has('tax_id') && <p className="text-xs text-rose-500">{errors.get('tax_id')}</p>}
+                  {errors instanceof Map && errors.has('tax_id') && (
+                    <p className="text-xs text-rose-500">{errors.get('tax_id')}</p>
+                  )}
                 </div>
                 <div className="space-y-2">
                   <Label>Bank Name *</Label>
@@ -403,9 +425,13 @@ export default function VendorRegistration() {
                     value={form.bank_name}
                     onChange={(e) => updateForm('bank_name', e.target.value)}
                     placeholder="Bangkok Bank"
-                    className={errors instanceof Map && errors.has('bank_name') ? 'border-rose-500' : ''}
+                    className={
+                      errors instanceof Map && errors.has('bank_name') ? 'border-rose-500' : ''
+                    }
                   />
-                  {errors instanceof Map && errors.has('bank_name') && <p className="text-xs text-rose-500">{errors.get('bank_name')}</p>}
+                  {errors instanceof Map && errors.has('bank_name') && (
+                    <p className="text-xs text-rose-500">{errors.get('bank_name')}</p>
+                  )}
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   <div className="space-y-2">
@@ -414,7 +440,11 @@ export default function VendorRegistration() {
                       value={form.bank_account_number}
                       onChange={(e) => updateForm('bank_account_number', e.target.value)}
                       placeholder="xxx-x-xxxxx-x"
-                      className={errors instanceof Map && errors.has('bank_account_number') ? 'border-rose-500' : ''}
+                      className={
+                        errors instanceof Map && errors.has('bank_account_number')
+                          ? 'border-rose-500'
+                          : ''
+                      }
                     />
                     {errors instanceof Map && errors.has('bank_account_number') && (
                       <p className="text-xs text-rose-500">{errors.get('bank_account_number')}</p>
@@ -426,7 +456,11 @@ export default function VendorRegistration() {
                       value={form.bank_account_name}
                       onChange={(e) => updateForm('bank_account_name', e.target.value)}
                       placeholder="Company Name Co., Ltd."
-                      className={errors instanceof Map && errors.has('bank_account_name') ? 'border-rose-500' : ''}
+                      className={
+                        errors instanceof Map && errors.has('bank_account_name')
+                          ? 'border-rose-500'
+                          : ''
+                      }
                     />
                     {errors instanceof Map && errors.has('bank_account_name') && (
                       <p className="text-xs text-rose-500">{errors.get('bank_account_name')}</p>

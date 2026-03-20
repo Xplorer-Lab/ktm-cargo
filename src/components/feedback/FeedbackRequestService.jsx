@@ -12,16 +12,20 @@ export async function sendFeedbackRequest(shipment, customer) {
     await sendMessengerNotification({
       to: customer.email,
       message: message,
-      platform: 'line'
+      platform: 'line',
     });
 
     // Create pending feedback record
     await db.feedback.create({
       shipment_id: shipment.id,
+      journey_id: shipment.journey_id || null,
       customer_id: customer.id || '',
       customer_name: customer.name || shipment.customer_name,
       customer_email: customer.email,
       service_type: shipment.service_type,
+      feedback_kind: 'delivery_feedback',
+      order_reference_type: 'shipment',
+      order_reference_id: shipment.id,
       status: 'pending',
     });
 

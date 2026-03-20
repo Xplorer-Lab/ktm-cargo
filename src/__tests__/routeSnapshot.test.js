@@ -40,6 +40,7 @@ const EXPECTED_ROUTES = [
   '/FeedbackAnalytics',
   '/Inventory',
   '/Invoices',
+  '/Operations',
   '/PriceCalculator',
   '/Procurement',
   '/Reports',
@@ -60,11 +61,11 @@ describe('Route snapshot protection', () => {
     expect(actual).toEqual(EXPECTED_ROUTES);
   });
 
-  it('has exactly 20 routes (4 public + 15 protected + 1 catch-all)', () => {
+  it('has exactly 21 routes (4 public + 16 protected + 1 catch-all)', () => {
     const source = fs.readFileSync(indexPath, 'utf-8');
     const actual = extractRoutePaths(source);
 
-    expect(actual).toHaveLength(20);
+    expect(actual).toHaveLength(21);
   });
 
   it('public routes are not wrapped in ProtectedRoute', () => {
@@ -77,7 +78,7 @@ describe('Route snapshot protection', () => {
       // Match the Route definition and verify it does NOT contain ProtectedRoute
       // For public routes: <Route path="/ClientPortal" element={<ClientPortal />} />
       const routeBlockRegex = new RegExp(
-        `<Route\\s+path=["']${route.replace('/', '\\/')}["']\\s+element=\\{([^}]+)\\}`,
+        `<Route\\s+path=["']${route.replace('/', '\\/')}["']\\s+element=\\{([^}]+)\\}`
       );
       const match = source.match(routeBlockRegex);
       if (match) {

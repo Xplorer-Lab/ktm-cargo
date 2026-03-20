@@ -41,7 +41,11 @@ import { calculateDueDate } from './InvoiceService';
 import { SERVICE_TYPE_DEFAULTS } from '@/lib/defaults';
 
 // Derive a lighter SERVICE_TYPES list for the invoice form (no costBasis needed)
-const SERVICE_TYPES = SERVICE_TYPE_DEFAULTS.map(({ value, label, price }) => ({ value, label, price }));
+const SERVICE_TYPES = SERVICE_TYPE_DEFAULTS.map(({ value, label, price }) => ({
+  value,
+  label,
+  price,
+}));
 
 const PAYMENT_TERMS = [
   { value: 'immediate', label: 'Due Immediately', days: 0 },
@@ -131,7 +135,10 @@ export default function InvoiceForm({
   useEffect(() => {
     const terms = PAYMENT_TERMS.find((t) => t.value === watchedValues.payment_terms);
     if (terms && watchedValues.invoice_date) {
-      const dueDate = format(addDays(new Date(watchedValues.invoice_date), terms.days), 'yyyy-MM-dd');
+      const dueDate = format(
+        addDays(new Date(watchedValues.invoice_date), terms.days),
+        'yyyy-MM-dd'
+      );
       setValue('due_date', dueDate);
     }
   }, [watchedValues.payment_terms, watchedValues.invoice_date, setValue]);
@@ -171,7 +178,10 @@ export default function InvoiceForm({
         setValue('shipping_amount', shipment.total_amount || 0);
         setValue('insurance_amount', shipment.insurance_amount || 0);
         setValue('packaging_fee', shipment.packaging_fee || 0);
-        setValue('notes', `Shipment: ${shipment.tracking_number}\nItems: ${shipment.items_description || ''}`);
+        setValue(
+          'notes',
+          `Shipment: ${shipment.tracking_number}\nItems: ${shipment.items_description || ''}`
+        );
       }
     } else {
       const order = shoppingOrders.find((o) => o.id === sourceId);
@@ -187,7 +197,10 @@ export default function InvoiceForm({
         setValue('shipping_amount', shipping);
         setValue('weight_kg', weight);
         setValue('price_per_kg', pricePerKg);
-        setValue('notes', `Shopping Order: ${order.order_number}\nProducts: ${order.product_details || ''}`);
+        setValue(
+          'notes',
+          `Shopping Order: ${order.order_number}\nProducts: ${order.product_details || ''}`
+        );
       }
     }
     setOpenSourceSelect(false);
@@ -277,12 +290,15 @@ export default function InvoiceForm({
           {availableSources.length > 0 && (
             <div className="p-4 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/30 dark:to-indigo-950/30 rounded-xl border border-blue-200 dark:border-blue-800 space-y-3">
               <Label className="text-blue-800 dark:text-blue-200">
-                Link to {watchedValues.invoice_type === 'shipment' ? 'Shipment' : 'Shopping Order'} (Optional)
+                Link to {watchedValues.invoice_type === 'shipment' ? 'Shipment' : 'Shopping Order'}{' '}
+                (Optional)
               </Label>
               <Popover open={openSourceSelect} onOpenChange={setOpenSourceSelect}>
                 <PopoverTrigger asChild>
                   <Button variant="outline" className="w-full justify-between bg-white">
-                    {watchedValues.tracking_number || watchedValues.order_number || 'Select source...'}
+                    {watchedValues.tracking_number ||
+                      watchedValues.order_number ||
+                      'Select source...'}
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
                   </Button>
                 </PopoverTrigger>
@@ -301,7 +317,8 @@ export default function InvoiceForm({
                             <Check
                               className={cn(
                                 'mr-2 h-4 w-4',
-                                (watchedValues.shipment_id === source.id || watchedValues.order_id === source.id)
+                                watchedValues.shipment_id === source.id ||
+                                  watchedValues.order_id === source.id
                                   ? 'opacity-100'
                                   : 'opacity-0'
                               )}
@@ -311,7 +328,8 @@ export default function InvoiceForm({
                                 {source.tracking_number || source.order_number}
                               </span>
                               <span className="text-xs text-slate-500">
-                                {source.customer_name} - ฿{(source.total_amount || 0).toLocaleString()}
+                                {source.customer_name} - ฿
+                                {(source.total_amount || 0).toLocaleString()}
                               </span>
                             </div>
                           </CommandItem>
@@ -353,7 +371,9 @@ export default function InvoiceForm({
                             <Check
                               className={cn(
                                 'mr-2 h-4 w-4',
-                                watchedValues.customer_id === customer.id ? 'opacity-100' : 'opacity-0'
+                                watchedValues.customer_id === customer.id
+                                  ? 'opacity-100'
+                                  : 'opacity-0'
                               )}
                             />
                             <div className="flex flex-col">
@@ -484,7 +504,9 @@ export default function InvoiceForm({
           <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-800/50 rounded-2xl p-5 space-y-3">
             <div className="flex items-center gap-2">
               <Calculator className="w-5 h-5 text-slate-600" />
-              <span className="font-semibold text-slate-700 dark:text-slate-200">Invoice Total</span>
+              <span className="font-semibold text-slate-700 dark:text-slate-200">
+                Invoice Total
+              </span>
             </div>
 
             <div className="space-y-2 text-sm">

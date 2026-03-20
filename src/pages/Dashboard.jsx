@@ -33,20 +33,14 @@ import { checkSegmentHealth } from '@/components/notifications/NotificationServi
 import { startTour } from '@/components/common/TourGuide';
 
 export default function Dashboard() {
-  const {
-    shipments,
-    customers,
-    financials,
-    shipmentCategories,
-    isLoading
-  } = useDashboardData();
+  const { shipments, customers, financials, shipmentCategories, isLoading } = useDashboardData();
 
   const { totalCollected, totalVendorPaid, totalCargoPaid, netProfit } = financials;
   const {
     pending: pendingShipments,
     inTransit: inTransitShipments,
     delivered: deliveredShipments,
-    recent: recentShipments
+    recent: recentShipments,
   } = shipmentCategories;
 
   // AI-powered customer segmentation
@@ -78,7 +72,7 @@ export default function Dashboard() {
             checkSegmentHealth(segmentSummary, user.email);
           }
         })
-        .catch(() => { });
+        .catch(() => {});
     }
   }, [customers.length, segmentSummary]);
 

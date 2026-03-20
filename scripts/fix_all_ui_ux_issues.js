@@ -35,16 +35,18 @@ try {
 // Group issues by file and pattern
 const issuesByFile = {};
 
-[...auditReport.issues.high, ...auditReport.issues.medium, ...auditReport.issues.low].forEach(issue => {
-  if (!issuesByFile[issue.file]) {
-    issuesByFile[issue.file] = {
-      high: [],
-      medium: [],
-      low: [],
-    };
+[...auditReport.issues.high, ...auditReport.issues.medium, ...auditReport.issues.low].forEach(
+  (issue) => {
+    if (!issuesByFile[issue.file]) {
+      issuesByFile[issue.file] = {
+        high: [],
+        medium: [],
+        low: [],
+      };
+    }
+    issuesByFile[issue.file][issue.severity].push(issue);
   }
-  issuesByFile[issue.file][issue.severity].push(issue);
-});
+);
 
 const totalFiles = Object.keys(issuesByFile).length;
 console.log(`📋 Found ${totalFiles} files with issues\n`);
@@ -65,16 +67,17 @@ for (const [filePath, issues] of Object.entries(issuesByFile)) {
     let fileChanged = false;
 
     // HIGH PRIORITY FIXES
-    
+
     // 1. Add error handler import if missing and has error handling issues
-    if (issues.high.some(i => i.pattern === 'missingErrorHandling')) {
+    if (issues.high.some((i) => i.pattern === 'missingErrorHandling')) {
       if (!content.includes('useErrorHandler') && !content.includes('@/hooks/useErrorHandler')) {
         // Find last import
         const importMatch = content.match(/(import[^;]+;[\s]*\n)/g);
         if (importMatch) {
           const lastImport = importMatch[importMatch.length - 1];
           const importIndex = content.lastIndexOf(lastImport) + lastImport.length;
-          content = content.slice(0, importIndex) + 
+          content =
+            content.slice(0, importIndex) +
             "import { useErrorHandler } from '@/hooks/useErrorHandler';\n" +
             content.slice(importIndex);
           fileChanged = true;
@@ -83,13 +86,14 @@ for (const [filePath, issues] of Object.entries(issuesByFile)) {
     }
 
     // 2. Add form validation imports if missing
-    if (issues.high.some(i => i.pattern === 'missingValidation')) {
+    if (issues.high.some((i) => i.pattern === 'missingValidation')) {
       if (!content.includes('react-hook-form') && !content.includes('zodResolver')) {
         const importMatch = content.match(/(import[^;]+;[\s]*\n)/g);
         if (importMatch) {
           const lastImport = importMatch[importMatch.length - 1];
           const importIndex = content.lastIndexOf(lastImport) + lastImport.length;
-          content = content.slice(0, importIndex) + 
+          content =
+            content.slice(0, importIndex) +
             "import { useForm } from 'react-hook-form';\n" +
             "import { zodResolver } from '@hookform/resolvers/zod';\n" +
             content.slice(importIndex);
@@ -99,13 +103,13 @@ for (const [filePath, issues] of Object.entries(issuesByFile)) {
     }
 
     // MEDIUM PRIORITY FIXES
-    
+
     // 3. Add null checks (convert .property to ?.property where safe)
     // This is complex and risky, so we'll skip automatic fixes for now
     // Manual review recommended
 
     // LOW PRIORITY FIXES
-    
+
     // 4. Remove console.logs in production (optional)
     // We'll leave console.logs for now as they might be intentional
 
@@ -137,11 +141,7 @@ const report = {
   },
 };
 
-fs.writeFileSync(
-  'UI_UX_FIXES_AUTOMATED.json',
-  JSON.stringify(report, null, 2)
-);
+fs.writeFileSync('UI_UX_FIXES_AUTOMATED.json', JSON.stringify(report, null, 2));
 
 console.log('📄 Report saved to: UI_UX_FIXES_AUTOMATED.json\n');
 console.log('⚠️  Note: Many fixes require manual review. This script prepares files for fixes.\n');
-

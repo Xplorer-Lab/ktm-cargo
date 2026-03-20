@@ -26,8 +26,11 @@ import { config } from 'dotenv';
 config(); // load .env
 
 const supabaseUrl = (process.env.VITE_SUPABASE_URL || '').trim();
-const supabaseKey =
-  (process.env.SUPABASE_SERVICE_ROLE_KEY || process.env.VITE_SUPABASE_ANON_KEY || '').trim();
+const supabaseKey = (
+  process.env.SUPABASE_SERVICE_ROLE_KEY ||
+  process.env.VITE_SUPABASE_ANON_KEY ||
+  ''
+).trim();
 
 if (!supabaseUrl || !supabaseKey) {
   console.error(

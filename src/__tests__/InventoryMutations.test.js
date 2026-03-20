@@ -144,10 +144,7 @@ describe('Inventory mutation paths', () => {
     });
 
     it('creates all when no SKU matches', async () => {
-      const results = await handleBulkImport(
-        [{ sku: 'NEW-1' }, { sku: 'NEW-2' }],
-        []
-      );
+      const results = await handleBulkImport([{ sku: 'NEW-1' }, { sku: 'NEW-2' }], []);
       expect(mockCreate).toHaveBeenCalledTimes(2);
       expect(results.created).toBe(2);
     });

@@ -61,10 +61,30 @@ const onboardingSteps = [
     icon: Gift,
     color: 'from-amber-500 to-orange-600',
     tiers: [
-      { icon: Star, name: 'New Customer', discount: 'Welcome discount', color: 'from-slate-400 to-slate-500' },
-      { icon: Trophy, name: 'Regular (5+ shipments)', discount: '5% off all orders', color: 'from-amber-600 to-amber-700' },
-      { icon: Gem, name: 'Premium (20+ shipments)', discount: '10% off + priority', color: 'from-purple-500 to-purple-600' },
-      { icon: Crown, name: 'VIP (50+ shipments)', discount: '15% off + dedicated support', color: 'from-amber-400 to-yellow-500' },
+      {
+        icon: Star,
+        name: 'New Customer',
+        discount: 'Welcome discount',
+        color: 'from-slate-400 to-slate-500',
+      },
+      {
+        icon: Trophy,
+        name: 'Regular (5+ shipments)',
+        discount: '5% off all orders',
+        color: 'from-amber-600 to-amber-700',
+      },
+      {
+        icon: Gem,
+        name: 'Premium (20+ shipments)',
+        discount: '10% off + priority',
+        color: 'from-purple-500 to-purple-600',
+      },
+      {
+        icon: Crown,
+        name: 'VIP (50+ shipments)',
+        discount: '15% off + dedicated support',
+        color: 'from-amber-400 to-yellow-500',
+      },
     ],
   },
   {
@@ -144,10 +164,12 @@ export default function CustomerOnboarding({ customer, onComplete }) {
     <div className="max-w-2xl mx-auto p-4 animate-in fade-in duration-500">
       <Card className="border-0 shadow-2xl overflow-hidden bg-white dark:bg-slate-900">
         {/* Progress Header */}
-        <div className={cn(
-          "bg-gradient-to-r p-6 text-white transition-all duration-500",
-          currentStepData?.color
-        )}>
+        <div
+          className={cn(
+            'bg-gradient-to-r p-6 text-white transition-all duration-500',
+            currentStepData?.color
+          )}
+        >
           <div className="flex items-center justify-between mb-4">
             <div className="flex items-center gap-2">
               <div className="p-2 bg-white/20 rounded-lg backdrop-blur-sm">
@@ -176,26 +198,30 @@ export default function CustomerOnboarding({ customer, onComplete }) {
                   onClick={() => goToStep(idx)}
                   disabled={!isAccessible}
                   className={cn(
-                    "flex flex-col items-center gap-2 transition-all cursor-pointer disabled:cursor-not-allowed",
-                    isCurrent && "scale-110"
+                    'flex flex-col items-center gap-2 transition-all cursor-pointer disabled:cursor-not-allowed',
+                    isCurrent && 'scale-110'
                   )}
                 >
-                  <div className={cn(
-                    "w-10 h-10 rounded-full flex items-center justify-center transition-all",
-                    isCompleted && "bg-white text-emerald-600",
-                    isCurrent && !isCompleted && "bg-white text-slate-800 ring-4 ring-white/30",
-                    !isCompleted && !isCurrent && "bg-white/20 text-white/70"
-                  )}>
+                  <div
+                    className={cn(
+                      'w-10 h-10 rounded-full flex items-center justify-center transition-all',
+                      isCompleted && 'bg-white text-emerald-600',
+                      isCurrent && !isCompleted && 'bg-white text-slate-800 ring-4 ring-white/30',
+                      !isCompleted && !isCurrent && 'bg-white/20 text-white/70'
+                    )}
+                  >
                     {isCompleted ? (
                       <CheckCircle className="w-5 h-5" />
                     ) : (
                       <StepIcon className="w-5 h-5" />
                     )}
                   </div>
-                  <span className={cn(
-                    "text-xs font-medium hidden sm:block",
-                    isCurrent || isCompleted ? "text-white" : "text-white/50"
-                  )}>
+                  <span
+                    className={cn(
+                      'text-xs font-medium hidden sm:block',
+                      isCurrent || isCompleted ? 'text-white' : 'text-white/50'
+                    )}
+                  >
                     {step.title.split(' ')[0]}
                   </span>
                 </button>
@@ -205,15 +231,19 @@ export default function CustomerOnboarding({ customer, onComplete }) {
         </div>
 
         {/* Content */}
-        <CardContent className={cn(
-          "p-6 transition-all duration-300",
-          isAnimating && "opacity-0 translate-x-4"
-        )}>
+        <CardContent
+          className={cn(
+            'p-6 transition-all duration-300',
+            isAnimating && 'opacity-0 translate-x-4'
+          )}
+        >
           <div className="flex items-start gap-4 mb-6">
-            <div className={cn(
-              "p-3 rounded-2xl bg-gradient-to-br text-white shrink-0",
-              currentStepData.color
-            )}>
+            <div
+              className={cn(
+                'p-3 rounded-2xl bg-gradient-to-br text-white shrink-0',
+                currentStepData.color
+              )}
+            >
               <Icon className="w-7 h-7" />
             </div>
             <div>
@@ -283,10 +313,7 @@ export default function CustomerOnboarding({ customer, onComplete }) {
                 return (
                   <div
                     key={idx}
-                    className={cn(
-                      "p-4 rounded-2xl bg-gradient-to-br text-white",
-                      tier.color
-                    )}
+                    className={cn('p-4 rounded-2xl bg-gradient-to-br text-white', tier.color)}
                   >
                     <TierIcon className="w-8 h-8 mb-2" />
                     <p className="font-bold">{tier.name}</p>
@@ -334,7 +361,7 @@ export default function CustomerOnboarding({ customer, onComplete }) {
               onClick={handleNext}
               size="lg"
               className={cn(
-                "bg-gradient-to-r text-white shadow-lg min-w-[140px]",
+                'bg-gradient-to-r text-white shadow-lg min-w-[140px]',
                 currentStepData.color,
                 `shadow-${currentStepData.color.split('-')[1]}-500/30`
               )}

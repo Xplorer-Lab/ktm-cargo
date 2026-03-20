@@ -72,7 +72,7 @@ export default function CampaignLauncher({ targetCustomers, segment, onClose, on
           await sendMessengerNotification({
             to: customer.email,
             message: `${form.name}\n\n${personalizedMessage} ${form.discount_code ? `\n\nCode: ${form.discount_code} (${form.discount_percentage}% OFF)` : ''}`,
-            platform: 'line'
+            platform: 'line',
           });
           sent++;
           setSentCount(sent);

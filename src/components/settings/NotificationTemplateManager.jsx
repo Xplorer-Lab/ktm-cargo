@@ -454,7 +454,7 @@ export default function NotificationTemplateManager() {
                         console.error('Error sanitizing HTML:', error);
                         return '<p>Error rendering preview. Please check the template content.</p>';
                       }
-                    })()
+                    })(),
                   }}
                 />
               </div>

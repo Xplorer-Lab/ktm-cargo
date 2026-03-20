@@ -3,15 +3,7 @@ import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
-import {
-  Package,
-  Truck,
-  DollarSign,
-  Star,
-  Clock,
-  ArrowRight,
-  Calendar,
-} from 'lucide-react';
+import { Package, Truck, DollarSign, Star, Clock, ArrowRight, Calendar } from 'lucide-react';
 import { format, subMonths, startOfMonth, endOfMonth, isWithinInterval } from 'date-fns';
 
 export default function VendorPortalDashboard({ vendor }) {

@@ -175,8 +175,9 @@ export default function CustomerShipmentTracker({ customer, initialTrackingNumbe
                   return (
                     <div key={step.status} className="flex flex-col items-center relative z-10">
                       <div
-                        className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${isComplete ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-400'
-                          } ${isCurrent ? 'ring-4 ring-blue-200' : ''}`}
+                        className={`w-10 h-10 rounded-full flex items-center justify-center transition-all ${
+                          isComplete ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-400'
+                        } ${isCurrent ? 'ring-4 ring-blue-200' : ''}`}
                       >
                         <StepIcon className="w-5 h-5" />
                       </div>
@@ -237,7 +238,9 @@ export default function CustomerShipmentTracker({ customer, initialTrackingNumbe
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <MapPin className="w-4 h-4 text-blue-600" />
-                      <span className="text-sm font-medium">{selectedShipment.origin || 'Bangkok'}</span>
+                      <span className="text-sm font-medium">
+                        {selectedShipment.origin || 'Bangkok'}
+                      </span>
                     </div>
                     <p className="text-xs text-slate-500 ml-6">
                       {selectedShipment.pickup_address || 'Pickup location'}
@@ -247,7 +250,9 @@ export default function CustomerShipmentTracker({ customer, initialTrackingNumbe
                   <div className="flex-1">
                     <div className="flex items-center gap-2 mb-1">
                       <MapPin className="w-4 h-4 text-emerald-600" />
-                      <span className="text-sm font-medium">{selectedShipment.destination || 'Yangon'}</span>
+                      <span className="text-sm font-medium">
+                        {selectedShipment.destination || 'Yangon'}
+                      </span>
                     </div>
                     <p className="text-xs text-slate-500 ml-6">
                       {selectedShipment.delivery_address || 'Delivery location'}
@@ -293,10 +298,11 @@ export default function CustomerShipmentTracker({ customer, initialTrackingNumbe
                 <button
                   key={shipment.id}
                   onClick={() => setSelectedShipment(shipment)}
-                  className={`w-full flex items-center justify-between p-4 rounded-xl border-2 transition-all text-left ${selectedShipment?.id === shipment.id
+                  className={`w-full flex items-center justify-between p-4 rounded-xl border-2 transition-all text-left ${
+                    selectedShipment?.id === shipment.id
                       ? 'border-blue-500 bg-blue-50'
                       : 'border-slate-200 hover:border-blue-200'
-                    }`}
+                  }`}
                 >
                   <div className="flex items-center gap-3">
                     <div className="p-2 bg-blue-100 rounded-lg">

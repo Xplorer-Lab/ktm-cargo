@@ -9,16 +9,16 @@
 
 ## Required Secrets / Environment Variables
 
-| Variable | Where | Description |
-|----------|-------|-------------|
-| `VITE_SUPABASE_URL` | Frontend build | Supabase project URL |
-| `VITE_SUPABASE_ANON_KEY` | Frontend build | Supabase anon/publishable key (browser-safe) |
-| `VITE_SENTRY_DSN` | Frontend build | Sentry DSN for error tracking (optional) |
-| `VITE_LOGROCKET_APP_ID` | Frontend build | LogRocket app ID (optional) |
-| `VITE_STRIPE_PUBLISHABLE_KEY` | Frontend build | Stripe publishable key `pk_live_…` (optional, for billing) |
-| `STRIPE_SECRET_KEY` | Supabase Edge Function secrets | Stripe secret key `sk_live_…` — **never in frontend** |
-| `STRIPE_WEBHOOK_SECRET` | Supabase Edge Function secrets | Stripe webhook signing secret `whsec_…` |
-| `SUPABASE_SERVICE_ROLE_KEY` | Migration scripts only | For running migrations programmatically |
+| Variable                      | Where                          | Description                                                |
+| ----------------------------- | ------------------------------ | ---------------------------------------------------------- |
+| `VITE_SUPABASE_URL`           | Frontend build                 | Supabase project URL                                       |
+| `VITE_SUPABASE_ANON_KEY`      | Frontend build                 | Supabase anon/publishable key (browser-safe)               |
+| `VITE_SENTRY_DSN`             | Frontend build                 | Sentry DSN for error tracking (optional)                   |
+| `VITE_LOGROCKET_APP_ID`       | Frontend build                 | LogRocket app ID (optional)                                |
+| `VITE_STRIPE_PUBLISHABLE_KEY` | Frontend build                 | Stripe publishable key `pk_live_…` (optional, for billing) |
+| `STRIPE_SECRET_KEY`           | Supabase Edge Function secrets | Stripe secret key `sk_live_…` — **never in frontend**      |
+| `STRIPE_WEBHOOK_SECRET`       | Supabase Edge Function secrets | Stripe webhook signing secret `whsec_…`                    |
+| `SUPABASE_SERVICE_ROLE_KEY`   | Migration scripts only         | For running migrations programmatically                    |
 
 > **Security:** `STRIPE_SECRET_KEY`, `STRIPE_WEBHOOK_SECRET`, and `SUPABASE_SERVICE_ROLE_KEY`
 > must **never** appear in the frontend build or in the repository.
@@ -71,6 +71,7 @@ https://<your-project-ref>.supabase.co/functions/v1/stripe-webhook
 ```
 
 Events to enable:
+
 - `checkout.session.completed`
 - `customer.subscription.created`
 - `customer.subscription.updated`
@@ -120,14 +121,15 @@ all paths to fall back to `index.html`.
 
 GitHub Actions workflows are in `.github/workflows/`:
 
-| Workflow | Trigger | What it does |
-|----------|---------|-------------|
-| `ci.yml` | Push & PR to main/develop | Lint, test, build, security scan, bundle analysis |
-| `pr-check.yml` | PR opened/updated | PR size labels, commit lint, build preview |
-| `deploy.yml` | (configure as needed) | Production deployment |
-| `release.yml` | (configure as needed) | Release automation |
+| Workflow       | Trigger                   | What it does                                      |
+| -------------- | ------------------------- | ------------------------------------------------- |
+| `ci.yml`       | Push & PR to main/develop | Lint, test, build, security scan, bundle analysis |
+| `pr-check.yml` | PR opened/updated         | PR size labels, commit lint, build preview        |
+| `deploy.yml`   | (configure as needed)     | Production deployment                             |
+| `release.yml`  | (configure as needed)     | Release automation                                |
 
 All workflows require these GitHub Secrets:
+
 - `VITE_SUPABASE_URL`
 - `VITE_SUPABASE_ANON_KEY`
 - `CODECOV_TOKEN` (optional, for coverage)

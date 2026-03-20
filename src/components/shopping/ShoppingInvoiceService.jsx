@@ -1,6 +1,6 @@
 /**
  * Shopping Invoice Utilities
- * 
+ *
  * Helper functions for shopping order invoicing.
  * Invoices should be created manually by staff.
  */
@@ -19,7 +19,9 @@ export async function generateShoppingOrderInvoice(order, customer) {
  * Invoices should be created manually from the Invoices page
  */
 export async function processShoppingOrderInvoicing(order, customers) {
-  console.warn('processShoppingOrderInvoicing is deprecated. Create invoices manually from the Invoices page.');
+  console.warn(
+    'processShoppingOrderInvoicing is deprecated. Create invoices manually from the Invoices page.'
+  );
   return { invoice: null, skipped: true, reason: 'Auto-generation disabled' };
 }
 

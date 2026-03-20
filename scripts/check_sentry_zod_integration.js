@@ -34,7 +34,9 @@ try {
   }
 
   if (deps['@sentry/tracing']) {
-    warnings.push(`⚠️  @sentry/tracing found: ${deps['@sentry/tracing']} (deprecated - use @sentry/react's built-in tracing)`);
+    warnings.push(
+      `⚠️  @sentry/tracing found: ${deps['@sentry/tracing']} (deprecated - use @sentry/react's built-in tracing)`
+    );
   }
 
   // Check Zod
@@ -64,7 +66,7 @@ try {
 console.log('\n🔧 Checking Sentry Configuration...');
 try {
   const mainJsx = fs.readFileSync('src/main.jsx', 'utf-8');
-  
+
   if (mainJsx.includes('@sentry/react')) {
     successes.push('✅ Sentry imported in main.jsx');
   } else {
@@ -139,7 +141,7 @@ try {
   const schemasPath = 'src/lib/schemas.js';
   if (fs.existsSync(schemasPath)) {
     const schemasContent = fs.readFileSync(schemasPath, 'utf-8');
-    
+
     if (schemasContent.includes('import') && schemasContent.includes('zod')) {
       successes.push('✅ Zod imported in schemas.js');
     } else {
@@ -155,9 +157,7 @@ try {
 
     // Check for common schemas
     const commonSchemas = ['customerSchema', 'shipmentSchema', 'campaignSchema', 'vendorSchema'];
-    const foundSchemas = commonSchemas.filter(schema => 
-      schemasContent.includes(schema)
-    );
+    const foundSchemas = commonSchemas.filter((schema) => schemasContent.includes(schema));
     if (foundSchemas.length > 0) {
       successes.push(`✅ Found schemas: ${foundSchemas.join(', ')}`);
     }
@@ -174,7 +174,7 @@ try {
   const errorHandlerPath = 'src/hooks/useErrorHandler.js';
   if (fs.existsSync(errorHandlerPath)) {
     const errorHandlerContent = fs.readFileSync(errorHandlerPath, 'utf-8');
-    
+
     if (errorHandlerContent.includes('@sentry/react')) {
       successes.push('✅ Sentry imported in useErrorHandler');
     } else {
@@ -205,7 +205,7 @@ try {
   let zodUsage = 0;
   let errorHandlerUsage = 0;
 
-  srcFiles.forEach(file => {
+  srcFiles.forEach((file) => {
     try {
       const content = fs.readFileSync(file, 'utf-8');
       if (content.includes('@sentry/react') || content.includes('Sentry.')) {
@@ -237,7 +237,7 @@ try {
     import * as Sentry from '@sentry/react';
     console.log('Sentry version:', Sentry.SDK_VERSION || 'unknown');
   `;
-  
+
   // Just check if module exists
   try {
     const packageJson = JSON.parse(fs.readFileSync('package.json', 'utf-8'));
@@ -305,16 +305,16 @@ console.log('📊 INTEGRATION REPORT');
 console.log('='.repeat(80));
 
 console.log('\n✅ SUCCESSES:');
-successes.forEach(msg => console.log(`  ${msg}`));
+successes.forEach((msg) => console.log(`  ${msg}`));
 
 if (warnings.length > 0) {
   console.log('\n⚠️  WARNINGS:');
-  warnings.forEach(msg => console.log(`  ${msg}`));
+  warnings.forEach((msg) => console.log(`  ${msg}`));
 }
 
 if (issues.length > 0) {
   console.log('\n❌ ISSUES:');
-  issues.forEach(msg => console.log(`  ${msg}`));
+  issues.forEach((msg) => console.log(`  ${msg}`));
 }
 
 // Summary
@@ -349,10 +349,6 @@ const report = {
   score,
 };
 
-fs.writeFileSync(
-  'SENTRY_ZOD_INTEGRATION_REPORT.json',
-  JSON.stringify(report, null, 2)
-);
+fs.writeFileSync('SENTRY_ZOD_INTEGRATION_REPORT.json', JSON.stringify(report, null, 2));
 
 console.log('📄 Report saved to: SENTRY_ZOD_INTEGRATION_REPORT.json\n');
-

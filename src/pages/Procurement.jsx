@@ -863,8 +863,6 @@ export default function Procurement() {
             />
           </TabsContent>
 
-
-
           {/* Invoices Tab */}
           <TabsContent value="invoices" className="mt-6">
             <InvoiceList

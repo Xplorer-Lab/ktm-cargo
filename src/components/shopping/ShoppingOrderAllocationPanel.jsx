@@ -10,12 +10,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-} from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import {
   Package,
@@ -163,7 +158,6 @@ export default function ShoppingOrderAllocationPanel({
     }
   };
 
-
   return (
     <div className="space-y-6">
       {/* Summary Cards */}
@@ -176,7 +170,13 @@ export default function ShoppingOrderAllocationPanel({
               </div>
               <div>
                 <p className="text-xs text-blue-600 font-medium">Total Weight</p>
-                {isLoading ? <Skeleton className="h-7 w-20" /> : <p className="text-xl font-bold text-blue-900">{stats.totalWeight.toFixed(1)} kg</p>}
+                {isLoading ? (
+                  <Skeleton className="h-7 w-20" />
+                ) : (
+                  <p className="text-xl font-bold text-blue-900">
+                    {stats.totalWeight.toFixed(1)} kg
+                  </p>
+                )}
               </div>
             </div>
           </CardContent>
@@ -190,9 +190,13 @@ export default function ShoppingOrderAllocationPanel({
               </div>
               <div>
                 <p className="text-xs text-emerald-600 font-medium">Allocated</p>
-                {isLoading ? <Skeleton className="h-7 w-12" /> : <p className="text-xl font-bold text-emerald-900">
-                  {stats.allocatedOrders}/{stats.totalOrders}
-                </p>}
+                {isLoading ? (
+                  <Skeleton className="h-7 w-12" />
+                ) : (
+                  <p className="text-xl font-bold text-emerald-900">
+                    {stats.allocatedOrders}/{stats.totalOrders}
+                  </p>
+                )}
               </div>
             </div>
           </CardContent>
@@ -206,7 +210,11 @@ export default function ShoppingOrderAllocationPanel({
               </div>
               <div>
                 <p className="text-xs text-amber-600 font-medium">Unallocated</p>
-                {isLoading ? <Skeleton className="h-7 w-8" /> : <p className="text-xl font-bold text-amber-900">{unallocatedOrders.length}</p>}
+                {isLoading ? (
+                  <Skeleton className="h-7 w-8" />
+                ) : (
+                  <p className="text-xl font-bold text-amber-900">{unallocatedOrders.length}</p>
+                )}
               </div>
             </div>
           </CardContent>
@@ -220,9 +228,13 @@ export default function ShoppingOrderAllocationPanel({
               </div>
               <div>
                 <p className="text-xs text-rose-600 font-medium">Vendor Cost</p>
-                {isLoading ? <Skeleton className="h-7 w-24" /> : <p className="text-xl font-bold text-rose-900">
-                  ฿{stats.totalVendorCost.toLocaleString()}
-                </p>}
+                {isLoading ? (
+                  <Skeleton className="h-7 w-24" />
+                ) : (
+                  <p className="text-xl font-bold text-rose-900">
+                    ฿{stats.totalVendorCost.toLocaleString()}
+                  </p>
+                )}
               </div>
             </div>
           </CardContent>

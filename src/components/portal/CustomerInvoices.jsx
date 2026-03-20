@@ -38,14 +38,19 @@ function openPrintableInvoice(invoice, companySettings) {
 
   const lineItems = Array.isArray(invoice.line_items) ? invoice.line_items : [];
 
-  const lineItemsHtml = lineItems.length > 0
-    ? lineItems.map((item) => `
+  const lineItemsHtml =
+    lineItems.length > 0
+      ? lineItems
+          .map(
+            (item) => `
         <tr>
           <td style="padding:8px;border-bottom:1px solid #e2e8f0;">${item.description || item.label || '—'}</td>
           <td style="padding:8px;border-bottom:1px solid #e2e8f0;text-align:right;">฿${Number(item.amount || 0).toLocaleString()}</td>
         </tr>
-      `).join('')
-    : `<tr><td colspan="2" style="padding:8px;text-align:center;color:#94a3b8;">No line items</td></tr>`;
+      `
+          )
+          .join('')
+      : `<tr><td colspan="2" style="padding:8px;text-align:center;color:#94a3b8;">No line items</td></tr>`;
 
   // Payment info from company settings or sensible fallback
   const bankName = companySettings?.bank_name;
@@ -272,7 +277,9 @@ export default function CustomerInvoices({ customer, companySettings }) {
                     </div>
                     <div className="flex items-center gap-4">
                       <div className="text-right">
-                        <p className="font-bold">฿{Number(invoice.total_amount || 0).toLocaleString()}</p>
+                        <p className="font-bold">
+                          ฿{Number(invoice.total_amount || 0).toLocaleString()}
+                        </p>
                         {invoice.displayStatus === 'partially_paid' && invoice.balance_due > 0 && (
                           <p className="text-xs text-rose-600 font-medium">
                             Due: ฿{Number(invoice.balance_due).toLocaleString()}
@@ -377,16 +384,19 @@ export default function CustomerInvoices({ customer, companySettings }) {
               </div>
 
               {/* Line Items */}
-              {Array.isArray(selectedInvoice.line_items) && selectedInvoice.line_items.length > 0 && (
-                <div className="border-t pt-4 space-y-2 text-sm">
-                  {selectedInvoice.line_items.map((item, idx) => (
-                    <div key={idx} className="flex justify-between">
-                      <span className="text-slate-500">{item.description || item.label || '—'}</span>
-                      <span>฿{Number(item.amount || 0).toLocaleString()}</span>
-                    </div>
-                  ))}
-                </div>
-              )}
+              {Array.isArray(selectedInvoice.line_items) &&
+                selectedInvoice.line_items.length > 0 && (
+                  <div className="border-t pt-4 space-y-2 text-sm">
+                    {selectedInvoice.line_items.map((item, idx) => (
+                      <div key={idx} className="flex justify-between">
+                        <span className="text-slate-500">
+                          {item.description || item.label || '—'}
+                        </span>
+                        <span>฿{Number(item.amount || 0).toLocaleString()}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
 
               <div className="pt-4 border-t space-y-2">
                 <div className="flex justify-between items-center text-slate-600">
@@ -402,7 +412,11 @@ export default function CustomerInvoices({ customer, companySettings }) {
                 <div className="flex justify-between items-center pt-2 border-t">
                   <span className="text-lg font-medium">Balance Due</span>
                   <span className="text-2xl font-bold text-blue-600">
-                    ฿{(selectedInvoice.balance_due !== undefined ? Number(selectedInvoice.balance_due) : Number(selectedInvoice.total_amount || 0)).toLocaleString()}
+                    ฿
+                    {(selectedInvoice.balance_due !== undefined
+                      ? Number(selectedInvoice.balance_due)
+                      : Number(selectedInvoice.total_amount || 0)
+                    ).toLocaleString()}
                   </span>
                 </div>
               </div>
@@ -418,14 +432,14 @@ export default function CustomerInvoices({ customer, companySettings }) {
                     <ul className="text-sm text-blue-700 space-y-1">
                       {promptPayId && <li>PromptPay: {promptPayId}</li>}
                       {bankName && bankAccount && (
-                        <li>Bank Transfer: {bankName} {bankAccount}</li>
+                        <li>
+                          Bank Transfer: {bankName} {bankAccount}
+                        </li>
                       )}
                       <li>Cash on pickup</li>
                     </ul>
                   ) : (
-                    <p className="text-sm text-blue-700">
-                      Please contact us for payment details.
-                    </p>
+                    <p className="text-sm text-blue-700">Please contact us for payment details.</p>
                   )}
                 </div>
               )}

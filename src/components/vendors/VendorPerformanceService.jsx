@@ -49,8 +49,8 @@ export async function updateVendorOnDelivery(shipmentId, vendorOrders, vendors) 
   const avgRating =
     ratedOrders.length > 0
       ? Math.round(
-        (ratedOrders.reduce((sum, o) => sum + o.quality_rating, 0) / ratedOrders.length) * 10
-      ) / 10
+          (ratedOrders.reduce((sum, o) => sum + o.quality_rating, 0) / ratedOrders.length) * 10
+        ) / 10
       : vendor.rating || 5;
 
   // Update vendor with new metrics

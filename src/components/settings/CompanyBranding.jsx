@@ -16,7 +16,11 @@ export default function CompanyBranding() {
   const [uploading, setUploading] = useState(false);
   const [logoError, setLogoError] = useState(false);
 
-  const { data: settings, isLoading, isError } = useQuery({
+  const {
+    data: settings,
+    isLoading,
+    isError,
+  } = useQuery({
     queryKey: ['company-settings'],
     queryFn: async () => {
       try {
@@ -78,7 +82,7 @@ export default function CompanyBranding() {
       } catch (err) {
         console.error('Failed to save company settings:', err);
         throw new Error(
-          err.message?.includes('relation') 
+          err.message?.includes('relation')
             ? 'Database table not found. Please run the migration first.'
             : err.message || 'Failed to save settings'
         );
@@ -119,17 +123,17 @@ export default function CompanyBranding() {
       if (!logoUrl) {
         throw new Error('No URL returned from upload');
       }
-      
+
       // Update local form state
       setForm((prev) => ({ ...prev, logo_url: logoUrl }));
-      
+
       // Auto-save to database immediately
       if (settings?.id) {
         await db.companySettings.update(settings.id, { logo_url: logoUrl });
       } else {
         await db.companySettings.create({ ...form, logo_url: logoUrl });
       }
-      
+
       queryClient.invalidateQueries({ queryKey: ['company-settings'] });
       toast.success('Logo uploaded and saved successfully');
     } catch (err) {
@@ -160,8 +164,11 @@ export default function CompanyBranding() {
         <Alert variant="destructive" className="bg-amber-50 border-amber-200 text-amber-800">
           <AlertTriangle className="h-4 w-4" />
           <AlertDescription>
-            <strong>Database setup required:</strong> The company_settings table may not exist. 
-            Please run the migration: <code className="bg-amber-100 px-1 rounded">migrations/create_company_settings.sql</code>
+            <strong>Database setup required:</strong> The company_settings table may not exist.
+            Please run the migration:{' '}
+            <code className="bg-amber-100 px-1 rounded">
+              migrations/create_company_settings.sql
+            </code>
           </AlertDescription>
         </Alert>
       )}
@@ -183,9 +190,9 @@ export default function CompanyBranding() {
             <div className="flex items-center gap-6">
               <div className="w-24 h-24 border-2 border-dashed border-slate-200 rounded-xl flex items-center justify-center bg-slate-50 overflow-hidden">
                 {form.logo_url && !logoError ? (
-                  <img 
-                    src={form.logo_url} 
-                    alt="Logo" 
+                  <img
+                    src={form.logo_url}
+                    alt="Logo"
                     className="w-full h-full object-contain"
                     onError={() => {
                       console.error('Failed to load logo from:', form.logo_url);
@@ -222,9 +229,9 @@ export default function CompanyBranding() {
                 </Button>
                 <p className="text-xs text-slate-500">Recommended: 200x200px, PNG or JPG</p>
                 {form.logo_url && (
-                  <a 
-                    href={form.logo_url} 
-                    target="_blank" 
+                  <a
+                    href={form.logo_url}
+                    target="_blank"
                     rel="noopener noreferrer"
                     className="text-xs text-blue-600 hover:underline block truncate max-w-[200px]"
                     title={form.logo_url}

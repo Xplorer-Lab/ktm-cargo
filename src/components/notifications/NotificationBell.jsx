@@ -130,10 +130,10 @@ export default function NotificationBell() {
         <div className="flex items-center justify-between p-3 border-b">
           <h3 className="font-semibold">Notifications</h3>
           {unreadCount > 0 && (
-            <Button 
-              variant="ghost" 
-              size="sm" 
-              onClick={markAllRead} 
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={markAllRead}
               className="text-xs"
               disabled={markReadMutation.isPending}
             >

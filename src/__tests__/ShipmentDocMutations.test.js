@@ -40,9 +40,7 @@ function canBatchPrint(selectedShipments) {
 }
 
 function toggleShipmentSelection(selected, id) {
-  return selected.includes(id)
-    ? selected.filter((x) => x !== id)
-    : [...selected, id];
+  return selected.includes(id) ? selected.filter((x) => x !== id) : [...selected, id];
 }
 
 function selectAllShipments(currentSelected, eligibleShipments) {

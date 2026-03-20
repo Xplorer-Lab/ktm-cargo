@@ -17,31 +17,35 @@ const IS_PROD =
  */
 function createSafeErrorResponse(error, operation, tableName, extraContext = {}) {
   // Always send full details to Sentry
-  Sentry.captureException(error instanceof Error ? error : new Error(error?.message || 'Unknown DB error'), {
-    tags: {
-      component: 'db',
-      operation,
-      table: tableName,
-      supabaseCode: error?.code,
-    },
-    extra: {
-      supabaseCode: error?.code,
-      supabaseDetails: error?.details,
-      supabaseHint: error?.hint,
-      supabaseMessage: error?.message,
-      ...extraContext,
-    },
-  });
+  Sentry.captureException(
+    error instanceof Error ? error : new Error(error?.message || 'Unknown DB error'),
+    {
+      tags: {
+        component: 'db',
+        operation,
+        table: tableName,
+        supabaseCode: error?.code,
+      },
+      extra: {
+        supabaseCode: error?.code,
+        supabaseDetails: error?.details,
+        supabaseHint: error?.hint,
+        supabaseMessage: error?.message,
+        ...extraContext,
+      },
+    }
+  );
 
   // Build the user-friendly response that will be returned
-  const devMessage = error?.details || error?.hint || error?.message || `Failed to ${operation} ${tableName}`;
+  const devMessage =
+    error?.details || error?.hint || error?.message || `Failed to ${operation} ${tableName}`;
   const prodMessage = `Failed to ${operation} record. Please try again or contact support.`;
 
   return {
     success: false,
     data: null,
     code: error?.code || 'DB_ERROR',
-    message: IS_PROD ? prodMessage : devMessage
+    message: IS_PROD ? prodMessage : devMessage,
   };
 }
 
@@ -199,6 +203,10 @@ export const db = {
   vendorPayouts: createEntityClient('vendor_payouts', '*'),
   companySettings: createEntityClient('company_settings', '*'),
   notificationTemplates: createEntityClient('notification_templates', '*'),
+  orderJourneys: createEntityClient('order_journeys', '*'),
+  journeyEvents: createEntityClient('journey_events', '*'),
+  supportTickets: createEntityClient('support_tickets', '*'),
+  proofOfDelivery: createEntityClient('proof_of_delivery', '*'),
 };
 
 export const api = {
@@ -231,4 +239,8 @@ export const api = {
   vendorPayouts: createSafeEntityClient('vendor_payouts', '*'),
   companySettings: createSafeEntityClient('company_settings', '*'),
   notificationTemplates: createSafeEntityClient('notification_templates', '*'),
+  orderJourneys: createSafeEntityClient('order_journeys', '*'),
+  journeyEvents: createSafeEntityClient('journey_events', '*'),
+  supportTickets: createSafeEntityClient('support_tickets', '*'),
+  proofOfDelivery: createSafeEntityClient('proof_of_delivery', '*'),
 };

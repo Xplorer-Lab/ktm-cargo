@@ -42,10 +42,20 @@ import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 
 const vendorTypes = [
-  { value: 'cargo_carrier', label: 'Cargo Carrier', icon: Truck, description: 'Transport services' },
+  {
+    value: 'cargo_carrier',
+    label: 'Cargo Carrier',
+    icon: Truck,
+    description: 'Transport services',
+  },
   { value: 'supplier', label: 'Supplier', icon: Package, description: 'Product supplier' },
   { value: 'packaging', label: 'Packaging', icon: Building2, description: 'Packaging materials' },
-  { value: 'customs_broker', label: 'Customs Broker', icon: FileText, description: 'Customs clearance' },
+  {
+    value: 'customs_broker',
+    label: 'Customs Broker',
+    icon: FileText,
+    description: 'Customs clearance',
+  },
   { value: 'warehouse', label: 'Warehouse', icon: Building2, description: 'Storage facility' },
 ];
 
@@ -167,15 +177,19 @@ export default function VendorForm({ vendor, onSubmit, onCancel }) {
       <CardHeader className="pb-4 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/50 dark:to-indigo-950/50 border-b border-slate-100 dark:border-slate-800">
         <div className="flex items-center justify-between">
           <div className="flex items-center gap-3">
-            <div className={cn(
-              "p-3 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white"
-            )}>
+            <div
+              className={cn(
+                'p-3 rounded-xl bg-gradient-to-br from-blue-500 to-indigo-600 text-white'
+              )}
+            >
               <VendorTypeIcon className="w-6 h-6" />
             </div>
             <div>
               <CardTitle className="text-xl">{vendor ? 'Edit Vendor' : 'Add New Vendor'}</CardTitle>
               <CardDescription>
-                {vendor ? 'Update vendor information' : 'Enter vendor details to add to your network'}
+                {vendor
+                  ? 'Update vendor information'
+                  : 'Enter vendor details to add to your network'}
               </CardDescription>
             </div>
           </div>
@@ -190,15 +204,24 @@ export default function VendorForm({ vendor, onSubmit, onCancel }) {
         <form onSubmit={handleSubmit}>
           <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
             <TabsList className="grid w-full grid-cols-3 mb-6 bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
-              <TabsTrigger value="basic" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm">
+              <TabsTrigger
+                value="basic"
+                className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm"
+              >
                 <User className="w-4 h-4 mr-2" />
                 Basic Info
               </TabsTrigger>
-              <TabsTrigger value="pricing" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm">
+              <TabsTrigger
+                value="pricing"
+                className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm"
+              >
                 <DollarSign className="w-4 h-4 mr-2" />
                 Pricing
               </TabsTrigger>
-              <TabsTrigger value="capacity" className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm">
+              <TabsTrigger
+                value="capacity"
+                className="rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm"
+              >
                 <Scale className="w-4 h-4 mr-2" />
                 Capacity
               </TabsTrigger>
@@ -257,10 +280,7 @@ export default function VendorForm({ vendor, onSubmit, onCancel }) {
                     <CheckCircle className="w-4 h-4 text-slate-400" />
                     Status
                   </Label>
-                  <Select
-                    value={form.status}
-                    onValueChange={(v) => updateForm('status', v)}
-                  >
+                  <Select value={form.status} onValueChange={(v) => updateForm('status', v)}>
                     <SelectTrigger className="h-11">
                       <SelectValue />
                     </SelectTrigger>
@@ -268,7 +288,7 @@ export default function VendorForm({ vendor, onSubmit, onCancel }) {
                       {statusOptions.map((s) => (
                         <SelectItem key={s.value} value={s.value}>
                           <div className="flex items-center gap-2">
-                            <Badge className={cn("text-xs", s.color)}>{s.label}</Badge>
+                            <Badge className={cn('text-xs', s.color)}>{s.label}</Badge>
                           </div>
                         </SelectItem>
                       ))}
@@ -400,8 +420,12 @@ export default function VendorForm({ vendor, onSubmit, onCancel }) {
                       <Star className="w-5 h-5 text-amber-600" />
                     </div>
                     <div>
-                      <Label className="text-amber-900 dark:text-amber-200 font-medium">Preferred Vendor</Label>
-                      <p className="text-sm text-amber-700 dark:text-amber-400">Get priority recommendations</p>
+                      <Label className="text-amber-900 dark:text-amber-200 font-medium">
+                        Preferred Vendor
+                      </Label>
+                      <p className="text-sm text-amber-700 dark:text-amber-400">
+                        Get priority recommendations
+                      </p>
                     </div>
                   </div>
                   <Switch
@@ -420,14 +444,20 @@ export default function VendorForm({ vendor, onSubmit, onCancel }) {
                     <DollarSign className="w-5 h-5 text-blue-600" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-blue-900 dark:text-blue-200">Pricing Tiers</h3>
-                    <p className="text-sm text-blue-700 dark:text-blue-400">Configure rates for different service levels</p>
+                    <h3 className="font-semibold text-blue-900 dark:text-blue-200">
+                      Pricing Tiers
+                    </h3>
+                    <p className="text-sm text-blue-700 dark:text-blue-400">
+                      Configure rates for different service levels
+                    </p>
                   </div>
                 </div>
 
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div className="p-4 bg-white dark:bg-slate-800 rounded-xl border border-slate-200 dark:border-slate-700">
-                    <Label className="text-sm text-slate-600 dark:text-slate-400 mb-2 block">Standard Rate</Label>
+                    <Label className="text-sm text-slate-600 dark:text-slate-400 mb-2 block">
+                      Standard Rate
+                    </Label>
                     <div className="flex items-center gap-2">
                       <span className="text-slate-400 font-medium">฿</span>
                       <Input
@@ -504,9 +534,13 @@ export default function VendorForm({ vendor, onSubmit, onCancel }) {
               </div>
 
               {/* Pricing Summary */}
-              {(form.cost_per_kg > 0 || form.cost_per_kg_express > 0 || form.cost_per_kg_bulk > 0) && (
+              {(form.cost_per_kg > 0 ||
+                form.cost_per_kg_express > 0 ||
+                form.cost_per_kg_bulk > 0) && (
                 <div className="p-5 bg-slate-50 dark:bg-slate-800/50 rounded-2xl">
-                  <h4 className="font-semibold text-slate-900 dark:text-white mb-4">Pricing Summary</h4>
+                  <h4 className="font-semibold text-slate-900 dark:text-white mb-4">
+                    Pricing Summary
+                  </h4>
                   <div className="grid grid-cols-3 gap-4 text-center">
                     <div className="p-3 bg-white dark:bg-slate-800 rounded-xl">
                       <p className="text-slate-500 text-sm">Standard</p>
@@ -523,7 +557,9 @@ export default function VendorForm({ vendor, onSubmit, onCancel }) {
                       <p className="text-xs text-amber-500">/kg</p>
                     </div>
                     <div className="p-3 bg-emerald-50 dark:bg-emerald-900/20 rounded-xl">
-                      <p className="text-emerald-600 text-sm">Bulk ({form.bulk_threshold_kg}+ kg)</p>
+                      <p className="text-emerald-600 text-sm">
+                        Bulk ({form.bulk_threshold_kg}+ kg)
+                      </p>
                       <p className="text-2xl font-bold text-emerald-600">
                         ฿{parseFloat(form.cost_per_kg_bulk || 0).toFixed(2)}
                       </p>
@@ -535,15 +571,22 @@ export default function VendorForm({ vendor, onSubmit, onCancel }) {
             </TabsContent>
 
             {/* Capacity Tab */}
-            <TabsContent value="capacity" className="space-y-5 mt-0 animate-in fade-in duration-300">
+            <TabsContent
+              value="capacity"
+              className="space-y-5 mt-0 animate-in fade-in duration-300"
+            >
               <div className="p-5 bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 rounded-2xl border border-emerald-100 dark:border-emerald-900">
                 <div className="flex items-center gap-3 mb-5">
                   <div className="p-2 bg-emerald-100 dark:bg-emerald-900/50 rounded-lg">
                     <Scale className="w-5 h-5 text-emerald-600" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-emerald-900 dark:text-emerald-200">Capacity Management</h3>
-                    <p className="text-sm text-emerald-700 dark:text-emerald-400">Set monthly limits and requirements</p>
+                    <h3 className="font-semibold text-emerald-900 dark:text-emerald-200">
+                      Capacity Management
+                    </h3>
+                    <p className="text-sm text-emerald-700 dark:text-emerald-400">
+                      Set monthly limits and requirements
+                    </p>
                   </div>
                 </div>
 
@@ -575,25 +618,28 @@ export default function VendorForm({ vendor, onSubmit, onCancel }) {
                 {vendor && form.monthly_capacity_kg > 0 && (
                   <div className="mt-5 p-4 bg-white dark:bg-slate-800 rounded-xl">
                     <div className="flex justify-between text-sm mb-3">
-                      <span className="text-slate-600 dark:text-slate-400">Current Month Usage</span>
+                      <span className="text-slate-600 dark:text-slate-400">
+                        Current Month Usage
+                      </span>
                       <span className="font-semibold">
                         {form.current_month_allocated_kg} / {form.monthly_capacity_kg} kg
                       </span>
                     </div>
                     <Progress
                       value={parseFloat(capacityUsedPercent)}
-                      className={cn(
-                        "h-3",
-                        parseFloat(capacityUsedPercent) > 80 && "bg-rose-100"
-                      )}
+                      className={cn('h-3', parseFloat(capacityUsedPercent) > 80 && 'bg-rose-100')}
                     />
                     <div className="flex justify-between mt-2 text-xs">
-                      <span className={cn(
-                        "font-medium",
-                        parseFloat(capacityUsedPercent) > 80 ? "text-rose-600"
-                          : parseFloat(capacityUsedPercent) > 50 ? "text-amber-600"
-                            : "text-emerald-600"
-                      )}>
+                      <span
+                        className={cn(
+                          'font-medium',
+                          parseFloat(capacityUsedPercent) > 80
+                            ? 'text-rose-600'
+                            : parseFloat(capacityUsedPercent) > 50
+                              ? 'text-amber-600'
+                              : 'text-emerald-600'
+                        )}
+                      >
                         {capacityUsedPercent}% capacity used
                       </span>
                       <span className="text-slate-500">{remainingCapacity} kg available</span>
@@ -608,8 +654,12 @@ export default function VendorForm({ vendor, onSubmit, onCancel }) {
                     <Clock className="w-5 h-5 text-purple-600" />
                   </div>
                   <div>
-                    <h3 className="font-semibold text-purple-900 dark:text-purple-200">Lead Time & Performance</h3>
-                    <p className="text-sm text-purple-700 dark:text-purple-400">Track vendor reliability</p>
+                    <h3 className="font-semibold text-purple-900 dark:text-purple-200">
+                      Lead Time & Performance
+                    </h3>
+                    <p className="text-sm text-purple-700 dark:text-purple-400">
+                      Track vendor reliability
+                    </p>
                   </div>
                 </div>
 
@@ -645,10 +695,10 @@ export default function VendorForm({ vendor, onSubmit, onCancel }) {
                           <Star
                             key={star}
                             className={cn(
-                              "w-4 h-4",
+                              'w-4 h-4',
                               star <= Math.round(form.rating)
-                                ? "text-amber-400 fill-amber-400"
-                                : "text-slate-200"
+                                ? 'text-amber-400 fill-amber-400'
+                                : 'text-slate-200'
                             )}
                           />
                         ))}

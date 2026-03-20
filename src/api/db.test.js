@@ -44,24 +44,18 @@ describe('createEntityClient', () => {
 
     mockQueryBuilder = {
       select: mockSelect,
-      insert: jest
-        .fn()
-        .mockReturnValue({
+      insert: jest.fn().mockReturnValue({
+        select: jest
+          .fn()
+          .mockReturnValue({ single: jest.fn().mockReturnValue({ then: mockThen }) }),
+      }),
+      update: jest.fn().mockReturnValue({
+        eq: jest.fn().mockReturnValue({
           select: jest
             .fn()
             .mockReturnValue({ single: jest.fn().mockReturnValue({ then: mockThen }) }),
         }),
-      update: jest
-        .fn()
-        .mockReturnValue({
-          eq: jest
-            .fn()
-            .mockReturnValue({
-              select: jest
-                .fn()
-                .mockReturnValue({ single: jest.fn().mockReturnValue({ then: mockThen }) }),
-            }),
-        }),
+      }),
       delete: jest.fn().mockReturnValue({ eq: jest.fn().mockReturnValue({ then: mockThen }) }),
     };
 
@@ -113,11 +107,9 @@ describe('createEntityClient', () => {
 
   test('create() selects specific fields', async () => {
     // Re-setup specific mock for this test or capture it
-    const mockInsertSelect = jest
-      .fn()
-      .mockReturnValue({
-        single: jest.fn().mockReturnValue({ then: jest.fn((r) => r({ data: {}, error: null })) }),
-      });
+    const mockInsertSelect = jest.fn().mockReturnValue({
+      single: jest.fn().mockReturnValue({ then: jest.fn((r) => r({ data: {}, error: null })) }),
+    });
     mockQueryBuilder.insert.mockReturnValue({ select: mockInsertSelect });
 
     const client = createEntityClient('test_table', 'id, created_at');
@@ -126,11 +118,9 @@ describe('createEntityClient', () => {
   });
 
   test('update() selects specific fields', async () => {
-    const mockUpdateSelect = jest
-      .fn()
-      .mockReturnValue({
-        single: jest.fn().mockReturnValue({ then: jest.fn((r) => r({ data: {}, error: null })) }),
-      });
+    const mockUpdateSelect = jest.fn().mockReturnValue({
+      single: jest.fn().mockReturnValue({ then: jest.fn((r) => r({ data: {}, error: null })) }),
+    });
     // update: .from().update().eq().select().single()
     mockQueryBuilder.update.mockReturnValue({
       eq: jest.fn().mockReturnValue({

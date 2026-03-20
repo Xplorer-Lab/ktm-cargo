@@ -45,8 +45,13 @@ function getCSVExportConfig(type, filteredShipments, dailyRevenue, filteredExpen
       return {
         headers: ['Tracking', 'Customer', 'Service', 'Weight', 'Amount', 'Status', 'Date'],
         data: (filteredShipments || []).map((s) => [
-          s.tracking_number, s.customer_name, s.service_type,
-          s.weight_kg, s.total_amount, s.status, s.created_date,
+          s.tracking_number,
+          s.customer_name,
+          s.service_type,
+          s.weight_kg,
+          s.total_amount,
+          s.status,
+          s.created_date,
         ]),
         filename: 'shipments_report.csv',
       };
@@ -128,7 +133,13 @@ describe('Report mutation paths', () => {
 
   describe('buildCSVContent', () => {
     it('builds valid CSV string', () => {
-      const csv = buildCSVContent(['Name', 'Age'], [['Alice', 30], ['Bob', 25]]);
+      const csv = buildCSVContent(
+        ['Name', 'Age'],
+        [
+          ['Alice', 30],
+          ['Bob', 25],
+        ]
+      );
       expect(csv).toBe('Name,Age\nAlice,30\nBob,25');
     });
 

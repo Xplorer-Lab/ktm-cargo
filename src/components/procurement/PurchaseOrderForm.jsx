@@ -94,15 +94,19 @@ export default function PurchaseOrderForm({ vendors = [], existingPO, onSubmit, 
 
   // Calculations
   const subtotal = useMemo(() => items.reduce((sum, item) => sum + (item.total || 0), 0), [items]);
-  const total = useMemo(() => (
-    subtotal + (parseFloat(formData.tax_amount) || 0) + (parseFloat(formData.shipping_cost) || 0)
-  ), [subtotal, formData.tax_amount, formData.shipping_cost]);
+  const total = useMemo(
+    () =>
+      subtotal + (parseFloat(formData.tax_amount) || 0) + (parseFloat(formData.shipping_cost) || 0),
+    [subtotal, formData.tax_amount, formData.shipping_cost]
+  );
 
-  const estimatedCargoCost = useMemo(() => (
-    formData.total_weight_kg > 0 && formData.cost_per_kg > 0
-      ? formData.total_weight_kg * formData.cost_per_kg
-      : 0
-  ), [formData.total_weight_kg, formData.cost_per_kg]);
+  const estimatedCargoCost = useMemo(
+    () =>
+      formData.total_weight_kg > 0 && formData.cost_per_kg > 0
+        ? formData.total_weight_kg * formData.cost_per_kg
+        : 0,
+    [formData.total_weight_kg, formData.cost_per_kg]
+  );
 
   const handleVendorChange = (vendorId) => {
     const vendor = vendors.find((v) => v.id === vendorId);
@@ -167,9 +171,13 @@ export default function PurchaseOrderForm({ vendors = [], existingPO, onSubmit, 
             <FileText className="w-5 h-5" />
           </div>
           <div>
-            <CardTitle className="text-lg">{existingPO ? 'Edit Purchase Order' : 'New Purchase Order'}</CardTitle>
+            <CardTitle className="text-lg">
+              {existingPO ? 'Edit Purchase Order' : 'New Purchase Order'}
+            </CardTitle>
             <CardDescription>
-              {existingPO ? `Editing ${existingPO.po_number}` : 'Create a new vendor purchase order'}
+              {existingPO
+                ? `Editing ${existingPO.po_number}`
+                : 'Create a new vendor purchase order'}
             </CardDescription>
           </div>
         </div>
@@ -201,7 +209,9 @@ export default function PurchaseOrderForm({ vendors = [], existingPO, onSubmit, 
                       {recommendedVendors.slice(0, 3).map((v) => (
                         <SelectItem key={v.id} value={v.id}>
                           <div className="flex items-center gap-2">
-                            {v.is_preferred && <Star className="w-3 h-3 text-amber-500 fill-amber-500" />}
+                            {v.is_preferred && (
+                              <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
+                            )}
                             <span className="font-medium">{v.name}</span>
                             {v.cost_per_kg > 0 && (
                               <span className="text-xs text-slate-400">฿{v.cost_per_kg}/kg</span>
@@ -222,7 +232,9 @@ export default function PurchaseOrderForm({ vendors = [], existingPO, onSubmit, 
                     .map((v) => (
                       <SelectItem key={v.id} value={v.id}>
                         <div className="flex items-center gap-2">
-                          {v.is_preferred && <Star className="w-3 h-3 text-amber-500 fill-amber-500" />}
+                          {v.is_preferred && (
+                            <Star className="w-3 h-3 text-amber-500 fill-amber-500" />
+                          )}
                           <span>{v.name}</span>
                           {v.cost_per_kg > 0 && (
                             <span className="text-xs text-slate-400">฿{v.cost_per_kg}/kg</span>
@@ -273,8 +285,12 @@ export default function PurchaseOrderForm({ vendors = [], existingPO, onSubmit, 
                 <Scale className="w-5 h-5 text-blue-600" />
               </div>
               <div>
-                <Label className="text-blue-900 dark:text-blue-200 font-semibold">Cargo Weight & Pricing</Label>
-                <p className="text-sm text-blue-700 dark:text-blue-400">Set weight and cost parameters</p>
+                <Label className="text-blue-900 dark:text-blue-200 font-semibold">
+                  Cargo Weight & Pricing
+                </Label>
+                <p className="text-sm text-blue-700 dark:text-blue-400">
+                  Set weight and cost parameters
+                </p>
               </div>
             </div>
 
@@ -286,7 +302,9 @@ export default function PurchaseOrderForm({ vendors = [], existingPO, onSubmit, 
                   min="0"
                   step="0.1"
                   value={formData.total_weight_kg}
-                  onChange={(e) => setFormData({ ...formData, total_weight_kg: parseFloat(e.target.value) || 0 })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, total_weight_kg: parseFloat(e.target.value) || 0 })
+                  }
                   placeholder="Total weight in kg"
                   className="h-11"
                 />
@@ -298,7 +316,9 @@ export default function PurchaseOrderForm({ vendors = [], existingPO, onSubmit, 
                   min="0"
                   step="0.01"
                   value={formData.cost_per_kg}
-                  onChange={(e) => setFormData({ ...formData, cost_per_kg: parseFloat(e.target.value) || 0 })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, cost_per_kg: parseFloat(e.target.value) || 0 })
+                  }
                   placeholder="Vendor cost per kg"
                   className="h-11"
                 />
@@ -307,7 +327,9 @@ export default function PurchaseOrderForm({ vendors = [], existingPO, onSubmit, 
 
             {estimatedCargoCost > 0 && (
               <div className="mt-4 pt-4 border-t border-blue-200 dark:border-blue-800 flex justify-between items-center">
-                <span className="text-blue-700 dark:text-blue-300 font-medium">Estimated Cargo Cost:</span>
+                <span className="text-blue-700 dark:text-blue-300 font-medium">
+                  Estimated Cargo Cost:
+                </span>
                 <span className="text-xl font-bold text-blue-900 dark:text-blue-100">
                   ฿{estimatedCargoCost.toLocaleString()}
                 </span>
@@ -331,16 +353,27 @@ export default function PurchaseOrderForm({ vendors = [], existingPO, onSubmit, 
               <table className="w-full">
                 <thead className="bg-slate-50 dark:bg-slate-800">
                   <tr>
-                    <th className="text-left p-3 text-sm font-semibold text-slate-600 dark:text-slate-300">Item Description</th>
-                    <th className="text-center p-3 text-sm font-semibold text-slate-600 dark:text-slate-300 w-24">Qty</th>
-                    <th className="text-center p-3 text-sm font-semibold text-slate-600 dark:text-slate-300 w-32">Unit Price</th>
-                    <th className="text-right p-3 text-sm font-semibold text-slate-600 dark:text-slate-300 w-32">Total</th>
+                    <th className="text-left p-3 text-sm font-semibold text-slate-600 dark:text-slate-300">
+                      Item Description
+                    </th>
+                    <th className="text-center p-3 text-sm font-semibold text-slate-600 dark:text-slate-300 w-24">
+                      Qty
+                    </th>
+                    <th className="text-center p-3 text-sm font-semibold text-slate-600 dark:text-slate-300 w-32">
+                      Unit Price
+                    </th>
+                    <th className="text-right p-3 text-sm font-semibold text-slate-600 dark:text-slate-300 w-32">
+                      Total
+                    </th>
                     <th className="w-12"></th>
                   </tr>
                 </thead>
                 <tbody>
                   {items.map((item, idx) => (
-                    <tr key={idx} className="border-t border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors">
+                    <tr
+                      key={idx}
+                      className="border-t border-slate-100 dark:border-slate-700 hover:bg-slate-50 dark:hover:bg-slate-800/50 transition-colors"
+                    >
                       <td className="p-2">
                         <Input
                           value={item.name}
@@ -354,7 +387,9 @@ export default function PurchaseOrderForm({ vendors = [], existingPO, onSubmit, 
                           type="number"
                           min="1"
                           value={item.quantity}
-                          onChange={(e) => updateItem(idx, 'quantity', parseInt(e.target.value) || 0)}
+                          onChange={(e) =>
+                            updateItem(idx, 'quantity', parseInt(e.target.value) || 0)
+                          }
                           className="text-center border-0 bg-transparent focus-visible:ring-1"
                         />
                       </td>
@@ -364,7 +399,9 @@ export default function PurchaseOrderForm({ vendors = [], existingPO, onSubmit, 
                           min="0"
                           step="0.01"
                           value={item.unit_price}
-                          onChange={(e) => updateItem(idx, 'unit_price', parseFloat(e.target.value) || 0)}
+                          onChange={(e) =>
+                            updateItem(idx, 'unit_price', parseFloat(e.target.value) || 0)
+                          }
                           className="text-center border-0 bg-transparent focus-visible:ring-1"
                         />
                       </td>
@@ -403,7 +440,9 @@ export default function PurchaseOrderForm({ vendors = [], existingPO, onSubmit, 
                   type="number"
                   min="0"
                   value={formData.tax_amount}
-                  onChange={(e) => setFormData({ ...formData, tax_amount: parseFloat(e.target.value) || 0 })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, tax_amount: parseFloat(e.target.value) || 0 })
+                  }
                   className="w-28 text-right h-9"
                 />
               </div>
@@ -413,7 +452,9 @@ export default function PurchaseOrderForm({ vendors = [], existingPO, onSubmit, 
                   type="number"
                   min="0"
                   value={formData.shipping_cost}
-                  onChange={(e) => setFormData({ ...formData, shipping_cost: parseFloat(e.target.value) || 0 })}
+                  onChange={(e) =>
+                    setFormData({ ...formData, shipping_cost: parseFloat(e.target.value) || 0 })
+                  }
                   className="w-28 text-right h-9"
                 />
               </div>

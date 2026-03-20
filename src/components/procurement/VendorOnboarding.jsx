@@ -11,14 +11,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import {
-  Building2,
-  User,
-  FileText,
-  CheckCircle,
-  ArrowRight,
-  ArrowLeft,
-} from 'lucide-react';
+import { Building2, User, FileText, CheckCircle, ArrowRight, ArrowLeft } from 'lucide-react';
 import { db } from '@/api/db';
 import { toast } from 'sonner';
 import { AuditActions } from '@/components/audit/AuditService';

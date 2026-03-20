@@ -51,7 +51,11 @@ function shouldSendNotification(oldStatus, newStatus) {
 async function handleUpdateMutation(id, data, orders, sendNotification, customerEmail) {
   await db.shoppingOrders.update(id, data);
 
-  if (sendNotification && customerEmail && (data.status === 'shipping' || data.status === 'delivered')) {
+  if (
+    sendNotification &&
+    customerEmail &&
+    (data.status === 'shipping' || data.status === 'delivered')
+  ) {
     const order = orders.find((o) => o.id === id);
     if (order) {
       await mockSendNotification({ ...order, ...data }, data.status, customerEmail);
@@ -118,9 +122,7 @@ describe('ShoppingOrder mutation paths', () => {
   });
 
   describe('handleUpdateMutation', () => {
-    const orders = [
-      { id: 'so-1', order_number: 'SHOP-1', customer_name: 'Test' },
-    ];
+    const orders = [{ id: 'so-1', order_number: 'SHOP-1', customer_name: 'Test' }];
 
     it('updates order in database', async () => {
       await handleUpdateMutation('so-1', { status: 'purchased' }, orders, false, null);
@@ -129,13 +131,7 @@ describe('ShoppingOrder mutation paths', () => {
     });
 
     it('sends notification when status changes to shipping with customer email', async () => {
-      await handleUpdateMutation(
-        'so-1',
-        { status: 'shipping' },
-        orders,
-        true,
-        'customer@test.com'
-      );
+      await handleUpdateMutation('so-1', { status: 'shipping' }, orders, true, 'customer@test.com');
 
       expect(mockSendNotification).toHaveBeenCalledWith(
         expect.objectContaining({ id: 'so-1', status: 'shipping' }),

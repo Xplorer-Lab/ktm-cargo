@@ -50,9 +50,7 @@ jest.mock('@/components/vendors/VendorPerformanceService', () => ({
 }));
 
 jest.mock('@/components/auth/RolePermissions', () => ({
-  hasPermission: jest.fn((user, perm) =>
-    user?.role === 'admin' || user?.role === 'staff'
-  ),
+  hasPermission: jest.fn((user, perm) => user?.role === 'admin' || user?.role === 'staff'),
 }));
 
 // ── Imports ──────────────────────────────────────────────────────────────

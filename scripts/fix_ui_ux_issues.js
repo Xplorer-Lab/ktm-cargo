@@ -35,20 +35,22 @@ try {
 // Group issues by file
 const issuesByFile = {};
 
-[...auditReport.issues.high, ...auditReport.issues.medium, ...auditReport.issues.low].forEach(issue => {
-  if (!issuesByFile[issue.file]) {
-    issuesByFile[issue.file] = [];
+[...auditReport.issues.high, ...auditReport.issues.medium, ...auditReport.issues.low].forEach(
+  (issue) => {
+    if (!issuesByFile[issue.file]) {
+      issuesByFile[issue.file] = [];
+    }
+    issuesByFile[issue.file].push(issue);
   }
-  issuesByFile[issue.file].push(issue);
-});
+);
 
 console.log(`📋 Found ${Object.keys(issuesByFile).length} files with issues\n`);
 
 // Fix high priority issues first
 console.log('🟠 Fixing High Priority Issues...\n');
 
-const highPriorityFiles = Object.keys(issuesByFile).filter(file => 
-  issuesByFile[file].some(issue => issue.severity === 'high')
+const highPriorityFiles = Object.keys(issuesByFile).filter((file) =>
+  issuesByFile[file].some((issue) => issue.severity === 'high')
 );
 
 let filesProcessed = 0;
@@ -63,12 +65,12 @@ for (const file of highPriorityFiles.slice(0, maxFiles)) {
 
     let content = fs.readFileSync(file, 'utf-8');
     const originalContent = content;
-    const fileIssues = issuesByFile[file].filter(i => i.severity === 'high');
-    
+    const fileIssues = issuesByFile[file].filter((i) => i.severity === 'high');
+
     let fileFixed = false;
 
     // Fix missing error handling
-    fileIssues.forEach(issue => {
+    fileIssues.forEach((issue) => {
       if (issue.pattern === 'missingErrorHandling') {
         // This requires manual review - skip for now, will add pattern matching later
         // For now, just track it
@@ -76,14 +78,14 @@ for (const file of highPriorityFiles.slice(0, maxFiles)) {
     });
 
     // Fix missing validation
-    fileIssues.forEach(issue => {
+    fileIssues.forEach((issue) => {
       if (issue.pattern === 'missingValidation') {
         // Check if form already has validation
         if (content.includes('zodResolver') || content.includes('useForm')) {
           // Already has some validation, skip
           return;
         }
-        
+
         // Add import if needed
         if (!content.includes('import') || !content.includes('react-hook-form')) {
           // Find last import
@@ -91,7 +93,8 @@ for (const file of highPriorityFiles.slice(0, maxFiles)) {
           if (lastImportMatch) {
             const lastImport = lastImportMatch[lastImportMatch.length - 1];
             const importIndex = content.lastIndexOf(lastImport) + lastImport.length;
-            content = content.slice(0, importIndex) + 
+            content =
+              content.slice(0, importIndex) +
               "import { useForm } from 'react-hook-form';\n" +
               "import { zodResolver } from '@hookform/resolvers/zod';\n" +
               content.slice(importIndex);
@@ -127,11 +130,7 @@ const report = {
   },
 };
 
-fs.writeFileSync(
-  'UI_UX_FIXES_AUTOMATED.json',
-  JSON.stringify(report, null, 2)
-);
+fs.writeFileSync('UI_UX_FIXES_AUTOMATED.json', JSON.stringify(report, null, 2));
 
 console.log('📄 Report saved to: UI_UX_FIXES_AUTOMATED.json\n');
 console.log('⚠️  Note: Many fixes require manual review. This script provides a starting point.\n');
-

@@ -12,10 +12,10 @@ async function checkSchema() {
 
   for (const table of tables) {
     console.log(`\n📊 ${table.toUpperCase()} Table Schema:\n`);
-    
+
     // Try to get a sample record to see actual columns
     const { data, error } = await supabase.from(table).select('*').limit(1);
-    
+
     if (error) {
       console.log(`❌ Error: ${error.message}`);
       console.log(`   Code: ${error.code}`);
@@ -36,4 +36,3 @@ async function checkSchema() {
 }
 
 checkSchema().catch(console.error);
-

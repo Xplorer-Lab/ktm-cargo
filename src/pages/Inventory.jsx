@@ -498,12 +498,13 @@ export default function Inventory() {
                 {alerts.map(({ item, analytics }) => (
                   <Card
                     key={item.id}
-                    className={`border-l-4 ${analytics.urgency === 'critical'
+                    className={`border-l-4 ${
+                      analytics.urgency === 'critical'
                         ? 'border-l-rose-500 bg-rose-50'
                         : analytics.urgency === 'high'
                           ? 'border-l-amber-500 bg-amber-50'
                           : 'border-l-blue-500 bg-blue-50'
-                      }`}
+                    }`}
                   >
                     <CardContent className="p-4">
                       <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">

@@ -30,7 +30,12 @@ export const SERVICE_TYPE_DEFAULTS = [
   { value: 'cargo_small', label: 'Cargo (1-5kg)', costBasis: 90, price: 120 },
   { value: 'cargo_medium', label: 'Cargo (6-15kg)', costBasis: 75, price: 95 },
   { value: 'cargo_large', label: 'Cargo (16-30kg)', costBasis: 55, price: 70 },
-  { value: 'shopping_small', label: 'Shopping + Small Items', costBasis: 80, price: DEFAULT_SHOPPING_PRICE_PER_KG },
+  {
+    value: 'shopping_small',
+    label: 'Shopping + Small Items',
+    costBasis: 80,
+    price: DEFAULT_SHOPPING_PRICE_PER_KG,
+  },
   { value: 'shopping_fashion', label: 'Shopping + Fashion/Electronics', costBasis: 85, price: 115 },
   { value: 'shopping_bulk', label: 'Shopping + Bulk Order', costBasis: 70, price: 90 },
   { value: 'express', label: 'Express (1-2 days)', costBasis: 100, price: 150 },

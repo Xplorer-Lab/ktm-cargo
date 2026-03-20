@@ -23,7 +23,7 @@ import { toast } from 'sonner';
 
 export default function VendorProfile({ vendor, onUpdate }) {
   const { handleError, handleValidationError } = useErrorHandler();
-  
+
   const form = useForm({
     resolver: zodResolver(vendorSchema.partial()),
     defaultValues: {
@@ -127,10 +127,7 @@ export default function VendorProfile({ vendor, onUpdate }) {
             <div className="grid md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Company Name</Label>
-                <Input
-                  {...form.register('name')}
-                  placeholder="Company name"
-                />
+                <Input {...form.register('name')} placeholder="Company name" />
                 {form.formState.errors.name && (
                   <p className="text-xs text-rose-600 mt-1">{form.formState.errors.name.message}</p>
                 )}
@@ -153,18 +150,19 @@ export default function VendorProfile({ vendor, onUpdate }) {
                   </SelectContent>
                 </Select>
                 {form.formState.errors.vendor_type && (
-                  <p className="text-xs text-rose-600 mt-1">{form.formState.errors.vendor_type.message}</p>
+                  <p className="text-xs text-rose-600 mt-1">
+                    {form.formState.errors.vendor_type.message}
+                  </p>
                 )}
               </div>
             </div>
             <div className="space-y-2">
               <Label>Business Address</Label>
-              <Textarea
-                {...form.register('address')}
-                rows={2}
-              />
+              <Textarea {...form.register('address')} rows={2} />
               {form.formState.errors.address && (
-                <p className="text-xs text-rose-600 mt-1">{form.formState.errors.address.message}</p>
+                <p className="text-xs text-rose-600 mt-1">
+                  {form.formState.errors.address.message}
+                </p>
               )}
             </div>
             <div className="space-y-2">
@@ -187,11 +185,11 @@ export default function VendorProfile({ vendor, onUpdate }) {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label>Contact Person</Label>
-              <Input
-                {...form.register('contact_name')}
-              />
+              <Input {...form.register('contact_name')} />
               {form.formState.errors.contact_name && (
-                <p className="text-xs text-rose-600 mt-1">{form.formState.errors.contact_name.message}</p>
+                <p className="text-xs text-rose-600 mt-1">
+                  {form.formState.errors.contact_name.message}
+                </p>
               )}
             </div>
             <div className="grid md:grid-cols-2 gap-4">
@@ -202,7 +200,9 @@ export default function VendorProfile({ vendor, onUpdate }) {
                 </Label>
                 <Input {...form.register('phone')} />
                 {form.formState.errors.phone && (
-                  <p className="text-xs text-rose-600 mt-1">{form.formState.errors.phone.message}</p>
+                  <p className="text-xs text-rose-600 mt-1">
+                    {form.formState.errors.phone.message}
+                  </p>
                 )}
               </div>
               <div className="space-y-2">
@@ -210,12 +210,11 @@ export default function VendorProfile({ vendor, onUpdate }) {
                   <Mail className="w-4 h-4 text-slate-400" />
                   Email
                 </Label>
-                <Input
-                  type="email"
-                  {...form.register('email')}
-                />
+                <Input type="email" {...form.register('email')} />
                 {form.formState.errors.email && (
-                  <p className="text-xs text-rose-600 mt-1">{form.formState.errors.email.message}</p>
+                  <p className="text-xs text-rose-600 mt-1">
+                    {form.formState.errors.email.message}
+                  </p>
                 )}
               </div>
             </div>
@@ -232,30 +231,30 @@ export default function VendorProfile({ vendor, onUpdate }) {
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label>Bank Name</Label>
-              <Input
-                {...form.register('bank_name')}
-              />
+              <Input {...form.register('bank_name')} />
               {form.formState.errors.bank_name && (
-                <p className="text-xs text-rose-600 mt-1">{form.formState.errors.bank_name.message}</p>
+                <p className="text-xs text-rose-600 mt-1">
+                  {form.formState.errors.bank_name.message}
+                </p>
               )}
             </div>
             <div className="grid md:grid-cols-2 gap-4">
               <div className="space-y-2">
                 <Label>Account Number</Label>
-                <Input
-                  {...form.register('bank_account_number')}
-                />
+                <Input {...form.register('bank_account_number')} />
                 {form.formState.errors.bank_account_number && (
-                  <p className="text-xs text-rose-600 mt-1">{form.formState.errors.bank_account_number.message}</p>
+                  <p className="text-xs text-rose-600 mt-1">
+                    {form.formState.errors.bank_account_number.message}
+                  </p>
                 )}
               </div>
               <div className="space-y-2">
                 <Label>Account Name</Label>
-                <Input
-                  {...form.register('bank_account_name')}
-                />
+                <Input {...form.register('bank_account_name')} />
                 {form.formState.errors.bank_account_name && (
-                  <p className="text-xs text-rose-600 mt-1">{form.formState.errors.bank_account_name.message}</p>
+                  <p className="text-xs text-rose-600 mt-1">
+                    {form.formState.errors.bank_account_name.message}
+                  </p>
                 )}
               </div>
             </div>
@@ -276,7 +275,9 @@ export default function VendorProfile({ vendor, onUpdate }) {
                 </SelectContent>
               </Select>
               {form.formState.errors.payment_terms && (
-                <p className="text-xs text-rose-600 mt-1">{form.formState.errors.payment_terms.message}</p>
+                <p className="text-xs text-rose-600 mt-1">
+                  {form.formState.errors.payment_terms.message}
+                </p>
               )}
             </div>
           </CardContent>
@@ -290,10 +291,7 @@ export default function VendorProfile({ vendor, onUpdate }) {
             </CardTitle>
           </CardHeader>
           <CardContent>
-            <Textarea
-              {...form.register('services')}
-              rows={3}
-            />
+            <Textarea {...form.register('services')} rows={3} />
             {form.formState.errors.services && (
               <p className="text-xs text-rose-600 mt-1">{form.formState.errors.services.message}</p>
             )}

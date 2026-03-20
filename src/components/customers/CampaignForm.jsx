@@ -54,7 +54,8 @@ const campaignTypes = [
     icon: Users,
     color: 'from-blue-500 to-indigo-500',
     description: 'Reward customer referrals',
-    template: 'Refer a friend and both of you get {discount}% off! Share code {code} with your friends.',
+    template:
+      'Refer a friend and both of you get {discount}% off! Share code {code} with your friends.',
   },
   {
     value: 'promotion',
@@ -62,7 +63,8 @@ const campaignTypes = [
     icon: Sparkles,
     color: 'from-purple-500 to-pink-500',
     description: 'Limited time offers',
-    template: '🎉 Special Promotion! {discount}% off all shipments. Use code {code} before {end_date}!',
+    template:
+      '🎉 Special Promotion! {discount}% off all shipments. Use code {code} before {end_date}!',
   },
   {
     value: 'announcement',
@@ -167,14 +169,20 @@ export default function CampaignForm({ campaign, customers = [], onSubmit, onCan
       case 'inactive': {
         const thirtyDaysAgo = new Date();
         thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
-        return customers.filter((c) => !c.last_order_date || new Date(c.last_order_date) < thirtyDaysAgo).length;
+        return customers.filter(
+          (c) => !c.last_order_date || new Date(c.last_order_date) < thirtyDaysAgo
+        ).length;
       }
       case 'vip':
-        return customers.filter((c) => (c.total_shipments || 0) >= 10 || (c.total_spent || 0) > 50000).length;
+        return customers.filter(
+          (c) => (c.total_shipments || 0) >= 10 || (c.total_spent || 0) > 50000
+        ).length;
       case 'online_shoppers':
         return customers.filter((c) => c.customer_type === 'online_shopper').length;
       case 'cargo_users':
-        return customers.filter((c) => c.customer_type === 'individual' || c.customer_type === 'sme_importer').length;
+        return customers.filter(
+          (c) => c.customer_type === 'individual' || c.customer_type === 'sme_importer'
+        ).length;
       default:
         return customers.length;
     }
@@ -199,7 +207,9 @@ export default function CampaignForm({ campaign, customers = [], onSubmit, onCan
             <Megaphone className="w-5 h-5" />
           </div>
           <div>
-            <CardTitle className="text-lg">{campaign ? 'Edit Campaign' : 'Create Campaign'}</CardTitle>
+            <CardTitle className="text-lg">
+              {campaign ? 'Edit Campaign' : 'Create Campaign'}
+            </CardTitle>
             <CardDescription>
               {campaign ? `Editing ${campaign.name}` : 'Design a new marketing campaign'}
             </CardDescription>
@@ -217,7 +227,7 @@ export default function CampaignForm({ campaign, customers = [], onSubmit, onCan
             <Input
               {...register('name')}
               placeholder="Enter campaign name"
-              className={cn("h-11", errors.name && "border-rose-500")}
+              className={cn('h-11', errors.name && 'border-rose-500')}
             />
             {errors.name && (
               <p className="text-xs text-rose-500 flex items-center gap-1">
@@ -244,26 +254,49 @@ export default function CampaignForm({ campaign, customers = [], onSubmit, onCan
                     type="button"
                     onClick={() => setValue('campaign_type', type.value)}
                     className={cn(
-                      "relative p-4 rounded-xl border-2 text-left transition-all duration-200 group",
+                      'relative p-4 rounded-xl border-2 text-left transition-all duration-200 group',
                       isSelected
-                        ? "border-transparent bg-gradient-to-br text-white shadow-lg"
-                        : "border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600"
+                        ? 'border-transparent bg-gradient-to-br text-white shadow-lg'
+                        : 'border-slate-200 dark:border-slate-700 hover:border-slate-300 dark:hover:border-slate-600'
                     )}
-                    style={isSelected ? { backgroundImage: `linear-gradient(to bottom right, var(--tw-gradient-stops))` } : {}}
+                    style={
+                      isSelected
+                        ? {
+                            backgroundImage: `linear-gradient(to bottom right, var(--tw-gradient-stops))`,
+                          }
+                        : {}
+                    }
                   >
-                    <div className={cn(
-                      "absolute inset-0 rounded-xl bg-gradient-to-br opacity-0 group-hover:opacity-10 transition-opacity",
-                      type.color
-                    )} />
+                    <div
+                      className={cn(
+                        'absolute inset-0 rounded-xl bg-gradient-to-br opacity-0 group-hover:opacity-10 transition-opacity',
+                        type.color
+                      )}
+                    />
                     {isSelected && (
-                      <div className={cn("absolute inset-0 rounded-xl bg-gradient-to-br", type.color)} style={{ zIndex: -1 }} />
+                      <div
+                        className={cn('absolute inset-0 rounded-xl bg-gradient-to-br', type.color)}
+                        style={{ zIndex: -1 }}
+                      />
                     )}
                     <div className="relative">
-                      <Icon className={cn("w-6 h-6 mb-2", isSelected ? "text-white" : "text-slate-500")} />
-                      <p className={cn("font-semibold text-sm", isSelected ? "text-white" : "text-slate-900 dark:text-white")}>
+                      <Icon
+                        className={cn('w-6 h-6 mb-2', isSelected ? 'text-white' : 'text-slate-500')}
+                      />
+                      <p
+                        className={cn(
+                          'font-semibold text-sm',
+                          isSelected ? 'text-white' : 'text-slate-900 dark:text-white'
+                        )}
+                      >
                         {type.label}
                       </p>
-                      <p className={cn("text-xs mt-1", isSelected ? "text-white/80" : "text-slate-500")}>
+                      <p
+                        className={cn(
+                          'text-xs mt-1',
+                          isSelected ? 'text-white/80' : 'text-slate-500'
+                        )}
+                      >
                         {type.description}
                       </p>
                     </div>
@@ -328,7 +361,9 @@ export default function CampaignForm({ campaign, customers = [], onSubmit, onCan
             <div className="p-5 bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/30 dark:to-teal-950/30 rounded-2xl border border-emerald-200 dark:border-emerald-800 space-y-4">
               <div className="flex items-center gap-2">
                 <Percent className="w-5 h-5 text-emerald-600" />
-                <span className="font-semibold text-emerald-900 dark:text-emerald-200">Discount Settings</span>
+                <span className="font-semibold text-emerald-900 dark:text-emerald-200">
+                  Discount Settings
+                </span>
               </div>
 
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -375,22 +410,14 @@ export default function CampaignForm({ campaign, customers = [], onSubmit, onCan
                 <CalendarDays className="w-4 h-4 text-slate-400" />
                 Start Date
               </Label>
-              <Input
-                type="date"
-                {...register('start_date')}
-                className="h-11"
-              />
+              <Input type="date" {...register('start_date')} className="h-11" />
             </div>
             <div className="space-y-2">
               <Label className="flex items-center gap-2">
                 <CalendarDays className="w-4 h-4 text-slate-400" />
                 End Date
               </Label>
-              <Input
-                type="date"
-                {...register('end_date')}
-                className="h-11"
-              />
+              <Input type="date" {...register('end_date')} className="h-11" />
             </div>
           </div>
 
@@ -411,10 +438,10 @@ export default function CampaignForm({ campaign, customers = [], onSubmit, onCan
                     type="button"
                     onClick={() => setValue('channel', ch.value)}
                     className={cn(
-                      "flex items-center gap-2 px-4 py-2 rounded-xl border-2 transition-all",
+                      'flex items-center gap-2 px-4 py-2 rounded-xl border-2 transition-all',
                       isSelected
-                        ? "border-blue-500 bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300"
-                        : "border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300"
+                        ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/30 text-blue-700 dark:text-blue-300'
+                        : 'border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-400 hover:border-slate-300'
                     )}
                   >
                     <Icon className="w-4 h-4" />
@@ -470,10 +497,10 @@ export default function CampaignForm({ campaign, customers = [], onSubmit, onCan
             <Button
               type="submit"
               className={cn(
-                "flex-1 text-white shadow-lg",
+                'flex-1 text-white shadow-lg',
                 selectedCampaignType
                   ? `bg-gradient-to-r ${selectedCampaignType.color}`
-                  : "bg-gradient-to-r from-amber-500 to-orange-600"
+                  : 'bg-gradient-to-r from-amber-500 to-orange-600'
               )}
               disabled={isSubmitting}
             >

@@ -299,9 +299,18 @@ export default function Reports() {
 
   // Calculate metrics
   // Calculate Dropshipping Order Metrics
-  const shoppingOrdersTotalRevenue = filteredOrders.reduce((sum, o) => sum + (o.total_amount || 0), 0);
-  const shoppingOrdersTotalVendorCost = filteredOrders.reduce((sum, o) => sum + (o.vendor_cost || 0), 0);
-  const shoppingOrdersTotalCargoCost = filteredOrders.reduce((sum, o) => sum + (o.cargo_cost || 0), 0);
+  const shoppingOrdersTotalRevenue = filteredOrders.reduce(
+    (sum, o) => sum + (o.total_amount || 0),
+    0
+  );
+  const shoppingOrdersTotalVendorCost = filteredOrders.reduce(
+    (sum, o) => sum + (o.vendor_cost || 0),
+    0
+  );
+  const shoppingOrdersTotalCargoCost = filteredOrders.reduce(
+    (sum, o) => sum + (o.cargo_cost || 0),
+    0
+  );
   const shoppingOrdersTrueProfit = filteredOrders.reduce(
     (sum, o) => sum + (o.total_amount || 0) - (o.vendor_cost || 0) - (o.cargo_cost || 0),
     0
@@ -309,7 +318,8 @@ export default function Reports() {
 
   // Overall metrics integration
   const totalRevenue =
-    filteredShipments.reduce((sum, s) => sum + (s.total_amount || 0), 0) + shoppingOrdersTotalRevenue;
+    filteredShipments.reduce((sum, s) => sum + (s.total_amount || 0), 0) +
+    shoppingOrdersTotalRevenue;
 
   // Combine normal shipment profit with our newly calculated dropshipping true profit
   const totalProfit =
@@ -633,15 +643,21 @@ export default function Reports() {
                   <div className="mt-3 text-xs text-slate-500 space-y-1 border-t pt-2">
                     <div className="flex justify-between">
                       <span>Vendor Paid:</span>
-                      <span className="text-rose-600">฿{shoppingOrdersTotalVendorCost.toLocaleString()}</span>
+                      <span className="text-rose-600">
+                        ฿{shoppingOrdersTotalVendorCost.toLocaleString()}
+                      </span>
                     </div>
                     <div className="flex justify-between">
                       <span>Cargo Paid:</span>
-                      <span className="text-rose-600">฿{shoppingOrdersTotalCargoCost.toLocaleString()}</span>
+                      <span className="text-rose-600">
+                        ฿{shoppingOrdersTotalCargoCost.toLocaleString()}
+                      </span>
                     </div>
                     <div className="flex justify-between font-medium">
                       <span>True Profit:</span>
-                      <span className="text-emerald-600">฿{shoppingOrdersTrueProfit.toLocaleString()}</span>
+                      <span className="text-emerald-600">
+                        ฿{shoppingOrdersTrueProfit.toLocaleString()}
+                      </span>
                     </div>
                   </div>
                 </CardContent>
@@ -1290,10 +1306,11 @@ export default function Reports() {
                       {recommendations.map((rec, i) => (
                         <div
                           key={i}
-                          className={`p-3 rounded-lg ${rec.priority === 'high'
-                            ? 'bg-rose-50 border border-rose-100'
-                            : 'bg-blue-50 border border-blue-100'
-                            }`}
+                          className={`p-3 rounded-lg ${
+                            rec.priority === 'high'
+                              ? 'bg-rose-50 border border-rose-100'
+                              : 'bg-blue-50 border border-blue-100'
+                          }`}
                         >
                           <div className="flex items-start justify-between">
                             <div>
@@ -1389,8 +1406,8 @@ export default function Reports() {
                         ฿
                         {customers.length > 0
                           ? Math.round(
-                            segmentSummary.totals.totalRevenue / customers.length
-                          ).toLocaleString()
+                              segmentSummary.totals.totalRevenue / customers.length
+                            ).toLocaleString()
                           : 0}
                       </span>
                     </div>

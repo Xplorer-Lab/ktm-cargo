@@ -88,7 +88,8 @@ export const auth = {
         payload[key] = data[key];
       }
     }
-    if (Object.keys(payload).length === 0) return (await supabase.from('profiles').select('*').eq('id', user.id).single()).data;
+    if (Object.keys(payload).length === 0)
+      return (await supabase.from('profiles').select('*').eq('id', user.id).single()).data;
 
     payload.updated_date = new Date().toISOString();
 

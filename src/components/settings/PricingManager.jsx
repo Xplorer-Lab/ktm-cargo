@@ -7,7 +7,13 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Switch } from '@/components/ui/switch';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
 import {
   Select,
   SelectContent,
@@ -66,7 +72,7 @@ const pricingFormSchema = z.object({
   cost_per_kg: z.preprocess((val) => parseFloat(val) || 0, z.number().min(0)),
   price_per_kg: z.preprocess((val) => parseFloat(val) || 0, z.number().min(0)),
   min_weight: z.preprocess((val) => parseFloat(val) || 0, z.number().min(0)),
-  max_weight: z.preprocess((val) => val === '' ? null : parseFloat(val), z.number().nullable()),
+  max_weight: z.preprocess((val) => (val === '' ? null : parseFloat(val)), z.number().nullable()),
   insurance_rate: z.preprocess((val) => parseFloat(val) || 0, z.number().min(0).max(100)),
   packaging_fee: z.preprocess((val) => parseFloat(val) || 0, z.number().min(0)),
   is_active: z.boolean().default(true),
@@ -204,9 +210,12 @@ export default function PricingManager() {
   }));
 
   const totalActiveSurcharges = surcharges.filter((s) => s.is_active).length;
-  const avgMargin = profitMargins.length > 0
-    ? (profitMargins.reduce((sum, p) => sum + parseFloat(p.margin), 0) / profitMargins.length).toFixed(1)
-    : 0;
+  const avgMargin =
+    profitMargins.length > 0
+      ? (
+          profitMargins.reduce((sum, p) => sum + parseFloat(p.margin), 0) / profitMargins.length
+        ).toFixed(1)
+      : 0;
 
   const handleDeletePricing = () => {
     if (pricingToDelete) {
@@ -274,11 +283,17 @@ export default function PricingManager() {
 
       <Tabs defaultValue="services" className="w-full">
         <TabsList className="bg-slate-100 dark:bg-slate-800 p-1 rounded-xl">
-          <TabsTrigger value="services" className="gap-2 rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm">
+          <TabsTrigger
+            value="services"
+            className="gap-2 rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm"
+          >
             <Package className="w-4 h-4" />
             Services
           </TabsTrigger>
-          <TabsTrigger value="surcharges" className="gap-2 rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm">
+          <TabsTrigger
+            value="surcharges"
+            className="gap-2 rounded-lg data-[state=active]:bg-white dark:data-[state=active]:bg-slate-700 data-[state=active]:shadow-sm"
+          >
             <Percent className="w-4 h-4" />
             Surcharges
           </TabsTrigger>
@@ -317,11 +332,11 @@ export default function PricingManager() {
                     const margin =
                       pricing.price_per_kg > 0
                         ? (
-                          ((pricing.price_per_kg - pricing.cost_per_kg) / pricing.price_per_kg) *
-                          100
-                        ).toFixed(1)
+                            ((pricing.price_per_kg - pricing.cost_per_kg) / pricing.price_per_kg) *
+                            100
+                          ).toFixed(1)
                         : 0;
-                    const serviceType = SERVICE_TYPES.find(s => s.value === pricing.service_type);
+                    const serviceType = SERVICE_TYPES.find((s) => s.value === pricing.service_type);
                     const ServiceIcon = serviceType?.icon || Package;
 
                     return (
@@ -339,16 +354,18 @@ export default function PricingManager() {
                             </p>
                             <div className="flex items-center gap-3 text-sm text-slate-500 mt-1">
                               <span className="flex items-center gap-1">
-                                <span className="text-rose-500">Cost:</span> ฿{pricing.cost_per_kg}/kg
+                                <span className="text-rose-500">Cost:</span> ฿{pricing.cost_per_kg}
+                                /kg
                               </span>
                               <span>•</span>
                               <span className="flex items-center gap-1">
-                                <span className="text-blue-500">Price:</span> ฿{pricing.price_per_kg}/kg
+                                <span className="text-blue-500">Price:</span> ฿
+                                {pricing.price_per_kg}/kg
                               </span>
                               <span>•</span>
                               <span
                                 className={cn(
-                                  "font-medium",
+                                  'font-medium',
                                   margin > 20
                                     ? 'text-emerald-600'
                                     : margin > 10
@@ -364,7 +381,7 @@ export default function PricingManager() {
                         <div className="flex items-center gap-2">
                           <Badge
                             className={cn(
-                              "font-medium",
+                              'font-medium',
                               pricing.is_active !== false
                                 ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300'
                                 : 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400'
@@ -451,7 +468,9 @@ export default function PricingManager() {
                           <Percent className="w-5 h-5 text-amber-600" />
                         </div>
                         <div>
-                          <p className="font-semibold text-slate-900 dark:text-white">{surcharge.name}</p>
+                          <p className="font-semibold text-slate-900 dark:text-white">
+                            {surcharge.name}
+                          </p>
                           <div className="flex items-center gap-3 text-sm text-slate-500 mt-1">
                             <span className="font-semibold text-amber-600">
                               {surcharge.surcharge_type === 'fixed'
@@ -472,7 +491,7 @@ export default function PricingManager() {
                       <div className="flex items-center gap-2">
                         <Badge
                           className={cn(
-                            "font-medium",
+                            'font-medium',
                             surcharge.is_active !== false
                               ? 'bg-emerald-100 text-emerald-800 dark:bg-emerald-900/50 dark:text-emerald-300'
                               : 'bg-slate-100 text-slate-600 dark:bg-slate-700 dark:text-slate-400'
@@ -534,9 +553,7 @@ export default function PricingManager() {
               <DollarSign className="w-5 h-5 text-blue-600" />
               {editingPricing ? 'Edit Service Pricing' : 'Add Service Pricing'}
             </DialogTitle>
-            <DialogDescription>
-              Configure pricing for a service type
-            </DialogDescription>
+            <DialogDescription>Configure pricing for a service type</DialogDescription>
           </DialogHeader>
           <PricingForm
             pricing={editingPricing}
@@ -570,9 +587,7 @@ export default function PricingManager() {
               <Percent className="w-5 h-5 text-amber-600" />
               {editingSurcharge ? 'Edit Surcharge' : 'Add Surcharge'}
             </DialogTitle>
-            <DialogDescription>
-              Configure additional fees and surcharges
-            </DialogDescription>
+            <DialogDescription>Configure additional fees and surcharges</DialogDescription>
           </DialogHeader>
           <SurchargeForm
             surcharge={editingSurcharge}
@@ -599,7 +614,8 @@ export default function PricingManager() {
             <AlertDialogTitle>Delete Service Pricing?</AlertDialogTitle>
             <AlertDialogDescription>
               This will permanently delete the pricing for "
-              {pricingToDelete?.display_name || pricingToDelete?.service_type}". This action cannot be undone.
+              {pricingToDelete?.display_name || pricingToDelete?.service_type}". This action cannot
+              be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -620,8 +636,8 @@ export default function PricingManager() {
           <AlertDialogHeader>
             <AlertDialogTitle>Delete Surcharge?</AlertDialogTitle>
             <AlertDialogDescription>
-              This will permanently delete the surcharge "
-              {surchargeToDelete?.name}". This action cannot be undone.
+              This will permanently delete the surcharge "{surchargeToDelete?.name}". This action
+              cannot be undone.
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -663,9 +679,13 @@ function PricingForm({ pricing, onSubmit, onCancel, isSubmitting }) {
 
   const watchedValues = watch();
 
-  const margin = watchedValues.price_per_kg > 0
-    ? (((watchedValues.price_per_kg - watchedValues.cost_per_kg) / watchedValues.price_per_kg) * 100).toFixed(1)
-    : 0;
+  const margin =
+    watchedValues.price_per_kg > 0
+      ? (
+          ((watchedValues.price_per_kg - watchedValues.cost_per_kg) / watchedValues.price_per_kg) *
+          100
+        ).toFixed(1)
+      : 0;
 
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 mt-4">
@@ -699,11 +719,7 @@ function PricingForm({ pricing, onSubmit, onCancel, isSubmitting }) {
         </div>
         <div className="space-y-2">
           <Label>Display Name</Label>
-          <Input
-            {...register('display_name')}
-            placeholder="e.g. Standard Cargo"
-            className="h-11"
-          />
+          <Input {...register('display_name')} placeholder="e.g. Standard Cargo" className="h-11" />
         </div>
       </div>
 
@@ -714,32 +730,24 @@ function PricingForm({ pricing, onSubmit, onCancel, isSubmitting }) {
               Cost per kg
               <span className="text-xs text-slate-400">(฿)</span>
             </Label>
-            <Input
-              type="number"
-              step="0.01"
-              {...register('cost_per_kg')}
-              className="h-11"
-            />
+            <Input type="number" step="0.01" {...register('cost_per_kg')} className="h-11" />
           </div>
           <div className="space-y-2">
             <Label className="flex items-center gap-1">
               Price per kg
               <span className="text-xs text-slate-400">(฿)</span>
             </Label>
-            <Input
-              type="number"
-              step="0.01"
-              {...register('price_per_kg')}
-              className="h-11"
-            />
+            <Input type="number" step="0.01" {...register('price_per_kg')} className="h-11" />
           </div>
         </div>
 
         {watchedValues.price_per_kg > 0 && (
-          <div className={cn(
-            "mt-3 pt-3 border-t border-slate-200 dark:border-slate-700 text-center",
-            margin > 20 ? 'text-emerald-600' : margin > 10 ? 'text-amber-600' : 'text-rose-600'
-          )}>
+          <div
+            className={cn(
+              'mt-3 pt-3 border-t border-slate-200 dark:border-slate-700 text-center',
+              margin > 20 ? 'text-emerald-600' : margin > 10 ? 'text-amber-600' : 'text-rose-600'
+            )}
+          >
             <span className="text-sm font-medium">Profit Margin: </span>
             <span className="text-lg font-bold">{margin}%</span>
           </div>
@@ -752,12 +760,7 @@ function PricingForm({ pricing, onSubmit, onCancel, isSubmitting }) {
             Min Weight
             <span className="text-xs text-slate-400">(kg)</span>
           </Label>
-          <Input
-            type="number"
-            step="0.1"
-            {...register('min_weight')}
-            className="h-11"
-          />
+          <Input type="number" step="0.1" {...register('min_weight')} className="h-11" />
         </div>
         <div className="space-y-2">
           <Label className="flex items-center gap-1">
@@ -780,24 +783,14 @@ function PricingForm({ pricing, onSubmit, onCancel, isSubmitting }) {
             <Shield className="w-4 h-4 text-slate-400" />
             Insurance Rate (%)
           </Label>
-          <Input
-            type="number"
-            step="0.1"
-            {...register('insurance_rate')}
-            className="h-11"
-          />
+          <Input type="number" step="0.1" {...register('insurance_rate')} className="h-11" />
         </div>
         <div className="space-y-2">
           <Label className="flex items-center gap-2">
             <Box className="w-4 h-4 text-slate-400" />
             Packaging Fee (฿)
           </Label>
-          <Input
-            type="number"
-            step="1"
-            {...register('packaging_fee')}
-            className="h-11"
-          />
+          <Input type="number" step="1" {...register('packaging_fee')} className="h-11" />
         </div>
       </div>
 
@@ -809,9 +802,7 @@ function PricingForm({ pricing, onSubmit, onCancel, isSubmitting }) {
         <Controller
           name="is_active"
           control={control}
-          render={({ field }) => (
-            <Switch checked={field.value} onCheckedChange={field.onChange} />
-          )}
+          render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />}
         />
       </div>
 
@@ -855,11 +846,13 @@ function SurchargeForm({ surcharge, onSubmit, onCancel, isSubmitting }) {
   return (
     <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 mt-4">
       <div className="space-y-2">
-        <Label>Surcharge Name <span className="text-rose-500">*</span></Label>
+        <Label>
+          Surcharge Name <span className="text-rose-500">*</span>
+        </Label>
         <Input
           {...register('name')}
           placeholder="e.g. Fuel Surcharge"
-          className={cn("h-11", errors.name && "border-rose-500")}
+          className={cn('h-11', errors.name && 'border-rose-500')}
         />
         {errors.name && (
           <p className="text-xs text-rose-500 flex items-center gap-1">
@@ -891,12 +884,7 @@ function SurchargeForm({ surcharge, onSubmit, onCancel, isSubmitting }) {
         <div className="space-y-2">
           <Label>Amount</Label>
           <div className="flex items-center gap-2">
-            <Input
-              type="number"
-              step="0.01"
-              {...register('amount')}
-              className="h-11"
-            />
+            <Input type="number" step="0.01" {...register('amount')} className="h-11" />
             <span className="text-slate-500 font-medium w-8">
               {watchedValues.surcharge_type === 'fixed' ? '฿' : '%'}
             </span>
@@ -927,11 +915,7 @@ function SurchargeForm({ surcharge, onSubmit, onCancel, isSubmitting }) {
 
       <div className="space-y-2">
         <Label>Description</Label>
-        <Input
-          {...register('description')}
-          placeholder="Optional description"
-          className="h-11"
-        />
+        <Input {...register('description')} placeholder="Optional description" className="h-11" />
       </div>
 
       <div className="flex items-center justify-between p-4 bg-slate-50 dark:bg-slate-800 rounded-xl">
@@ -942,9 +926,7 @@ function SurchargeForm({ surcharge, onSubmit, onCancel, isSubmitting }) {
         <Controller
           name="is_active"
           control={control}
-          render={({ field }) => (
-            <Switch checked={field.value} onCheckedChange={field.onChange} />
-          )}
+          render={({ field }) => <Switch checked={field.value} onCheckedChange={field.onChange} />}
         />
       </div>
 

@@ -41,7 +41,10 @@ serve(async (req: Request) => {
     const supabase = createClient(supabaseUrl, supabaseServiceKey);
 
     const token = authHeader.replace('Bearer ', '');
-    const { data: { user }, error: authError } = await supabase.auth.getUser(token);
+    const {
+      data: { user },
+      error: authError,
+    } = await supabase.auth.getUser(token);
     if (authError || !user) throw new Error('Unauthorized');
 
     const { priceId, successUrl, cancelUrl } = await req.json();
@@ -65,10 +68,7 @@ serve(async (req: Request) => {
       customerId = customer.id;
 
       // Store Stripe customer ID
-      await supabase
-        .from('profiles')
-        .update({ stripe_customer_id: customerId })
-        .eq('id', user.id);
+      await supabase.from('profiles').update({ stripe_customer_id: customerId }).eq('id', user.id);
     }
 
     // Create Checkout session

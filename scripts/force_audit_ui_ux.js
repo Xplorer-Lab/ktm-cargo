@@ -29,116 +29,121 @@ const stats = {
 const patterns = {
   // Missing error handling in event handlers
   missingErrorHandling: {
-    regex: /(onClick|onSubmit|onChange|onBlur|onFocus|onKeyDown|onKeyUp|onMouseEnter|onMouseLeave)\s*=\s*\{?\s*(async\s+)?\([^)]*\)\s*=>\s*\{[^}]*\}(?!\s*catch)/g,
+    regex:
+      /(onClick|onSubmit|onChange|onBlur|onFocus|onKeyDown|onKeyUp|onMouseEnter|onMouseLeave)\s*=\s*\{?\s*(async\s+)?\([^)]*\)\s*=>\s*\{[^}]*\}(?!\s*catch)/g,
     severity: 'high',
     description: 'Event handler without error handling',
   },
-  
+
   // Empty catch blocks
   emptyCatch: {
     regex: /catch\s*\([^)]*\)\s*\{\s*\}/g,
     severity: 'high',
     description: 'Empty catch block - errors are silently ignored',
   },
-  
+
   // Missing loading states
   missingLoadingState: {
-    regex: /(mutate|mutateAsync|execute|refetch)\([^)]*\)(?![\s\S]*?(isLoading|isPending|isFetching|loading|pending))/g,
+    regex:
+      /(mutate|mutateAsync|execute|refetch)\([^)]*\)(?![\s\S]*?(isLoading|isPending|isFetching|loading|pending))/g,
     severity: 'medium',
     description: 'Async operation without loading state check',
   },
-  
+
   // Direct state updates in event handlers (potential race conditions)
   directStateUpdate: {
-    regex: /(onClick|onSubmit|onChange).*?setState\([^)]*\)(?![\s\S]*?useCallback|[\s\S]*?useMemo)/g,
+    regex:
+      /(onClick|onSubmit|onChange).*?setState\([^)]*\)(?![\s\S]*?useCallback|[\s\S]*?useMemo)/g,
     severity: 'medium',
     description: 'Direct state update in event handler without memoization',
   },
-  
+
   // Missing null/undefined checks
   missingNullCheck: {
     regex: /(onClick|onSubmit|onChange).*?\.(id|name|value|data)\s*(?!\?)/g,
     severity: 'medium',
     description: 'Potential null/undefined access in event handler',
   },
-  
+
   // Unhandled promise rejections
   unhandledPromise: {
     regex: /(onClick|onSubmit|onChange).*?await\s+\w+\([^)]*\)(?![\s\S]*?catch)/g,
     severity: 'high',
     description: 'Unhandled promise rejection in event handler',
   },
-  
+
   // Missing cleanup in useEffect
   missingCleanup: {
-    regex: /useEffect\s*\([^)]*\)\s*=>\s*\{[^}]*setTimeout|setInterval|addEventListener|subscribe(?![\s\S]*?return\s+\(\)\s*=>)/g,
+    regex:
+      /useEffect\s*\([^)]*\)\s*=>\s*\{[^}]*setTimeout|setInterval|addEventListener|subscribe(?![\s\S]*?return\s+\(\)\s*=>)/g,
     severity: 'high',
     description: 'useEffect with side effects but no cleanup function',
   },
-  
+
   // Inline functions in JSX (performance issue)
   inlineFunction: {
     regex: /(onClick|onSubmit|onChange|onBlur|onFocus)\s*=\s*\{[^}]*=>[^}]*\}/g,
     severity: 'low',
     description: 'Inline function in JSX - should use useCallback',
   },
-  
+
   // Missing disabled state for async operations
   missingDisabled: {
     regex: /(mutate|mutateAsync|execute).*?disabled\s*=\s*\{false\}/g,
     severity: 'medium',
     description: 'Button not disabled during async operation',
   },
-  
+
   // Missing form validation
   missingValidation: {
-    regex: /onSubmit\s*=\s*\{[^}]*handleSubmit(?![\s\S]*?validation|[\s\S]*?schema|[\s\S]*?validate)/g,
+    regex:
+      /onSubmit\s*=\s*\{[^}]*handleSubmit(?![\s\S]*?validation|[\s\S]*?schema|[\s\S]*?validate)/g,
     severity: 'high',
     description: 'Form submission without validation',
   },
-  
+
   // Direct DOM manipulation
   directDOM: {
     regex: /(document\.|window\.|getElementById|querySelector|innerHTML|innerText)\s*=/g,
     severity: 'high',
     description: 'Direct DOM manipulation - should use React state',
   },
-  
+
   // Missing key props in lists
   missingKey: {
     regex: /\.map\s*\([^)]*\)\s*=>\s*\(<[^>]+(?!\s+key=)/g,
     severity: 'medium',
     description: 'List items without key prop',
   },
-  
+
   // State updates based on previous state without functional update
   unsafeStateUpdate: {
     regex: /setState\s*\([^)]*\s+\+\s+[^)]*\)|setState\s*\([^)]*\s+\|\|\s+[^)]*\)/g,
     severity: 'medium',
     description: 'State update that might use stale state',
   },
-  
+
   // Missing error boundaries for critical components
   missingErrorBoundary: {
     regex: /(dangerouslySetInnerHTML|eval\(|new Function)/g,
     severity: 'critical',
     description: 'Dangerous code without error boundary',
   },
-  
+
   // Missing accessibility attributes
   missingA11y: {
     regex: /<button(?![\s\S]*?aria-|[\s\S]*?type=)/g,
     severity: 'low',
     description: 'Button missing accessibility attributes',
   },
-  
+
   // Console.log in production code
   consoleLog: {
     regex: /console\.(log|warn|error|debug)\(/g,
     severity: 'low',
     description: 'Console logging in production code',
   },
-  
+
   // Missing loading indicators
   missingLoadingIndicator: {
     regex: /(isLoading|isPending|isFetching)\s*&&\s*[^&]*\?/g,
@@ -172,12 +177,13 @@ function analyzeFile(filePath) {
   const content = fs.readFileSync(filePath, 'utf-8');
   const relativePath = path.relative(process.cwd(), filePath);
   const lines = content.split('\n');
-  
+
   const fileIssues = [];
   let eventHandlers = 0;
 
   // Count event handlers
-  const eventHandlerPattern = /(onClick|onSubmit|onChange|onBlur|onFocus|onKeyDown|onKeyUp|onMouseEnter|onMouseLeave|onDoubleClick|onDrag|onDrop)\s*=/g;
+  const eventHandlerPattern =
+    /(onClick|onSubmit|onChange|onBlur|onFocus|onKeyDown|onKeyUp|onMouseEnter|onMouseLeave|onDoubleClick|onDrag|onDrop)\s*=/g;
   const matches = content.match(eventHandlerPattern);
   if (matches) {
     eventHandlers += matches.length;
@@ -187,16 +193,16 @@ function analyzeFile(filePath) {
   Object.entries(patterns).forEach(([patternName, pattern]) => {
     const regex = new RegExp(pattern.regex.source, pattern.regex.flags || 'g');
     const matches = [...content.matchAll(regex)];
-    
+
     matches.forEach((match) => {
       const lineNumber = content.substring(0, match.index).split('\n').length;
       const lineContent = lines[lineNumber - 1]?.trim() || '';
-      
+
       // Skip if it's in a comment
       if (lineContent.startsWith('//') || lineContent.includes('/*')) {
         return;
       }
-      
+
       fileIssues.push({
         pattern: patternName,
         severity: pattern.severity,
@@ -239,11 +245,11 @@ function checkSpecificIssues(content, lines, filePath, fileIssues) {
     const beforeMatch = content.substring(0, match.index);
     const afterMatch = content.substring(match.index);
     const functionBody = afterMatch.match(/\{[\s\S]*?\}/)?.[0] || '';
-    
+
     // Check for common dependencies that might be missing
     const hasState = /setState|useState/.test(functionBody);
     const hasProps = /props\.|\.props/.test(functionBody);
-    
+
     if (hasState || hasProps) {
       fileIssues.push({
         pattern: 'useEffectMissingDeps',
@@ -305,7 +311,8 @@ function checkSpecificIssues(content, lines, filePath, fileIssues) {
   });
 
   // Check for race conditions in async operations
-  const asyncStateUpdatePattern = /await\s+\w+\([^)]*\)[\s\S]*?setState\([^)]*\)(?![\s\S]*?isMounted|[\s\S]*?abort)/g;
+  const asyncStateUpdatePattern =
+    /await\s+\w+\([^)]*\)[\s\S]*?setState\([^)]*\)(?![\s\S]*?isMounted|[\s\S]*?abort)/g;
   const asyncMatches = [...content.matchAll(asyncStateUpdatePattern)];
   asyncMatches.forEach((match) => {
     const lineNumber = content.substring(0, match.index).split('\n').length;
@@ -323,7 +330,7 @@ function checkSpecificIssues(content, lines, filePath, fileIssues) {
 function generateReport() {
   const srcPath = path.join(process.cwd(), 'src');
   const files = getAllFiles(srcPath);
-  
+
   console.log(`\n🔍 Scanning ${files.length} files for UI/UX issues...\n`);
 
   files.forEach((file) => {
@@ -331,7 +338,7 @@ function generateReport() {
       const { fileIssues, eventHandlers } = analyzeFile(file);
       stats.componentsScanned++;
       stats.eventHandlersFound += eventHandlers;
-      
+
       fileIssues.forEach((issue) => {
         stats.issuesFound++;
         issues[issue.severity].push(issue);
@@ -363,10 +370,7 @@ function generateReport() {
   };
 
   // Save JSON report
-  fs.writeFileSync(
-    'UI_UX_AUDIT_REPORT.json',
-    JSON.stringify(report, null, 2)
-  );
+  fs.writeFileSync('UI_UX_AUDIT_REPORT.json', JSON.stringify(report, null, 2));
 
   // Generate markdown report
   generateMarkdownReport(report);
@@ -557,4 +561,3 @@ Comprehensive audit of UI/UX front-end functions, events, and user interactions.
 
 // Run audit
 generateReport();
-

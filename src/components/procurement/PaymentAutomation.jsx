@@ -226,10 +226,11 @@ export default function PaymentAutomation({
                 return (
                   <div
                     key={receipt.id}
-                    className={`flex items-center justify-between p-4 rounded-lg border ${selectedReceipts.includes(receipt.id)
+                    className={`flex items-center justify-between p-4 rounded-lg border ${
+                      selectedReceipts.includes(receipt.id)
                         ? 'border-blue-300 bg-blue-50'
                         : 'border-slate-200 bg-slate-50'
-                      } hover:border-blue-200 transition-colors`}
+                    } hover:border-blue-200 transition-colors`}
                   >
                     <div className="flex items-center gap-4">
                       <Checkbox

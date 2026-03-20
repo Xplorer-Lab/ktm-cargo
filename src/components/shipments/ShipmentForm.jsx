@@ -107,13 +107,15 @@ export default function ShipmentForm({
   const watchedValues = watch();
 
   // Filter POs that are approved/received and have remaining weight
-  const availablePOs = useMemo(() => (
-    purchaseOrders.filter(
-      (po) =>
-        ['approved', 'sent', 'partial_received', 'received'].includes(po.status) &&
-        (po.remaining_weight_kg > 0 || !po.total_weight_kg)
-    )
-  ), [purchaseOrders]);
+  const availablePOs = useMemo(
+    () =>
+      purchaseOrders.filter(
+        (po) =>
+          ['approved', 'sent', 'partial_received', 'received'].includes(po.status) &&
+          (po.remaining_weight_kg > 0 || !po.total_weight_kg)
+      ),
+    [purchaseOrders]
+  );
 
   // Calculation Logic
   const calculated = useMemo(() => {
@@ -239,7 +241,10 @@ export default function ShipmentForm({
       total_amount: calculated.total,
       profit: calculated.profit,
       insurance_amount: calculated.insurance || 0,
-      tracking_number: data.tracking_number || shipment?.tracking_number || `BKK${Date.now().toString(36).toUpperCase()}`,
+      tracking_number:
+        data.tracking_number ||
+        shipment?.tracking_number ||
+        `BKK${Date.now().toString(36).toUpperCase()}`,
       origin: 'Bangkok',
       destination: 'Yangon',
     };
@@ -284,7 +289,10 @@ export default function ShipmentForm({
                     variant="outline"
                     role="combobox"
                     aria-expanded={openCombobox}
-                    className={cn("w-full justify-between h-11", errors.customer_name && "border-rose-500")}
+                    className={cn(
+                      'w-full justify-between h-11',
+                      errors.customer_name && 'border-rose-500'
+                    )}
                   >
                     {watchedValues.customer_name || 'Select customer...'}
                     <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
@@ -305,7 +313,9 @@ export default function ShipmentForm({
                             <Check
                               className={cn(
                                 'mr-2 h-4 w-4',
-                                watchedValues.customer_name === customer.name ? 'opacity-100' : 'opacity-0'
+                                watchedValues.customer_name === customer.name
+                                  ? 'opacity-100'
+                                  : 'opacity-0'
                               )}
                             />
                             <div className="flex flex-col">
@@ -338,7 +348,7 @@ export default function ShipmentForm({
               <Input
                 {...register('customer_phone')}
                 placeholder="+66 or +95"
-                className={cn("h-11", errors.customer_phone && "border-rose-500")}
+                className={cn('h-11', errors.customer_phone && 'border-rose-500')}
               />
               {errors.customer_phone && (
                 <p className="text-xs text-rose-500 flex items-center gap-1">
@@ -356,7 +366,9 @@ export default function ShipmentForm({
                 <div className="p-1.5 bg-blue-100 dark:bg-blue-900/50 rounded-lg">
                   <Truck className="w-4 h-4 text-blue-600" />
                 </div>
-                <Label className="text-blue-800 dark:text-blue-200 font-medium">Link to Vendor Purchase Order</Label>
+                <Label className="text-blue-800 dark:text-blue-200 font-medium">
+                  Link to Vendor Purchase Order
+                </Label>
               </div>
               <Controller
                 name="vendor_po_id"
@@ -375,7 +387,9 @@ export default function ShipmentForm({
                             <span className="text-slate-500">-</span>
                             <span>{po.vendor_name}</span>
                             {po.cost_per_kg && (
-                              <Badge variant="secondary" className="text-xs">฿{po.cost_per_kg}/kg</Badge>
+                              <Badge variant="secondary" className="text-xs">
+                                ฿{po.cost_per_kg}/kg
+                              </Badge>
                             )}
                             {po.remaining_weight_kg && (
                               <Badge className="bg-emerald-100 text-emerald-700 text-xs">
@@ -397,7 +411,9 @@ export default function ShipmentForm({
                     <Package className="w-3 h-3 mr-1" />
                     {watchedValues.vendor_name}
                   </Badge>
-                  <span className="text-blue-600 font-medium">Cost: ฿{watchedValues.vendor_cost_per_kg}/kg</span>
+                  <span className="text-blue-600 font-medium">
+                    Cost: ฿{watchedValues.vendor_cost_per_kg}/kg
+                  </span>
                 </div>
               )}
             </div>
@@ -406,7 +422,7 @@ export default function ShipmentForm({
           {/* Vendor Capacity Alert - Real-time visualization */}
           {watchedValues.vendor_po_id && parseFloat(watchedValues.weight_kg) > 0 && (
             <VendorCapacityAlert
-              purchaseOrder={purchaseOrders.find(po => po.id === watchedValues.vendor_po_id)}
+              purchaseOrder={purchaseOrders.find((po) => po.id === watchedValues.vendor_po_id)}
               requestedWeight={parseFloat(watchedValues.weight_kg) || 0}
             />
           )}
@@ -422,8 +438,12 @@ export default function ShipmentForm({
                 name="service_type"
                 control={control}
                 render={({ field }) => (
-                  <Select onValueChange={field.onChange} defaultValue={field.value} value={field.value}>
-                    <SelectTrigger className={cn("h-11", errors.service_type && "border-rose-500")}>
+                  <Select
+                    onValueChange={field.onChange}
+                    defaultValue={field.value}
+                    value={field.value}
+                  >
+                    <SelectTrigger className={cn('h-11', errors.service_type && 'border-rose-500')}>
                       <SelectValue placeholder="Select type" />
                     </SelectTrigger>
                     <SelectContent>
@@ -434,7 +454,9 @@ export default function ShipmentForm({
                             <div className="flex items-center gap-2">
                               <Icon className="w-4 h-4 text-slate-500" />
                               <span>{s.label}</span>
-                              <Badge variant="secondary" className="text-xs">฿{s.price}/kg</Badge>
+                              <Badge variant="secondary" className="text-xs">
+                                ฿{s.price}/kg
+                              </Badge>
                             </div>
                           </SelectItem>
                         );
@@ -462,9 +484,9 @@ export default function ShipmentForm({
                 {...register('weight_kg')}
                 placeholder="Enter weight"
                 className={cn(
-                  "h-11",
+                  'h-11',
                   poWeightStatus?.isOverLimit && 'border-rose-500 focus-visible:ring-rose-500',
-                  errors.weight_kg && "border-rose-500"
+                  errors.weight_kg && 'border-rose-500'
                 )}
               />
               {errors.weight_kg && (
@@ -486,7 +508,7 @@ export default function ShipmentForm({
               {...register('items_description')}
               placeholder="Describe the items being shipped..."
               rows={2}
-              className={cn(errors.items_description && "border-rose-500")}
+              className={cn(errors.items_description && 'border-rose-500')}
             />
             {errors.items_description && (
               <p className="text-xs text-rose-500 flex items-center gap-1">
@@ -529,11 +551,7 @@ export default function ShipmentForm({
                 <CalendarDays className="w-4 h-4 text-slate-400" />
                 Estimated Date
               </Label>
-              <Input
-                type="date"
-                {...register('estimated_delivery')}
-                className="h-11"
-              />
+              <Input type="date" {...register('estimated_delivery')} className="h-11" />
             </div>
             {enableAdvancedCosting && (
               <div className="space-y-2">
@@ -560,10 +578,7 @@ export default function ShipmentForm({
                   control={control}
                   name="insurance_opted"
                   render={({ field }) => (
-                    <Switch
-                      checked={field.value}
-                      onCheckedChange={field.onChange}
-                    />
+                    <Switch checked={field.value} onCheckedChange={field.onChange} />
                   )}
                 />
                 <span className="text-sm text-slate-600 dark:text-slate-400">
@@ -578,11 +593,7 @@ export default function ShipmentForm({
           {/* Notes */}
           <div className="space-y-2">
             <Label>Notes</Label>
-            <Textarea
-              {...register('notes')}
-              placeholder="Additional notes..."
-              rows={2}
-            />
+            <Textarea {...register('notes')} placeholder="Additional notes..." rows={2} />
           </div>
 
           {/* Pricing Summary */}
@@ -590,7 +601,9 @@ export default function ShipmentForm({
             <div className="bg-gradient-to-br from-slate-50 to-slate-100 dark:from-slate-800 dark:to-slate-800/50 rounded-2xl p-5 space-y-4 animate-in fade-in duration-300">
               <div className="flex items-center gap-2">
                 <Calculator className="w-5 h-5 text-slate-600" />
-                <span className="font-semibold text-slate-700 dark:text-slate-200">Price Calculation</span>
+                <span className="font-semibold text-slate-700 dark:text-slate-200">
+                  Price Calculation
+                </span>
               </div>
 
               <div className="grid grid-cols-2 md:grid-cols-5 gap-4 text-sm">
@@ -613,7 +626,9 @@ export default function ShipmentForm({
 
                 <div className="p-3 bg-white dark:bg-slate-700 rounded-xl">
                   <p className="text-slate-500 text-xs mb-1">Insurance</p>
-                  <p className="font-bold text-lg">฿{(calculated.insurance || 0).toLocaleString()}</p>
+                  <p className="font-bold text-lg">
+                    ฿{(calculated.insurance || 0).toLocaleString()}
+                  </p>
                 </div>
 
                 {enableAdvancedCosting && (
@@ -627,9 +642,7 @@ export default function ShipmentForm({
 
                 <div className="p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl text-white">
                   <p className="text-blue-100 text-xs mb-1">Total</p>
-                  <p className="font-bold text-xl">
-                    ฿{calculated.total?.toLocaleString()}
-                  </p>
+                  <p className="font-bold text-xl">฿{calculated.total?.toLocaleString()}</p>
                 </div>
               </div>
 
@@ -666,8 +679,10 @@ export default function ShipmentForm({
             >
               {isSubmitting ? (
                 <Loader2 className="w-4 h-4 animate-spin" />
+              ) : shipment ? (
+                'Update Shipment'
               ) : (
-                shipment ? 'Update Shipment' : 'Create Shipment'
+                'Create Shipment'
               )}
             </Button>
           </div>

@@ -36,9 +36,24 @@ import { goodsReceiptSchema } from '@/domains/core/schemas';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 
 const conditionOptions = [
-  { value: 'good', label: 'Good', icon: CheckCircle, color: 'text-emerald-600 bg-emerald-50 border-emerald-200' },
-  { value: 'damaged', label: 'Damaged', icon: AlertTriangle, color: 'text-amber-600 bg-amber-50 border-amber-200' },
-  { value: 'rejected', label: 'Rejected', icon: XCircle, color: 'text-rose-600 bg-rose-50 border-rose-200' },
+  {
+    value: 'good',
+    label: 'Good',
+    icon: CheckCircle,
+    color: 'text-emerald-600 bg-emerald-50 border-emerald-200',
+  },
+  {
+    value: 'damaged',
+    label: 'Damaged',
+    icon: AlertTriangle,
+    color: 'text-amber-600 bg-amber-50 border-amber-200',
+  },
+  {
+    value: 'rejected',
+    label: 'Rejected',
+    icon: XCircle,
+    color: 'text-rose-600 bg-rose-50 border-rose-200',
+  },
 ];
 
 export default function GoodsReceiptForm({ purchaseOrder, onSubmit, onCancel }) {
@@ -52,7 +67,7 @@ export default function GoodsReceiptForm({ purchaseOrder, onSubmit, onCancel }) 
       discrepancy_notes: '',
       quality_status: 'passed',
       items_received: '[]',
-    }
+    },
   });
 
   const [items, setItems] = useState([]);
@@ -82,18 +97,20 @@ export default function GoodsReceiptForm({ purchaseOrder, onSubmit, onCancel }) 
   };
 
   // Calculations
-  const totalValue = useMemo(() => (
-    items.reduce((sum, item) => sum + (item.received_qty || 0) * (item.unit_price || 0), 0)
-  ), [items]);
+  const totalValue = useMemo(
+    () => items.reduce((sum, item) => sum + (item.received_qty || 0) * (item.unit_price || 0), 0),
+    [items]
+  );
 
-  const hasDiscrepancy = useMemo(() => (
-    items.some((item) => item.received_qty !== item.ordered_qty || item.condition !== 'good')
-  ), [items]);
+  const hasDiscrepancy = useMemo(
+    () => items.some((item) => item.received_qty !== item.ordered_qty || item.condition !== 'good'),
+    [items]
+  );
 
   const receiptStats = useMemo(() => {
-    const good = items.filter(i => i.condition === 'good').length;
-    const damaged = items.filter(i => i.condition === 'damaged').length;
-    const rejected = items.filter(i => i.condition === 'rejected').length;
+    const good = items.filter((i) => i.condition === 'good').length;
+    const damaged = items.filter((i) => i.condition === 'damaged').length;
+    const rejected = items.filter((i) => i.condition === 'rejected').length;
     const totalOrdered = items.reduce((sum, i) => sum + i.ordered_qty, 0);
     const totalReceived = items.reduce((sum, i) => sum + i.received_qty, 0);
     const fulfillmentRate = totalOrdered > 0 ? (totalReceived / totalOrdered) * 100 : 0;
@@ -148,7 +165,9 @@ export default function GoodsReceiptForm({ purchaseOrder, onSubmit, onCancel }) 
           <div>
             <CardTitle className="text-lg">Receive Goods</CardTitle>
             <CardDescription className="flex items-center gap-2">
-              <Badge variant="secondary" className="font-mono">{purchaseOrder.po_number || 'N/A'}</Badge>
+              <Badge variant="secondary" className="font-mono">
+                {purchaseOrder.po_number || 'N/A'}
+              </Badge>
               <span>•</span>
               <span>{purchaseOrder.vendor_name}</span>
             </CardDescription>
@@ -189,10 +208,7 @@ export default function GoodsReceiptForm({ purchaseOrder, onSubmit, onCancel }) 
             </div>
             <Progress
               value={receiptStats.fulfillmentRate}
-              className={cn(
-                "h-2",
-                receiptStats.fulfillmentRate < 100 && "bg-amber-100"
-              )}
+              className={cn('h-2', receiptStats.fulfillmentRate < 100 && 'bg-amber-100')}
             />
             <p className="text-xs text-slate-500 mt-2">
               {receiptStats.totalReceived} of {receiptStats.totalOrdered} items received
@@ -205,11 +221,7 @@ export default function GoodsReceiptForm({ purchaseOrder, onSubmit, onCancel }) 
               <User className="w-4 h-4 text-slate-400" />
               Received By <span className="text-rose-500">*</span>
             </Label>
-            <Input
-              {...form.register('received_by')}
-              placeholder="Your name"
-              className="h-11"
-            />
+            <Input {...form.register('received_by')} placeholder="Your name" className="h-11" />
             {form.formState.errors.received_by && (
               <p className="text-xs text-rose-600 flex items-center gap-1">
                 <Info className="w-3 h-3" />
@@ -223,44 +235,62 @@ export default function GoodsReceiptForm({ purchaseOrder, onSubmit, onCancel }) 
             <table className="w-full">
               <thead className="bg-slate-50 dark:bg-slate-800">
                 <tr>
-                  <th className="text-left p-3 text-sm font-semibold text-slate-600 dark:text-slate-300">Item</th>
-                  <th className="text-center p-3 text-sm font-semibold text-slate-600 dark:text-slate-300 w-24">Ordered</th>
-                  <th className="text-center p-3 text-sm font-semibold text-slate-600 dark:text-slate-300 w-28">Received</th>
-                  <th className="text-center p-3 text-sm font-semibold text-slate-600 dark:text-slate-300 w-36">Condition</th>
-                  <th className="text-center p-3 text-sm font-semibold text-slate-600 dark:text-slate-300 w-20">Status</th>
+                  <th className="text-left p-3 text-sm font-semibold text-slate-600 dark:text-slate-300">
+                    Item
+                  </th>
+                  <th className="text-center p-3 text-sm font-semibold text-slate-600 dark:text-slate-300 w-24">
+                    Ordered
+                  </th>
+                  <th className="text-center p-3 text-sm font-semibold text-slate-600 dark:text-slate-300 w-28">
+                    Received
+                  </th>
+                  <th className="text-center p-3 text-sm font-semibold text-slate-600 dark:text-slate-300 w-36">
+                    Condition
+                  </th>
+                  <th className="text-center p-3 text-sm font-semibold text-slate-600 dark:text-slate-300 w-20">
+                    Status
+                  </th>
                 </tr>
               </thead>
               <tbody>
                 {items.map((item, idx) => {
-                  const isMatch = item.received_qty === item.ordered_qty && item.condition === 'good';
-                  const conditionOption = conditionOptions.find(c => c.value === item.condition);
+                  const isMatch =
+                    item.received_qty === item.ordered_qty && item.condition === 'good';
+                  const conditionOption = conditionOptions.find((c) => c.value === item.condition);
                   const ConditionIcon = conditionOption?.icon || CheckCircle;
 
                   return (
                     <tr
                       key={idx}
                       className={cn(
-                        "border-t border-slate-100 dark:border-slate-700 transition-colors",
-                        !isMatch && "bg-amber-50/50 dark:bg-amber-950/20"
+                        'border-t border-slate-100 dark:border-slate-700 transition-colors',
+                        !isMatch && 'bg-amber-50/50 dark:bg-amber-950/20'
                       )}
                     >
                       <td className="p-3">
                         <div className="flex items-center gap-2">
                           <Package className="w-4 h-4 text-slate-400" />
-                          <span className="font-medium text-slate-900 dark:text-white">{item.item_name}</span>
+                          <span className="font-medium text-slate-900 dark:text-white">
+                            {item.item_name}
+                          </span>
                         </div>
                       </td>
-                      <td className="p-3 text-center text-slate-500 font-mono">{item.ordered_qty}</td>
+                      <td className="p-3 text-center text-slate-500 font-mono">
+                        {item.ordered_qty}
+                      </td>
                       <td className="p-3">
                         <Input
                           type="number"
                           min="0"
                           max={item.ordered_qty}
                           value={item.received_qty}
-                          onChange={(e) => updateItem(idx, 'received_qty', parseInt(e.target.value) || 0)}
+                          onChange={(e) =>
+                            updateItem(idx, 'received_qty', parseInt(e.target.value) || 0)
+                          }
                           className={cn(
-                            "text-center h-9",
-                            item.received_qty !== item.ordered_qty && "border-amber-400 bg-amber-50 dark:bg-amber-900/20"
+                            'text-center h-9',
+                            item.received_qty !== item.ordered_qty &&
+                              'border-amber-400 bg-amber-50 dark:bg-amber-900/20'
                           )}
                         />
                       </td>
@@ -269,7 +299,7 @@ export default function GoodsReceiptForm({ purchaseOrder, onSubmit, onCancel }) 
                           value={item.condition}
                           onValueChange={(v) => updateItem(idx, 'condition', v)}
                         >
-                          <SelectTrigger className={cn("text-sm h-9", conditionOption?.color)}>
+                          <SelectTrigger className={cn('text-sm h-9', conditionOption?.color)}>
                             <SelectValue />
                           </SelectTrigger>
                           <SelectContent>
@@ -278,7 +308,7 @@ export default function GoodsReceiptForm({ purchaseOrder, onSubmit, onCancel }) 
                               return (
                                 <SelectItem key={opt.value} value={opt.value}>
                                   <div className="flex items-center gap-2">
-                                    <OptIcon className={cn("w-4 h-4", opt.color.split(' ')[0])} />
+                                    <OptIcon className={cn('w-4 h-4', opt.color.split(' ')[0])} />
                                     {opt.label}
                                   </div>
                                 </SelectItem>

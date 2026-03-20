@@ -59,7 +59,7 @@ jobs:
         run: |
           # Get the previous tag
           PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
-          
+
           if [ -z "$PREV_TAG" ]; then
             # First release - get all commits
             CHANGELOG=$(git log --pretty=format:"- %s (%h)" --no-merges)
@@ -67,7 +67,7 @@ jobs:
             # Get commits since previous tag
             CHANGELOG=$(git log ${PREV_TAG}..HEAD --pretty=format:"- %s (%h)" --no-merges)
           fi
-          
+
           # Escape for GitHub Actions
           echo "changelog<<EOF" >> $GITHUB_OUTPUT
           echo "$CHANGELOG" >> $GITHUB_OUTPUT
@@ -79,15 +79,15 @@ jobs:
           name: Release ${{ github.ref_name }}
           body: |
             ## What's Changed
-            
+
             ${{ steps.changelog.outputs.changelog }}
-            
+
             ## Installation
-            
+
             Download the appropriate archive for your platform and extract to your web server.
-            
+
             ## Docker
-            
+
             ```bash
             docker pull ghcr.io/${{ github.repository }}:${{ github.ref_name }}
             ```

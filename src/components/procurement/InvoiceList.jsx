@@ -76,7 +76,11 @@ export default function InvoiceList({ invoices = [], onMarkPaid, isLoading }) {
                 <FileText className="w-5 h-5 text-blue-600" />
               </div>
               <div>
-                {isLoading ? <Skeleton className="h-8 w-16" /> : <p className="text-2xl font-bold">{invoices.length}</p>}
+                {isLoading ? (
+                  <Skeleton className="h-8 w-16" />
+                ) : (
+                  <p className="text-2xl font-bold">{invoices.length}</p>
+                )}
                 <p className="text-xs text-slate-500">Total Invoices</p>
               </div>
             </div>
@@ -89,7 +93,11 @@ export default function InvoiceList({ invoices = [], onMarkPaid, isLoading }) {
                 <Clock className="w-5 h-5 text-amber-600" />
               </div>
               <div>
-                {isLoading ? <Skeleton className="h-8 w-24" /> : <p className="text-2xl font-bold">฿{totalPending.toLocaleString()}</p>}
+                {isLoading ? (
+                  <Skeleton className="h-8 w-24" />
+                ) : (
+                  <p className="text-2xl font-bold">฿{totalPending.toLocaleString()}</p>
+                )}
                 <p className="text-xs text-slate-500">Pending</p>
               </div>
             </div>
@@ -102,8 +110,14 @@ export default function InvoiceList({ invoices = [], onMarkPaid, isLoading }) {
                 <AlertTriangle className="w-5 h-5 text-rose-600" />
               </div>
               <div>
-                {isLoading ? <Skeleton className="h-8 w-24" /> : <p className="text-2xl font-bold">฿{totalOverdue.toLocaleString()}</p>}
-                <p className="text-xs text-slate-500">{isLoading ? '' : `${overdueCount} Overdue`}</p>
+                {isLoading ? (
+                  <Skeleton className="h-8 w-24" />
+                ) : (
+                  <p className="text-2xl font-bold">฿{totalOverdue.toLocaleString()}</p>
+                )}
+                <p className="text-xs text-slate-500">
+                  {isLoading ? '' : `${overdueCount} Overdue`}
+                </p>
               </div>
             </div>
           </CardContent>
@@ -115,7 +129,13 @@ export default function InvoiceList({ invoices = [], onMarkPaid, isLoading }) {
                 <CheckCircle className="w-5 h-5 text-emerald-600" />
               </div>
               <div>
-                {isLoading ? <Skeleton className="h-8 w-16" /> : <p className="text-2xl font-bold">{invoices.filter((i) => i.status === 'paid').length}</p>}
+                {isLoading ? (
+                  <Skeleton className="h-8 w-16" />
+                ) : (
+                  <p className="text-2xl font-bold">
+                    {invoices.filter((i) => i.status === 'paid').length}
+                  </p>
+                )}
                 <p className="text-xs text-slate-500">Paid</p>
               </div>
             </div>
@@ -145,21 +165,23 @@ export default function InvoiceList({ invoices = [], onMarkPaid, isLoading }) {
         <CardContent>
           {isLoading ? (
             <div className="space-y-3">
-              {Array(3).fill(0).map((_, i) => (
-                <div key={i} className="flex items-center justify-between p-4 border rounded-lg">
-                  <div className="flex items-center gap-4">
-                    <Skeleton className="h-10 w-10 rounded-lg" />
+              {Array(3)
+                .fill(0)
+                .map((_, i) => (
+                  <div key={i} className="flex items-center justify-between p-4 border rounded-lg">
+                    <div className="flex items-center gap-4">
+                      <Skeleton className="h-10 w-10 rounded-lg" />
+                      <div className="space-y-2">
+                        <Skeleton className="h-4 w-32" />
+                        <Skeleton className="h-3 w-48" />
+                      </div>
+                    </div>
                     <div className="space-y-2">
-                      <Skeleton className="h-4 w-32" />
-                      <Skeleton className="h-3 w-48" />
+                      <Skeleton className="h-6 w-24" />
+                      <Skeleton className="h-3 w-16" />
                     </div>
                   </div>
-                  <div className="space-y-2">
-                    <Skeleton className="h-6 w-24" />
-                    <Skeleton className="h-3 w-16" />
-                  </div>
-                </div>
-              ))}
+                ))}
             </div>
           ) : filteredInvoices.length > 0 ? (
             <div className="space-y-3">

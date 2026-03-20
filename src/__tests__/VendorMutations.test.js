@@ -88,10 +88,7 @@ describe('Vendor mutation paths', () => {
 
   describe('handleVendorSubmit routing', () => {
     it('routes to create when no editing vendor', () => {
-      const result = handleVendorSubmit(
-        { name: 'New Vendor', type: 'freight' },
-        null
-      );
+      const result = handleVendorSubmit({ name: 'New Vendor', type: 'freight' }, null);
       expect(result.action).toBe('create');
       expect(result.data.name).toBe('New Vendor');
     });
@@ -107,9 +104,7 @@ describe('Vendor mutation paths', () => {
   });
 
   describe('handleProcessPayments', () => {
-    const vendorOrders = [
-      { id: 'vo-1', status: 'completed', vendor_id: 'v-1', total_cost: 5000 },
-    ];
+    const vendorOrders = [{ id: 'vo-1', status: 'completed', vendor_id: 'v-1', total_cost: 5000 }];
     const vendors = [{ id: 'v-1', name: 'Vendor A' }];
 
     it('processes unpaid orders and invalidates payment cache', async () => {
@@ -124,9 +119,9 @@ describe('Vendor mutation paths', () => {
     it('propagates processing errors', async () => {
       mockProcessUnpaid.mockRejectedValueOnce(new Error('No orders to process'));
 
-      await expect(
-        handleProcessPayments([], [], queryClient)
-      ).rejects.toThrow('No orders to process');
+      await expect(handleProcessPayments([], [], queryClient)).rejects.toThrow(
+        'No orders to process'
+      );
     });
   });
 
@@ -149,9 +144,9 @@ describe('Vendor mutation paths', () => {
     it('propagates payment errors', async () => {
       mockMarkPaymentPaid.mockRejectedValueOnce(new Error('Payment not found'));
 
-      await expect(
-        handleMarkPaid('pay-999', 'cash', null, queryClient)
-      ).rejects.toThrow('Payment not found');
+      await expect(handleMarkPaid('pay-999', 'cash', null, queryClient)).rejects.toThrow(
+        'Payment not found'
+      );
     });
   });
 

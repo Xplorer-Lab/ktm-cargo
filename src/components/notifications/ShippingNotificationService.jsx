@@ -95,7 +95,10 @@ function processTemplate(template, data) {
   // Handle conditional blocks {{#field}}...{{/field}}
   Object.keys(data).forEach((key) => {
     const safeKey = escapeRegex(key);
-    const conditionalRegex = new RegExp(`\\{\\{#${safeKey}\\}\\}([\\s\\S]*?)\\{\\{/${safeKey}\\}\\}`, 'g');
+    const conditionalRegex = new RegExp(
+      `\\{\\{#${safeKey}\\}\\}([\\s\\S]*?)\\{\\{/${safeKey}\\}\\}`,
+      'g'
+    );
     if (data[key]) {
       result = result.replace(conditionalRegex, '$1');
     } else {

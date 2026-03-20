@@ -12,7 +12,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from '@/components/ui/dialog';
+import {
+  Dialog,
+  DialogContent,
+  DialogHeader,
+  DialogTitle,
+  DialogDescription,
+} from '@/components/ui/dialog';
 import {
   AlertDialog,
   AlertDialogAction,
@@ -76,6 +82,11 @@ const TYPE_CONFIG = {
     label: 'Shopping',
     color: 'bg-purple-100 text-purple-800',
     icon: ShoppingBag,
+  },
+  vendor_bill: {
+    label: 'Vendor Bill',
+    color: 'bg-amber-100 text-amber-800',
+    icon: FileText,
   },
 };
 
@@ -188,40 +199,72 @@ export default function Invoices() {
   // Stats
   const stats = useMemo(() => {
     const today = new Date();
-    let draft = 0, issued = 0, sent = 0, partially_paid = 0, paid = 0, overdue = 0;
-    let pendingAmount = 0, paidAmount = 0, overdueAmount = 0;
+    let draft = 0,
+      issued = 0,
+      sent = 0,
+      partially_paid = 0,
+      paid = 0,
+      overdue = 0;
+    let pendingAmount = 0,
+      paidAmount = 0,
+      overdueAmount = 0;
 
     invoices.forEach((inv) => {
       const amount = inv.total_amount || 0;
-      const isOverdue = inv.due_date && new Date(inv.due_date) < today &&
-        inv.status !== 'draft' && inv.status !== 'paid' && inv.status !== 'void';
+      const isOverdue =
+        inv.due_date &&
+        new Date(inv.due_date) < today &&
+        inv.status !== 'draft' &&
+        inv.status !== 'paid' &&
+        inv.status !== 'void';
 
       switch (inv.status) {
-        case 'draft': draft++; break;
+        case 'draft':
+          draft++;
+          break;
         case 'issued':
           issued++;
           pendingAmount += amount;
-          if (isOverdue) { overdue++; overdueAmount += amount; }
+          if (isOverdue) {
+            overdue++;
+            overdueAmount += amount;
+          }
           break;
         case 'sent':
           sent++;
           pendingAmount += amount;
-          if (isOverdue) { overdue++; overdueAmount += amount; }
+          if (isOverdue) {
+            overdue++;
+            overdueAmount += amount;
+          }
           break;
         case 'partially_paid':
           partially_paid++;
-          paidAmount += (inv.amount_paid || 0);
-          pendingAmount += (inv.balance_due || (amount - (inv.amount_paid || 0)));
-          if (isOverdue) { overdue++; overdueAmount += (inv.balance_due || (amount - (inv.amount_paid || 0))); }
+          paidAmount += inv.amount_paid || 0;
+          pendingAmount += inv.balance_due || amount - (inv.amount_paid || 0);
+          if (isOverdue) {
+            overdue++;
+            overdueAmount += inv.balance_due || amount - (inv.amount_paid || 0);
+          }
           break;
-        case 'paid': paid++; paidAmount += amount; break;
+        case 'paid':
+          paid++;
+          paidAmount += amount;
+          break;
       }
     });
 
     return {
       total: invoices.length,
-      draft, issued, sent, partially_paid, paid, overdue,
-      pendingAmount, paidAmount, overdueAmount
+      draft,
+      issued,
+      sent,
+      partially_paid,
+      paid,
+      overdue,
+      pendingAmount,
+      paidAmount,
+      overdueAmount,
     };
   }, [invoices]);
 
@@ -230,9 +273,8 @@ export default function Invoices() {
     return invoices.filter((invoice) => {
       // Type filter — treat null/undefined invoice_type as 'shipment'
       if (typeFilter !== 'all') {
-        const isShoppingOrder = invoice.invoice_type === 'shopping_order';
-        if (typeFilter === 'shipment' && isShoppingOrder) return false;
-        if (typeFilter === 'shopping_order' && !isShoppingOrder) return false;
+        const invoiceType = invoice.invoice_type || 'shipment';
+        if (invoiceType !== typeFilter) return false;
       }
 
       // Status filter
@@ -319,30 +361,42 @@ export default function Invoices() {
     if (!action || !invoice) return {};
 
     const actions = new Map([
-      ['issue', {
-        title: 'Issue Invoice',
-        description: `Are you sure you want to issue invoice ${invoice.invoice_number}? This will finalize the invoice and set the issue date.`,
-        confirmText: 'Issue Invoice',
-        confirmClass: 'bg-blue-600 hover:bg-blue-700',
-      }],
-      ['send', {
-        title: 'Mark as Sent',
-        description: `Mark invoice ${invoice.invoice_number} as sent to customer?`,
-        confirmText: 'Mark as Sent',
-        confirmClass: 'bg-purple-600 hover:bg-purple-700',
-      }],
-      ['pay', {
-        title: 'Record Payment',
-        description: `Record payment received for invoice ${invoice.invoice_number} (฿${invoice.total_amount?.toLocaleString()})?`,
-        confirmText: 'Record Payment',
-        confirmClass: 'bg-emerald-600 hover:bg-emerald-700',
-      }],
-      ['void', {
-        title: 'Void Invoice',
-        description: `Are you sure you want to void invoice ${invoice.invoice_number}? This action cannot be undone.`,
-        confirmText: 'Void Invoice',
-        confirmClass: 'bg-rose-600 hover:bg-rose-700',
-      }]
+      [
+        'issue',
+        {
+          title: 'Issue Invoice',
+          description: `Are you sure you want to issue invoice ${invoice.invoice_number}? This will finalize the invoice and set the issue date.`,
+          confirmText: 'Issue Invoice',
+          confirmClass: 'bg-blue-600 hover:bg-blue-700',
+        },
+      ],
+      [
+        'send',
+        {
+          title: 'Mark as Sent',
+          description: `Mark invoice ${invoice.invoice_number} as sent to customer?`,
+          confirmText: 'Mark as Sent',
+          confirmClass: 'bg-purple-600 hover:bg-purple-700',
+        },
+      ],
+      [
+        'pay',
+        {
+          title: 'Record Payment',
+          description: `Record payment received for invoice ${invoice.invoice_number} (฿${invoice.total_amount?.toLocaleString()})?`,
+          confirmText: 'Record Payment',
+          confirmClass: 'bg-emerald-600 hover:bg-emerald-700',
+        },
+      ],
+      [
+        'void',
+        {
+          title: 'Void Invoice',
+          description: `Are you sure you want to void invoice ${invoice.invoice_number}? This action cannot be undone.`,
+          confirmText: 'Void Invoice',
+          confirmClass: 'bg-rose-600 hover:bg-rose-700',
+        },
+      ],
     ]);
 
     return actions.get(action) || {};
@@ -357,9 +411,7 @@ export default function Invoices() {
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
             <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900">Invoices</h1>
-            <p className="text-sm text-slate-500 mt-1">
-              Create and manage customer invoices
-            </p>
+            <p className="text-sm text-slate-500 mt-1">Create and manage customer invoices</p>
           </div>
           <Button
             onClick={() => {
@@ -430,9 +482,7 @@ export default function Invoices() {
                   </div>
                   <div>
                     <p className="text-[10px] sm:text-xs text-rose-600 font-medium">Overdue</p>
-                    <p className="text-lg sm:text-xl font-bold text-rose-900">
-                      {stats.overdue}
-                    </p>
+                    <p className="text-lg sm:text-xl font-bold text-rose-900">{stats.overdue}</p>
                   </div>
                 </div>
               </CardContent>
@@ -478,6 +528,7 @@ export default function Invoices() {
                   <SelectItem value="all">All Types</SelectItem>
                   <SelectItem value="shipment">Shipment</SelectItem>
                   <SelectItem value="shopping_order">Shopping</SelectItem>
+                  <SelectItem value="vendor_bill">Vendor Bill</SelectItem>
                 </SelectContent>
               </Select>
 
@@ -497,7 +548,10 @@ export default function Invoices() {
 
               <Popover>
                 <PopoverTrigger asChild>
-                  <Button variant="outline" className="gap-1 sm:gap-2 text-xs sm:text-sm w-full sm:w-auto">
+                  <Button
+                    variant="outline"
+                    className="gap-1 sm:gap-2 text-xs sm:text-sm w-full sm:w-auto"
+                  >
                     <CalendarIcon className="w-3 h-3 sm:w-4 sm:h-4" />
                     <span className="hidden sm:inline">
                       {format(dateRange.from, 'MMM d')} - {format(dateRange.to, 'MMM d, yyyy')}
@@ -527,19 +581,24 @@ export default function Invoices() {
         {/* Invoice List */}
         {isLoading ? (
           <div className="space-y-4">
-            {Array(5).fill(0).map((_, i) => (
-              <Skeleton key={`skeleton-invoice-${i}`} className="h-24" />
-            ))}
+            {Array(5)
+              .fill(0)
+              .map((_, i) => (
+                <Skeleton key={`skeleton-invoice-${i}`} className="h-24" />
+              ))}
           </div>
         ) : filteredInvoices.length > 0 ? (
           <div className="space-y-3">
             {filteredInvoices.map((invoice) => {
               const statusConfig = STATUS_CONFIG[invoice.status] || STATUS_CONFIG.draft;
               const typeConfig = TYPE_CONFIG[invoice.invoice_type] || TYPE_CONFIG.shipment;
-              const StatusIcon = statusConfig.icon;
               const TypeIcon = typeConfig.icon;
-              const isOverdue = invoice.due_date && new Date(invoice.due_date) < new Date() &&
-                invoice.status !== 'draft' && invoice.status !== 'paid' && invoice.status !== 'void';
+              const isOverdue =
+                invoice.due_date &&
+                new Date(invoice.due_date) < new Date() &&
+                invoice.status !== 'draft' &&
+                invoice.status !== 'paid' &&
+                invoice.status !== 'void';
 
               return (
                 <Card
@@ -548,7 +607,10 @@ export default function Invoices() {
                 >
                   <CardContent className="p-4">
                     <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                      <div className="flex items-center gap-4 cursor-pointer" onClick={() => handleViewDetails(invoice)}>
+                      <div
+                        className="flex items-center gap-4 cursor-pointer"
+                        onClick={() => handleViewDetails(invoice)}
+                      >
                         <div className={`p-3 rounded-xl ${typeConfig.color}`}>
                           <TypeIcon className="w-5 h-5" />
                         </div>
@@ -582,7 +644,10 @@ export default function Invoices() {
                             ฿{(invoice.total_amount || 0).toLocaleString()}
                           </p>
                           <p className="text-xs text-slate-500">
-                            Due: {invoice.due_date ? format(parseISO(invoice.due_date), 'MMM d, yyyy') : '-'}
+                            Due:{' '}
+                            {invoice.due_date
+                              ? format(parseISO(invoice.due_date), 'MMM d, yyyy')
+                              : '-'}
                           </p>
                         </div>
 
@@ -590,28 +655,61 @@ export default function Invoices() {
                         <div className="flex gap-1">
                           {invoice.status === 'draft' && (
                             <>
-                              <Button size="sm" variant="ghost" onClick={() => handleEdit(invoice)} title="Edit">
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => handleEdit(invoice)}
+                                title="Edit"
+                              >
                                 <Edit className="w-4 h-4" />
                               </Button>
-                              <Button size="sm" variant="ghost" className="text-blue-600" onClick={() => handleAction('issue', invoice)} title="Issue">
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                className="text-blue-600"
+                                onClick={() => handleAction('issue', invoice)}
+                                title="Issue"
+                              >
                                 <FileText className="w-4 h-4" />
                               </Button>
                             </>
                           )}
                           {['issued', 'sent', 'partially_paid'].includes(invoice.status) && (
-                            <Button size="sm" variant="ghost" className="text-emerald-600" onClick={() => handleAction('pay', invoice)} title="Record Payment">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="text-emerald-600"
+                              onClick={() => handleAction('pay', invoice)}
+                              title="Record Payment"
+                            >
                               <CreditCard className="w-4 h-4" />
                             </Button>
                           )}
                           {invoice.status !== 'paid' && invoice.status !== 'void' && (
-                            <Button size="sm" variant="ghost" className="text-rose-600" onClick={() => handleAction('void', invoice)} title="Void">
+                            <Button
+                              size="sm"
+                              variant="ghost"
+                              className="text-rose-600"
+                              onClick={() => handleAction('void', invoice)}
+                              title="Void"
+                            >
                               <Ban className="w-4 h-4" />
                             </Button>
                           )}
-                          <Button size="sm" variant="ghost" onClick={() => handleViewDetails(invoice)} title="View">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handleViewDetails(invoice)}
+                            title="View"
+                          >
                             <Eye className="w-4 h-4" />
                           </Button>
-                          <Button size="sm" variant="ghost" onClick={() => handlePrintInvoice(invoice)} title="Print">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            onClick={() => handlePrintInvoice(invoice)}
+                            title="Print"
+                          >
                             <Printer className="w-4 h-4" />
                           </Button>
                         </div>
@@ -682,7 +780,10 @@ export default function Invoices() {
         </Dialog>
 
         {/* Action Confirmation Dialog */}
-        <AlertDialog open={actionDialog.open} onOpenChange={(open) => setActionDialog({ ...actionDialog, open })}>
+        <AlertDialog
+          open={actionDialog.open}
+          onOpenChange={(open) => setActionDialog({ ...actionDialog, open })}
+        >
           <AlertDialogContent>
             <AlertDialogHeader>
               <AlertDialogTitle>{dialogContent.title}</AlertDialogTitle>
@@ -698,16 +799,23 @@ export default function Invoices() {
         </AlertDialog>
 
         {/* Payment Input Dialog */}
-        <Dialog open={paymentDialog.open} onOpenChange={(open) => setPaymentDialog({ ...paymentDialog, open })}>
+        <Dialog
+          open={paymentDialog.open}
+          onOpenChange={(open) => setPaymentDialog({ ...paymentDialog, open })}
+        >
           <DialogContent>
             <DialogHeader>
               <DialogTitle>Record Payment</DialogTitle>
               <DialogDescription>
-                Enter the payment amount received for invoice {paymentDialog.invoice?.invoice_number}.
+                Enter the payment amount received for invoice{' '}
+                {paymentDialog.invoice?.invoice_number}.
                 <br />
                 Total amount: ฿{paymentDialog.invoice?.total_amount?.toLocaleString()}
                 <br />
-                Balance due: ฿{(paymentDialog.invoice?.balance_due ?? paymentDialog.invoice?.total_amount)?.toLocaleString()}
+                Balance due: ฿
+                {(
+                  paymentDialog.invoice?.balance_due ?? paymentDialog.invoice?.total_amount
+                )?.toLocaleString()}
               </DialogDescription>
             </DialogHeader>
             <div className="py-4">
@@ -715,7 +823,7 @@ export default function Invoices() {
               <Input
                 type="number"
                 value={paymentDialog.amount}
-                onChange={(e) => setPaymentDialog(prev => ({ ...prev, amount: e.target.value }))}
+                onChange={(e) => setPaymentDialog((prev) => ({ ...prev, amount: e.target.value }))}
                 placeholder="Amount received"
                 max={paymentDialog.invoice?.balance_due ?? paymentDialog.invoice?.total_amount}
                 min="0.01"
@@ -723,13 +831,26 @@ export default function Invoices() {
               />
             </div>
             <div className="flex justify-end gap-2">
-              <Button variant="outline" onClick={() => setPaymentDialog({ open: false, invoice: null, amount: '' })}>
+              <Button
+                variant="outline"
+                onClick={() => setPaymentDialog({ open: false, invoice: null, amount: '' })}
+              >
                 Cancel
               </Button>
               <Button
-                onClick={() => payMutation.mutate({ id: paymentDialog.invoice.id, details: { amount: paymentDialog.amount } })}
+                onClick={() =>
+                  payMutation.mutate({
+                    id: paymentDialog.invoice.id,
+                    details: { amount: paymentDialog.amount },
+                  })
+                }
                 className="bg-emerald-600 hover:bg-emerald-700 text-white"
-                disabled={!paymentDialog.amount || Number(paymentDialog.amount) <= 0 || Number(paymentDialog.amount) > (paymentDialog.invoice?.balance_due ?? paymentDialog.invoice?.total_amount)}
+                disabled={
+                  !paymentDialog.amount ||
+                  Number(paymentDialog.amount) <= 0 ||
+                  Number(paymentDialog.amount) >
+                    (paymentDialog.invoice?.balance_due ?? paymentDialog.invoice?.total_amount)
+                }
               >
                 Confirm Payment
               </Button>
@@ -740,4 +861,3 @@ export default function Invoices() {
     </div>
   );
 }
-

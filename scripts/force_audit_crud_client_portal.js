@@ -61,7 +61,11 @@ async function testCustomerCRUD() {
       .single();
 
     if (error) {
-      AUDIT_REPORT.crudOperations.customers.create = { success: false, error: error.message, code: error.code };
+      AUDIT_REPORT.crudOperations.customers.create = {
+        success: false,
+        error: error.message,
+        code: error.code,
+      };
       AUDIT_REPORT.crudOperations.customers.issues.push(`CREATE failed: ${error.message}`);
       console.log('❌ CREATE failed:', error.message);
     } else {
@@ -79,7 +83,11 @@ async function testCustomerCRUD() {
 
   // READ
   try {
-    const { data, error } = await supabase.from('customers').select('*').eq('id', createdId).single();
+    const { data, error } = await supabase
+      .from('customers')
+      .select('*')
+      .eq('id', createdId)
+      .single();
     if (error) {
       AUDIT_REPORT.crudOperations.customers.read = { success: false, error: error.message };
       AUDIT_REPORT.crudOperations.customers.issues.push(`READ failed: ${error.message}`);
@@ -191,8 +199,14 @@ async function testShipmentCRUD() {
       .single();
 
     if (error) {
-      AUDIT_REPORT.crudOperations.shipments.create = { success: false, error: error.message, code: error.code };
-      AUDIT_REPORT.crudOperations.shipments.issues.push(`CREATE failed: ${error.message} (${error.code})`);
+      AUDIT_REPORT.crudOperations.shipments.create = {
+        success: false,
+        error: error.message,
+        code: error.code,
+      };
+      AUDIT_REPORT.crudOperations.shipments.issues.push(
+        `CREATE failed: ${error.message} (${error.code})`
+      );
       console.log('❌ CREATE failed:', error.message, error.code);
     } else {
       createdId = created.id;
@@ -209,7 +223,11 @@ async function testShipmentCRUD() {
 
   // READ
   try {
-    const { data, error } = await supabase.from('shipments').select('*').eq('id', createdId).single();
+    const { data, error } = await supabase
+      .from('shipments')
+      .select('*')
+      .eq('id', createdId)
+      .single();
     if (error) {
       AUDIT_REPORT.crudOperations.shipments.read = { success: false, error: error.message };
       AUDIT_REPORT.crudOperations.shipments.issues.push(`READ failed: ${error.message}`);
@@ -283,7 +301,11 @@ async function testCampaignCRUD() {
       .single();
 
     if (error) {
-      AUDIT_REPORT.crudOperations.campaigns.create = { success: false, error: error.message, code: error.code };
+      AUDIT_REPORT.crudOperations.campaigns.create = {
+        success: false,
+        error: error.message,
+        code: error.code,
+      };
       AUDIT_REPORT.crudOperations.campaigns.issues.push(`CREATE failed: ${error.message}`);
       console.log('❌ CREATE failed:', error.message);
     } else {
@@ -338,7 +360,10 @@ async function testSettingsCRUD() {
           .eq('id', data[0].id);
 
         if (updateError) {
-          AUDIT_REPORT.crudOperations.settings.update = { success: false, error: updateError.message };
+          AUDIT_REPORT.crudOperations.settings.update = {
+            success: false,
+            error: updateError.message,
+          };
           console.log('❌ UPDATE failed:', updateError.message);
         } else {
           AUDIT_REPORT.crudOperations.settings.update = { success: true };
@@ -391,23 +416,37 @@ async function auditClientPortal() {
 
   // Test customer portal data access
   try {
-    const { data: customers, error } = await supabase.from('customers').select('id, email, name').limit(5);
+    const { data: customers, error } = await supabase
+      .from('customers')
+      .select('id, email, name')
+      .limit(5);
     if (error) {
-      AUDIT_REPORT.clientPortal.customerPortal.issues.push(`Cannot access customers: ${error.message}`);
+      AUDIT_REPORT.clientPortal.customerPortal.issues.push(
+        `Cannot access customers: ${error.message}`
+      );
     } else {
-      AUDIT_REPORT.clientPortal.customerPortal.tests.push(`Customer data accessible: ${customers?.length || 0} records`);
+      AUDIT_REPORT.clientPortal.customerPortal.tests.push(
+        `Customer data accessible: ${customers?.length || 0} records`
+      );
     }
   } catch (err) {
-    AUDIT_REPORT.clientPortal.customerPortal.issues.push(`Customer portal test error: ${err.message}`);
+    AUDIT_REPORT.clientPortal.customerPortal.issues.push(
+      `Customer portal test error: ${err.message}`
+    );
   }
 
   // Test vendor portal data access
   try {
-    const { data: vendors, error } = await supabase.from('vendors').select('id, email, name').limit(5);
+    const { data: vendors, error } = await supabase
+      .from('vendors')
+      .select('id, email, name')
+      .limit(5);
     if (error) {
       AUDIT_REPORT.clientPortal.vendorPortal.issues.push(`Cannot access vendors: ${error.message}`);
     } else {
-      AUDIT_REPORT.clientPortal.vendorPortal.tests.push(`Vendor data accessible: ${vendors?.length || 0} records`);
+      AUDIT_REPORT.clientPortal.vendorPortal.tests.push(
+        `Vendor data accessible: ${vendors?.length || 0} records`
+      );
     }
   } catch (err) {
     AUDIT_REPORT.clientPortal.vendorPortal.issues.push(`Vendor portal test error: ${err.message}`);
@@ -476,7 +515,11 @@ async function findLogicIssues() {
     }
 
     // Check for missing validation
-    if (content.includes('.create(') && !content.includes('Schema') && !content.includes('validate')) {
+    if (
+      content.includes('.create(') &&
+      !content.includes('Schema') &&
+      !content.includes('validate')
+    ) {
       AUDIT_REPORT.logicIssues.found.push({
         file: relativePath,
         issue: 'Create operation without validation',
@@ -494,7 +537,11 @@ async function findLogicIssues() {
     }
 
     // Check for direct Supabase calls instead of using db abstraction
-    if (content.includes('supabase.from(') && !file.includes('supabaseClient') && !file.includes('db.js')) {
+    if (
+      content.includes('supabase.from(') &&
+      !file.includes('supabaseClient') &&
+      !file.includes('db.js')
+    ) {
       AUDIT_REPORT.logicIssues.found.push({
         file: relativePath,
         issue: 'Direct Supabase call - should use db abstraction layer',
@@ -545,9 +592,14 @@ async function generateReport() {
   ];
 
   AUDIT_REPORT.summary.totalIssues = allIssues.length;
-  AUDIT_REPORT.summary.critical = allIssues.filter((i) => i.includes('CREATE failed') || i.includes('DELETE failed')).length;
-  AUDIT_REPORT.summary.high = AUDIT_REPORT.logicIssues.found.filter((l) => l.severity === 'high').length;
-  AUDIT_REPORT.summary.medium = allIssues.length - AUDIT_REPORT.summary.critical - AUDIT_REPORT.summary.high;
+  AUDIT_REPORT.summary.critical = allIssues.filter(
+    (i) => i.includes('CREATE failed') || i.includes('DELETE failed')
+  ).length;
+  AUDIT_REPORT.summary.high = AUDIT_REPORT.logicIssues.found.filter(
+    (l) => l.severity === 'high'
+  ).length;
+  AUDIT_REPORT.summary.medium =
+    allIssues.length - AUDIT_REPORT.summary.critical - AUDIT_REPORT.summary.high;
 
   const reportPath = path.join(__dirname, 'CRUD_CLIENT_PORTAL_AUDIT_REPORT.md');
   let report = `# CRUD & Client Portal Force Audit Report\n\n`;
@@ -652,4 +704,3 @@ async function main() {
 }
 
 main();
-

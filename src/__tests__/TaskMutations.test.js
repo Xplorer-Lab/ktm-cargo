@@ -113,7 +113,12 @@ describe('Task mutation paths', () => {
     });
 
     it('preserves other task fields', () => {
-      const result = toggleStatus({ id: 't-4', status: 'pending', title: 'Keep', priority: 'high' });
+      const result = toggleStatus({
+        id: 't-4',
+        status: 'pending',
+        title: 'Keep',
+        priority: 'high',
+      });
       expect(result.data.title).toBe('Keep');
       expect(result.data.priority).toBe('high');
     });

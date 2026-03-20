@@ -56,7 +56,9 @@ export function normalizeShipmentOrder(shipment) {
 export function normalizeShoppingOrder(order) {
   const sourceId = order?.id || '';
   const displayId =
-    order?.order_number || order?.reference_number || `SHOP-${String(sourceId).slice(-6).toUpperCase()}`;
+    order?.order_number ||
+    order?.reference_number ||
+    `SHOP-${String(sourceId).slice(-6).toUpperCase()}`;
   const createdDate = order?.created_date || order?.order_date || order?.updated_date || null;
 
   return {

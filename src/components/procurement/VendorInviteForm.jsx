@@ -72,7 +72,7 @@ export default function VendorInviteForm({ open, onOpenChange, onInviteSent }) {
       await sendMessengerNotification({
         to: data.email,
         message: `Hello${data.companyName ? ` ${data.companyName}` : ''},\n\nYou have been invited to register as a vendor on our procurement portal.\n\nPlease click the link below to complete your registration:\n${link}\n\nThis invitation expires on ${format(expiresAt, 'MMMM d, yyyy')}.`,
-        platform: 'Telegram'
+        platform: 'Telegram',
       });
 
       toast.success('Invitation sent successfully!');

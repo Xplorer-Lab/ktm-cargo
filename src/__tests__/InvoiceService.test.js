@@ -119,7 +119,11 @@ describe('createCustomerInvoice', () => {
 
   test('creates draft invoice with correct shape', async () => {
     mockRpc.mockResolvedValueOnce({ data: 'INV-202602-0042', error: null });
-    __mocks.createMock.mockResolvedValueOnce({ id: 'uuid-1', invoice_number: 'INV-202602-0042', status: 'draft' });
+    __mocks.createMock.mockResolvedValueOnce({
+      id: 'uuid-1',
+      invoice_number: 'INV-202602-0042',
+      status: 'draft',
+    });
 
     await createCustomerInvoice({
       customer_name: 'Test Customer',
@@ -138,7 +142,11 @@ describe('createCustomerInvoice', () => {
 
   test('always uses RPC-generated invoice number for creates', async () => {
     mockRpc.mockResolvedValueOnce({ data: 'INV-202602-0043', error: null });
-    __mocks.createMock.mockResolvedValueOnce({ id: 'uuid-2', invoice_number: 'INV-202602-0043', status: 'draft' });
+    __mocks.createMock.mockResolvedValueOnce({
+      id: 'uuid-2',
+      invoice_number: 'INV-202602-0043',
+      status: 'draft',
+    });
 
     await createCustomerInvoice({
       invoice_number: 'CUSTOM-001',
@@ -159,7 +167,13 @@ describe('createInvoiceFromShipment', () => {
     __mocks.filterMock.mockResolvedValueOnce([existingInvoice]);
 
     const result = await createInvoiceFromShipment(
-      { id: 'ship-1', tracking_number: 'T-001', customer_name: 'A', weight_kg: 5, price_per_kg: 100 },
+      {
+        id: 'ship-1',
+        tracking_number: 'T-001',
+        customer_name: 'A',
+        weight_kg: 5,
+        price_per_kg: 100,
+      },
       { id: 'cust-1', email: 'a@test.com' }
     );
 
@@ -172,7 +186,11 @@ describe('createInvoiceFromShipment', () => {
   test('creates new invoice when none exists for shipment', async () => {
     __mocks.filterMock.mockResolvedValueOnce([]);
     mockRpc.mockResolvedValueOnce({ data: 'INV-202602-0099', error: null });
-    __mocks.createMock.mockResolvedValueOnce({ id: 'inv-new', shipment_id: 'ship-2', status: 'draft' });
+    __mocks.createMock.mockResolvedValueOnce({
+      id: 'inv-new',
+      shipment_id: 'ship-2',
+      status: 'draft',
+    });
 
     const result = await createInvoiceFromShipment(
       {

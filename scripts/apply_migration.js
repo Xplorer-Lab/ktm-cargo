@@ -39,7 +39,7 @@ async function applyMigration() {
   try {
     // Step 1: Make columns nullable
     const { error: e1 } = await supabase.rpc('exec_sql', {
-      sql: 'ALTER TABLE shipments ALTER COLUMN tracking_number DROP NOT NULL'
+      sql: 'ALTER TABLE shipments ALTER COLUMN tracking_number DROP NOT NULL',
     });
 
     if (e1 && !e1.message.includes('does not exist')) {
@@ -49,7 +49,7 @@ async function applyMigration() {
     }
 
     const { error: e2 } = await supabase.rpc('exec_sql', {
-      sql: 'ALTER TABLE shopping_orders ALTER COLUMN order_number DROP NOT NULL'
+      sql: 'ALTER TABLE shopping_orders ALTER COLUMN order_number DROP NOT NULL',
     });
 
     if (e2 && !e2.message.includes('does not exist')) {
@@ -61,12 +61,12 @@ async function applyMigration() {
     console.log('\n📝 Step 2: Creating sequences...');
 
     const { error: e3 } = await supabase.rpc('exec_sql', {
-      sql: 'CREATE SEQUENCE IF NOT EXISTS tracking_seq START 1'
+      sql: 'CREATE SEQUENCE IF NOT EXISTS tracking_seq START 1',
     });
     if (!e3) console.log('   ✅ tracking_seq created');
 
     const { error: e4 } = await supabase.rpc('exec_sql', {
-      sql: 'CREATE SEQUENCE IF NOT EXISTS order_seq START 1'
+      sql: 'CREATE SEQUENCE IF NOT EXISTS order_seq START 1',
     });
     if (!e4) console.log('   ✅ order_seq created');
 
@@ -111,7 +111,7 @@ async function applyMigration() {
     console.log('\n📝 Step 4: Creating triggers...');
 
     const { error: e7 } = await supabase.rpc('exec_sql', {
-      sql: 'DROP TRIGGER IF EXISTS set_tracking_number ON shipments'
+      sql: 'DROP TRIGGER IF EXISTS set_tracking_number ON shipments',
     });
 
     const trackingTrigger = `
@@ -125,7 +125,7 @@ async function applyMigration() {
     if (!e8) console.log('   ✅ set_tracking_number trigger created');
 
     const { error: e9 } = await supabase.rpc('exec_sql', {
-      sql: 'DROP TRIGGER IF EXISTS set_order_number ON shopping_orders'
+      sql: 'DROP TRIGGER IF EXISTS set_order_number ON shopping_orders',
     });
 
     const orderTrigger = `
@@ -141,13 +141,12 @@ async function applyMigration() {
     console.log('\n='.repeat(80));
     console.log('\n🎉 Migration Applied Successfully!\n');
     return true;
-
   } catch (err) {
     console.error('\n❌ Error during migration:', err.message);
 
     // The exec_sql function probably doesn't exist
     console.log('\n💡 The RPC approach requires creating a helper function first.');
-    console.log('   Since we have the service role key, let\'s try a direct approach...\n');
+    console.log("   Since we have the service role key, let's try a direct approach...\n");
 
     return false;
   }
@@ -220,7 +219,6 @@ async function testMigration() {
 
     console.log('\n🎉 All triggers are working perfectly!\n');
     return true;
-
   } catch (err) {
     console.error('❌ Test error:', err.message);
     return false;
@@ -233,7 +231,7 @@ async function main() {
   if (success) {
     await testMigration();
   } else {
-    console.log('\n⚠️  The RPC approach didn\'t work.');
+    console.log("\n⚠️  The RPC approach didn't work.");
     console.log('   This is normal - Supabase restricts DDL via RPC for security.\n');
     console.log('📝 RECOMMENDED: Use the SQL Editor instead:\n');
     console.log('   1. Go to Supabase Dashboard → SQL Editor');

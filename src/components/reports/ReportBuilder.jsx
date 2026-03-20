@@ -11,15 +11,7 @@ import {
   SelectValue,
 } from '@/components/ui/select';
 import { Badge } from '@/components/ui/badge';
-import {
-  Plus,
-  Trash2,
-  FileSpreadsheet,
-  Filter,
-  SortAsc,
-  Mail,
-  Loader2,
-} from 'lucide-react';
+import { Plus, Trash2, FileSpreadsheet, Filter, SortAsc, Mail, Loader2 } from 'lucide-react';
 
 const REPORT_TYPES = {
   shipments: {
@@ -145,7 +137,7 @@ export default function ReportBuilder({ report, onSubmit, onCancel }) {
       sort_by: report?.sort_by || 'created_date',
       sort_order: report?.sort_order || 'desc',
       is_active: report?.is_active !== false,
-    }
+    },
   });
 
   const [selectedColumns, setSelectedColumns] = useState([]);
@@ -242,20 +234,14 @@ export default function ReportBuilder({ report, onSubmit, onCancel }) {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <div className="space-y-2">
               <Label>Report Name *</Label>
-              <Input
-                {...form.register('name')}
-                placeholder="e.g. Weekly Shipment Summary"
-              />
+              <Input {...form.register('name')} placeholder="e.g. Weekly Shipment Summary" />
               {form.formState.errors.name && (
                 <p className="text-xs text-rose-600 mt-1">{form.formState.errors.name.message}</p>
               )}
             </div>
             <div className="space-y-2">
               <Label>Report Type</Label>
-              <Select
-                value={form.watch('report_type')}
-                onValueChange={handleReportTypeChange}
-              >
+              <Select value={form.watch('report_type')} onValueChange={handleReportTypeChange}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>
@@ -422,10 +408,7 @@ export default function ReportBuilder({ report, onSubmit, onCancel }) {
               <Mail className="w-4 h-4" /> Email Schedule (Optional)
             </Label>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
-              <Select
-                value={watchedSchedule}
-                onValueChange={(v) => form.setValue('schedule', v)}
-              >
+              <Select value={watchedSchedule} onValueChange={(v) => form.setValue('schedule', v)}>
                 <SelectTrigger>
                   <SelectValue />
                 </SelectTrigger>

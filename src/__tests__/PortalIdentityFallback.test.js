@@ -91,7 +91,12 @@ async function findVendorRecord(currentUserId, normalizedEmail, supportsAuthIden
   return null;
 }
 
-async function findCustomerRecord(currentUserId, normalizedEmail, normalizedPhone, supportsAuthIdentityLink) {
+async function findCustomerRecord(
+  currentUserId,
+  normalizedEmail,
+  normalizedPhone,
+  supportsAuthIdentityLink
+) {
   // UID lookup first
   try {
     if (supportsAuthIdentityLink && currentUserId) {
@@ -253,7 +258,7 @@ describe('Portal identity fallback and auth edge paths', () => {
 
     it('falls back to email when UID lookup returns empty', async () => {
       mockVendorFilter
-        .mockResolvedValueOnce([])  // UID returns empty
+        .mockResolvedValueOnce([]) // UID returns empty
         .mockResolvedValueOnce([{ id: 'v-2', email: 'v@test.com' }]); // email match
 
       mockVendorUpdate.mockResolvedValueOnce({ id: 'v-2', auth_user_id: 'uid-1' });
@@ -293,7 +298,7 @@ describe('Portal identity fallback and auth edge paths', () => {
 
     it('falls back to email when UID returns empty', async () => {
       mockCustomerFilter
-        .mockResolvedValueOnce([])  // UID
+        .mockResolvedValueOnce([]) // UID
         .mockResolvedValueOnce([{ id: 'c-2', email: 'c@test.com' }]); // email
 
       mockCustomerUpdate.mockResolvedValueOnce({ id: 'c-2', auth_user_id: 'uid-1' });
@@ -305,7 +310,7 @@ describe('Portal identity fallback and auth edge paths', () => {
     it('falls back to phone when both UID and email fail', async () => {
       // UID returns empty, email is empty string so filter is skipped, phone matches
       mockCustomerFilter
-        .mockResolvedValueOnce([])                           // UID lookup returns empty
+        .mockResolvedValueOnce([]) // UID lookup returns empty
         .mockResolvedValueOnce([{ id: 'c-3', phone: '09111' }]); // phone lookup matches
 
       mockCustomerUpdate.mockResolvedValueOnce({ id: 'c-3', auth_user_id: 'uid-1' });
@@ -317,9 +322,9 @@ describe('Portal identity fallback and auth edge paths', () => {
 
     it('returns null when all lookups fail', async () => {
       mockCustomerFilter
-        .mockResolvedValueOnce([])   // UID
-        .mockResolvedValueOnce([])   // email
-        .mockResolvedValueOnce([]);  // phone
+        .mockResolvedValueOnce([]) // UID
+        .mockResolvedValueOnce([]) // email
+        .mockResolvedValueOnce([]); // phone
 
       const result = await findCustomerRecord('uid-1', 'x@x.com', '09999', true);
       expect(result).toBeNull();
@@ -327,7 +332,7 @@ describe('Portal identity fallback and auth edge paths', () => {
 
     it('handles UID filter throwing error gracefully', async () => {
       mockCustomerFilter
-        .mockRejectedValueOnce(new Error('RLS denied'))              // UID throws
+        .mockRejectedValueOnce(new Error('RLS denied')) // UID throws
         .mockResolvedValueOnce([{ id: 'c-4', email: 'c@test.com' }]); // email works
 
       mockCustomerUpdate.mockResolvedValueOnce({ id: 'c-4', auth_user_id: 'uid-1' });

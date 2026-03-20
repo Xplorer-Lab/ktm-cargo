@@ -125,7 +125,7 @@ export async function submitPOForApproval(purchaseOrder, rules, vendors) {
       await sendMessengerNotification({
         to: approverRule.approver_email,
         message: `[Approval Required] PO ${purchaseOrder.po_number} - ฿${purchaseOrder.total_amount?.toLocaleString()}\n\nA new purchase order requires your approval.\nVendor: ${purchaseOrder.vendor_name}\nRule: ${approverRule.name}\n\nPlease log in to review.`,
-        platform: 'Telegram'
+        platform: 'Telegram',
       });
     } catch (_e) {
       console.error('Failed to send approval email:', _e);

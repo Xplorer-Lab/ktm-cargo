@@ -73,7 +73,10 @@ export default function CustomerPortalDashboard({ customer, user, onNavigate }) 
               <p className="text-blue-100 mt-1">Track your shipments and manage your orders</p>
             </div>
             <div className="flex gap-3">
-              <Button className="bg-white text-blue-600 hover:bg-blue-50" onClick={() => onNavigate?.('new-order')}>
+              <Button
+                className="bg-white text-blue-600 hover:bg-blue-50"
+                onClick={() => onNavigate?.('new-order')}
+              >
                 <Package className="w-4 h-4 mr-2" /> New Order
               </Button>
             </div>

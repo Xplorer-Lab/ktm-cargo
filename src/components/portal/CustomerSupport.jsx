@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { feedbackSchema } from '@/domains/core/schemas';
+import { supportTicketSchema } from '@/domains/core/schemas';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { db } from '@/api/db';
 import { sendMessengerNotification } from '@/api/integrations';
@@ -25,7 +25,6 @@ import {
   Phone,
   Mail,
   Clock,
-  CheckCircle,
   HelpCircle,
   AlertTriangle,
   FileQuestion,
@@ -45,15 +44,15 @@ const ISSUE_TYPES = [
 export default function CustomerSupport({ customer, user }) {
   const queryClient = useQueryClient();
   const { handleError, handleValidationError } = useErrorHandler();
-  
+
   const form = useForm({
-    resolver: zodResolver(feedbackSchema.partial()),
+    resolver: zodResolver(supportTicketSchema.partial()),
     defaultValues: {
       category: '',
       comment: '',
     },
   });
-  
+
   const [issueType, setIssueType] = useState('');
   const [subject, setSubject] = useState('');
   const [message, setMessage] = useState('');
@@ -63,9 +62,9 @@ export default function CustomerSupport({ customer, user }) {
     queryKey: ['support-tickets', customer?.id, user?.email],
     queryFn: async () => {
       if (customer?.id) {
-        return db.feedback.filter({ customer_id: customer.id }, '-created_date');
+        return db.supportTickets.filter({ customer_id: customer.id }, '-created_date');
       } else if (user?.email) {
-        return db.feedback.filter({ customer_email: user.email }, '-created_date');
+        return db.supportTickets.filter({ customer_email: user.email }, '-created_date');
       }
       return [];
     },
@@ -83,31 +82,31 @@ export default function CustomerSupport({ customer, user }) {
           customer_name: customer?.name || user?.full_name,
           customer_email: customer?.email || user?.email,
           category: issueType,
-          comment: `${trackingNumber ? `Tracking: ${trackingNumber}\n\n` : ''}${message}`,
+          message: `${trackingNumber ? `Tracking: ${trackingNumber}\n\n` : ''}${message}`,
+          subject,
+          priority: issueType === 'delivery' ? 'high' : 'medium',
           status: 'pending',
+          source: 'portal',
         };
-        
-        const validatedData = feedbackSchema.partial().parse(ticketData);
 
-        // Create feedback/ticket
-        await db.feedback.create({
+        const validatedData = supportTicketSchema.partial().parse(ticketData);
+
+        // Create support ticket
+        await db.supportTickets.create({
           ...validatedData,
-          feedback_type: issueType,
-          subject: subject,
-          message: ticketData.comment,
           ticket_number: ticketNumber,
         });
 
-      // Send notification email
-      try {
-        await sendMessengerNotification({
-          to: customer?.email || user?.email,
-          message: `Support Ticket Created: ${ticketNumber}\n\nWe received your request.\nIssue: ${ISSUE_TYPES.find((t) => t.value === issueType)?.label}\nSubject: ${subject}\n\nWe will respond within 24 hours.`,
-          platform: 'line'
-        });
-      } catch (_e) {
-        console.error('Failed to send confirmation email', _e);
-      }
+        // Send notification email
+        try {
+          await sendMessengerNotification({
+            to: customer?.email || user?.email,
+            message: `Support Ticket Created: ${ticketNumber}\n\nWe received your request.\nIssue: ${ISSUE_TYPES.find((t) => t.value === issueType)?.label}\nSubject: ${subject}\n\nWe will respond within 24 hours.`,
+            platform: 'line',
+          });
+        } catch (_e) {
+          console.error('Failed to send confirmation email', _e);
+        }
 
         return ticketNumber;
       } catch (error) {

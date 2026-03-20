@@ -3,5 +3,5 @@
  */
 
 export const createPageUrl = (pageName) => {
-    return `/${pageName}`;
+  return `/${pageName}`;
 };

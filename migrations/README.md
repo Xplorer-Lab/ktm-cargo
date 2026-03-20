@@ -1,7 +1,7 @@
 # Database Migrations — KTM Cargo Express
 
 > **Runbook:** Apply migrations in the order below when setting up a new
-> environment or restoring from backup.  Run each file in the
+> environment or restoring from backup. Run each file in the
 > **Supabase SQL Editor** (Dashboard → SQL Editor → New query).
 
 ## Migration order (full)
@@ -10,44 +10,44 @@ Order matters — later migrations depend on objects created by earlier ones.
 
 ### Phase 1 — Schema foundation
 
-| # | File | Purpose |
-|---|------|---------|
-| 1 | `create_company_settings.sql` | Company settings table (pricing defaults, branding) |
-| 2 | `create_service_pricing_tables.sql` | Service pricing & surcharges tables |
-| 3 | `create_audit_logs.sql` | Audit log table |
+| #   | File                                | Purpose                                             |
+| --- | ----------------------------------- | --------------------------------------------------- |
+| 1   | `create_company_settings.sql`       | Company settings table (pricing defaults, branding) |
+| 2   | `create_service_pricing_tables.sql` | Service pricing & surcharges tables                 |
+| 3   | `create_audit_logs.sql`             | Audit log table                                     |
 
 ### Phase 2 — Schema alignment & fixes
 
-| # | File | Purpose |
-|---|------|---------|
-| 4 | `step1_add_columns.sql` | Add missing columns to core tables |
-| 5 | `step1_part2_missed_columns.sql` | Additional missed columns |
-| 6 | `step2_populate_data.sql` | Seed / backfill data |
-| 7 | `step3_fix_po_schema.sql` | Purchase orders schema fixes |
-| 8 | `fix_shipment_schema.sql` | Shipment table schema corrections |
-| 9 | `fix_shopping_orders_and_enforce.sql` | Shopping orders schema + constraints |
-| 10 | `fix_company_settings_schema.sql` | Company settings schema fixes |
-| 11 | `add_shipment_origin_destination.sql` | Add origin/destination columns to shipments |
-| 12 | `add_insurance_opted_column.sql` | Add `insurance_opted` boolean to shipments |
-| 13 | `enforce_relationships.sql` | Foreign key relationships |
+| #   | File                                  | Purpose                                     |
+| --- | ------------------------------------- | ------------------------------------------- |
+| 4   | `step1_add_columns.sql`               | Add missing columns to core tables          |
+| 5   | `step1_part2_missed_columns.sql`      | Additional missed columns                   |
+| 6   | `step2_populate_data.sql`             | Seed / backfill data                        |
+| 7   | `step3_fix_po_schema.sql`             | Purchase orders schema fixes                |
+| 8   | `fix_shipment_schema.sql`             | Shipment table schema corrections           |
+| 9   | `fix_shopping_orders_and_enforce.sql` | Shopping orders schema + constraints        |
+| 10  | `fix_company_settings_schema.sql`     | Company settings schema fixes               |
+| 11  | `add_shipment_origin_destination.sql` | Add origin/destination columns to shipments |
+| 12  | `add_insurance_opted_column.sql`      | Add `insurance_opted` boolean to shipments  |
+| 13  | `enforce_relationships.sql`           | Foreign key relationships                   |
 
 ### Phase 3 — P0 Security & data integrity (CRITICAL)
 
-| # | File | Purpose |
-|---|------|---------|
-| 14 | `fix_rls_policies.sql` | **Enable RLS** on all business tables; create `is_admin_or_director()` |
-| 15 | `fix_profiles_allow_self_insert.sql` | Allow new users to insert their own profile (auth self-heal) |
-| 16 | `fix_profiles_prevent_self_escalation.sql` | Trigger blocks non-admins from changing `role`/`staff_role` |
-| 17 | `add_invoice_number_sequence.sql` | DB-backed invoice number sequence (`next_invoice_number()` RPC) |
-| 18 | `add_auto_number_triggers.sql` | Auto-generate tracking / order numbers via triggers |
-| 19 | `add_portal_auth_identity_links.sql` | Add `auth_user_id` linkage + uniqueness for customers/vendors |
-| 20 | `add_client_portal_rls.sql` | **Customer + Vendor portal self-access policies** (required for Client Portal flows) |
+| #   | File                                       | Purpose                                                                              |
+| --- | ------------------------------------------ | ------------------------------------------------------------------------------------ |
+| 14  | `fix_rls_policies.sql`                     | **Enable RLS** on all business tables; create `is_admin_or_director()`               |
+| 15  | `fix_profiles_allow_self_insert.sql`       | Allow new users to insert their own profile (auth self-heal)                         |
+| 16  | `fix_profiles_prevent_self_escalation.sql` | Trigger blocks non-admins from changing `role`/`staff_role`                          |
+| 17  | `add_invoice_number_sequence.sql`          | DB-backed invoice number sequence (`next_invoice_number()` RPC)                      |
+| 18  | `add_auto_number_triggers.sql`             | Auto-generate tracking / order numbers via triggers                                  |
+| 19  | `add_portal_auth_identity_links.sql`       | Add `auth_user_id` linkage + uniqueness for customers/vendors                        |
+| 20  | `add_client_portal_rls.sql`                | **Customer + Vendor portal self-access policies** (required for Client Portal flows) |
 
 ### Phase 4 — Monetization (optional, if using Stripe)
 
-| # | File | Purpose |
-|---|------|---------|
-| 21 | `add_subscription_fields.sql` | Add `stripe_customer_id`, `subscription_status`, `subscription_tier` to profiles |
+| #   | File                          | Purpose                                                                          |
+| --- | ----------------------------- | -------------------------------------------------------------------------------- |
+| 21  | `add_subscription_fields.sql` | Add `stripe_customer_id`, `subscription_status`, `subscription_tier` to profiles |
 
 ### Verification
 

@@ -6,56 +6,56 @@
 version: 2
 updates:
   # npm dependencies
-  - package-ecosystem: "npm"
-    directory: "/"
+  - package-ecosystem: 'npm'
+    directory: '/'
     schedule:
-      interval: "weekly"
-      day: "monday"
-      time: "09:00"
-      timezone: "Asia/Bangkok"
+      interval: 'weekly'
+      day: 'monday'
+      time: '09:00'
+      timezone: 'Asia/Bangkok'
     open-pull-requests-limit: 10
     reviewers:
-      - "FreddieKT"
+      - 'FreddieKT'
     labels:
-      - "dependencies"
-      - "automated"
+      - 'dependencies'
+      - 'automated'
     commit-message:
-      prefix: "chore(deps)"
+      prefix: 'chore(deps)'
     groups:
       # Group minor and patch updates together
       minor-and-patch:
         patterns:
-          - "*"
+          - '*'
         update-types:
-          - "minor"
-          - "patch"
+          - 'minor'
+          - 'patch'
       # Keep major updates separate for review
       react:
         patterns:
-          - "react"
-          - "react-dom"
-          - "@types/react*"
+          - 'react'
+          - 'react-dom'
+          - '@types/react*'
       testing:
         patterns:
-          - "jest"
-          - "@testing-library/*"
-          - "vitest"
+          - 'jest'
+          - '@testing-library/*'
+          - 'vitest'
       build:
         patterns:
-          - "vite"
-          - "@vitejs/*"
-          - "eslint*"
-          - "prettier"
-          - "typescript"
+          - 'vite'
+          - '@vitejs/*'
+          - 'eslint*'
+          - 'prettier'
+          - 'typescript'
 
   # GitHub Actions
-  - package-ecosystem: "github-actions"
-    directory: "/"
+  - package-ecosystem: 'github-actions'
+    directory: '/'
     schedule:
-      interval: "weekly"
-      day: "monday"
+      interval: 'weekly'
+      day: 'monday'
     labels:
-      - "dependencies"
-      - "github-actions"
+      - 'dependencies'
+      - 'github-actions'
     commit-message:
-      prefix: "chore(ci)"
+      prefix: 'chore(ci)'

@@ -28,13 +28,59 @@ function SetupRequired() {
         Missing Supabase credentials. The app needs them to connect to your database and auth.
       </p>
       <ol style={{ color: '#475569', paddingLeft: 20, marginBottom: 16 }}>
-        <li>Copy <code style={{ background: '#f1f5f9', padding: '2px 6px', borderRadius: 4 }}>.env.example</code> to <code style={{ background: '#f1f5f9', padding: '2px 6px', borderRadius: 4 }}>.env</code> in the project root.</li>
-        <li>Open your <a href="https://supabase.com/dashboard" target="_blank" rel="noreferrer" style={{ color: '#2563eb' }}>Supabase Dashboard</a> → Project Settings → API.</li>
-        <li>Set <code style={{ background: '#f1f5f9', padding: '2px 6px', borderRadius: 4 }}>VITE_SUPABASE_URL</code> to your Project URL and <code style={{ background: '#f1f5f9', padding: '2px 6px', borderRadius: 4 }}>VITE_SUPABASE_ANON_KEY</code> to your anon public key in <code style={{ background: '#f1f5f9', padding: '2px 6px', borderRadius: 4 }}>.env</code>.</li>
-        <li>Restart the dev server or run <code style={{ background: '#f1f5f9', padding: '2px 6px', borderRadius: 4 }}>npm run build</code> then <code style={{ background: '#f1f5f9', padding: '2px 6px', borderRadius: 4 }}>npm run preview</code> again.</li>
+        <li>
+          Copy{' '}
+          <code style={{ background: '#f1f5f9', padding: '2px 6px', borderRadius: 4 }}>
+            .env.example
+          </code>{' '}
+          to{' '}
+          <code style={{ background: '#f1f5f9', padding: '2px 6px', borderRadius: 4 }}>.env</code>{' '}
+          in the project root.
+        </li>
+        <li>
+          Open your{' '}
+          <a
+            href="https://supabase.com/dashboard"
+            target="_blank"
+            rel="noreferrer"
+            style={{ color: '#2563eb' }}
+          >
+            Supabase Dashboard
+          </a>{' '}
+          → Project Settings → API.
+        </li>
+        <li>
+          Set{' '}
+          <code style={{ background: '#f1f5f9', padding: '2px 6px', borderRadius: 4 }}>
+            VITE_SUPABASE_URL
+          </code>{' '}
+          to your Project URL and{' '}
+          <code style={{ background: '#f1f5f9', padding: '2px 6px', borderRadius: 4 }}>
+            VITE_SUPABASE_ANON_KEY
+          </code>{' '}
+          to your anon public key in{' '}
+          <code style={{ background: '#f1f5f9', padding: '2px 6px', borderRadius: 4 }}>.env</code>.
+        </li>
+        <li>
+          Restart the dev server or run{' '}
+          <code style={{ background: '#f1f5f9', padding: '2px 6px', borderRadius: 4 }}>
+            npm run build
+          </code>{' '}
+          then{' '}
+          <code style={{ background: '#f1f5f9', padding: '2px 6px', borderRadius: 4 }}>
+            npm run preview
+          </code>{' '}
+          again.
+        </li>
       </ol>
       <p style={{ color: '#64748b', fontSize: 14 }}>
-        Keep <code style={{ background: '#f1f5f9', padding: '2px 6px', borderRadius: 4 }}>.env</code> out of version control (it is usually in <code style={{ background: '#f1f5f9', padding: '2px 6px', borderRadius: 4 }}>.gitignore</code>).
+        Keep{' '}
+        <code style={{ background: '#f1f5f9', padding: '2px 6px', borderRadius: 4 }}>.env</code> out
+        of version control (it is usually in{' '}
+        <code style={{ background: '#f1f5f9', padding: '2px 6px', borderRadius: 4 }}>
+          .gitignore
+        </code>
+        ).
       </p>
     </div>
   );

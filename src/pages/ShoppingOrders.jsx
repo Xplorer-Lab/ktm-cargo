@@ -108,7 +108,6 @@ export default function ShoppingOrders() {
     queryFn: () => db.purchaseOrders.list(),
   });
 
-
   // Get active POs with available weight
   const availablePOs = useMemo(() => {
     return purchaseOrders.filter(
@@ -269,7 +268,6 @@ export default function ShoppingOrders() {
     setShowDetails(true);
   };
 
-
   const handleQuickPaymentChange = (order, newStatus, e) => {
     e?.stopPropagation();
     updateMutation.mutate(
@@ -289,7 +287,7 @@ export default function ShoppingOrders() {
     e?.stopPropagation();
     updateMutation.mutate({
       id: order.id,
-      data: { vendor_payment_status: isPaid ? 'PAID' : 'UNPAID' }
+      data: { vendor_payment_status: isPaid ? 'PAID' : 'UNPAID' },
     });
   };
 
@@ -303,8 +301,6 @@ export default function ShoppingOrders() {
     if (!order.vendor_po_id) return null;
     return purchaseOrders.find((po) => po.id === order.vendor_po_id);
   };
-
-
 
   return (
     <div className="min-h-screen bg-slate-50 p-4 md:p-8">
@@ -506,16 +502,12 @@ export default function ShoppingOrders() {
           </TabsContent>
         </Tabs>
 
-
-
         {/* New/Edit Form Dialog */}
         <Dialog open={showForm} onOpenChange={setShowForm}>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-0 bg-transparent border-0 shadow-none">
             <DialogHeader className="sr-only">
               <DialogTitle>{editingOrder ? 'Edit Order' : 'New Order'}</DialogTitle>
-              <DialogDescription>
-                Order form
-              </DialogDescription>
+              <DialogDescription>Order form</DialogDescription>
             </DialogHeader>
             <ShoppingOrderForm
               order={editingOrder}
@@ -557,7 +549,12 @@ export default function ShoppingOrders() {
                   <h3 className="font-semibold text-sm text-slate-700">Product Info</h3>
                   {selectedOrder.product_links && (
                     <div className="text-sm bg-slate-50 p-2 rounded break-all">
-                      <a href={selectedOrder.product_links} target="_blank" rel="noopener noreferrer" className="text-blue-600 hover:underline flex items-center gap-1">
+                      <a
+                        href={selectedOrder.product_links}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="text-blue-600 hover:underline flex items-center gap-1"
+                      >
                         <ExternalLink className="w-3 h-3" /> View Product
                       </a>
                     </div>
@@ -569,7 +566,9 @@ export default function ShoppingOrders() {
 
                 {/* Weight Allocation */}
                 {(() => {
-                  const linkedPO = availablePOs.find((p) => p.id === selectedOrder.vendor_po_id) || purchaseOrders.find(p => p.id === selectedOrder.vendor_po_id);
+                  const linkedPO =
+                    availablePOs.find((p) => p.id === selectedOrder.vendor_po_id) ||
+                    purchaseOrders.find((p) => p.id === selectedOrder.vendor_po_id);
                   return linkedPO ? (
                     <div className="p-3 bg-blue-50 rounded-lg border border-blue-200">
                       <p className="text-xs text-blue-600 mb-1">Weight Allocation</p>
@@ -579,18 +578,19 @@ export default function ShoppingOrders() {
                         Vendor Cost: ฿{selectedOrder.vendor_cost?.toLocaleString() || 0}
                       </p>
                     </div>
+                  ) : selectedOrder.vendor_po_id ? (
+                    <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
+                      <p className="text-gray-600 text-sm">
+                        PO Link ID: {selectedOrder.vendor_po_id} (Not found in list)
+                      </p>
+                    </div>
                   ) : (
-                    selectedOrder.vendor_po_id ?
-                      <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
-                        <p className="text-gray-600 text-sm">PO Link ID: {selectedOrder.vendor_po_id} (Not found in list)</p>
-                      </div>
-                      :
-                      <div className="p-3 bg-amber-50 rounded-lg border border-amber-200">
-                        <p className="text-amber-800 text-sm flex items-center gap-1">
-                          <AlertTriangle className="w-4 h-4" />
-                          Not yet allocated to a Purchase Order
-                        </p>
-                      </div>
+                    <div className="p-3 bg-amber-50 rounded-lg border border-amber-200">
+                      <p className="text-amber-800 text-sm flex items-center gap-1">
+                        <AlertTriangle className="w-4 h-4" />
+                        Not yet allocated to a Purchase Order
+                      </p>
+                    </div>
                   );
                 })()}
 
@@ -676,7 +676,7 @@ export default function ShoppingOrders() {
                       onClick={() => {
                         setShowDetails(false);
                         navigate('/shipments', {
-                          state: { createFromShoppingOrder: selectedOrder }
+                          state: { createFromShoppingOrder: selectedOrder },
                         });
                       }}
                     >

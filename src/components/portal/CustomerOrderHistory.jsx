@@ -82,7 +82,9 @@ export default function CustomerOrderHistory({ customer }) {
     queryFn: async () => {
       if (!customer?.id && !customer?.name) return [];
 
-      const filters = customer?.id ? { customer_id: customer.id } : { customer_name: customer.name };
+      const filters = customer?.id
+        ? { customer_id: customer.id }
+        : { customer_name: customer.name };
 
       const [shipmentsResult, shoppingOrdersResult] = await Promise.allSettled([
         db.shipments.filter(filters, '-created_date'),
@@ -94,7 +96,8 @@ export default function CustomerOrderHistory({ customer }) {
       }
 
       const shipments = shipmentsResult.status === 'fulfilled' ? shipmentsResult.value : [];
-      const shoppingOrders = shoppingOrdersResult.status === 'fulfilled' ? shoppingOrdersResult.value : [];
+      const shoppingOrders =
+        shoppingOrdersResult.status === 'fulfilled' ? shoppingOrdersResult.value : [];
 
       return buildCustomerOrderHistory(shipments, shoppingOrders);
     },
@@ -112,7 +115,10 @@ export default function CustomerOrderHistory({ customer }) {
 
   const totalPages = Math.max(1, Math.ceil(filteredOrders.length / PAGE_SIZE));
   const currentPage = Math.min(page, totalPages - 1);
-  const paginatedOrders = filteredOrders.slice(currentPage * PAGE_SIZE, (currentPage + 1) * PAGE_SIZE);
+  const paginatedOrders = filteredOrders.slice(
+    currentPage * PAGE_SIZE,
+    (currentPage + 1) * PAGE_SIZE
+  );
 
   const handleSearchChange = (val) => {
     setSearch(val);
@@ -126,7 +132,9 @@ export default function CustomerOrderHistory({ customer }) {
 
   const handleExport = () => {
     const csv = [
-      ['Order Type', 'Reference', 'Date', 'Description', 'Weight (kg)', 'Amount', 'Status'].join(','),
+      ['Order Type', 'Reference', 'Date', 'Description', 'Weight (kg)', 'Amount', 'Status'].join(
+        ','
+      ),
       ...filteredOrders.map((order) =>
         [
           order.sourceType,
@@ -148,8 +156,12 @@ export default function CustomerOrderHistory({ customer }) {
     a.click();
   };
 
-  const selectedStatus = selectedOrder ? STATUS_CONFIG[selectedOrder.status] || STATUS_CONFIG.pending : null;
-  const selectedType = selectedOrder ? ORDER_TYPE_CONFIG[selectedOrder.sourceType] || ORDER_TYPE_CONFIG.shipment : null;
+  const selectedStatus = selectedOrder
+    ? STATUS_CONFIG[selectedOrder.status] || STATUS_CONFIG.pending
+    : null;
+  const selectedType = selectedOrder
+    ? ORDER_TYPE_CONFIG[selectedOrder.sourceType] || ORDER_TYPE_CONFIG.shipment
+    : null;
 
   return (
     <div className="space-y-6">
@@ -219,7 +231,9 @@ export default function CustomerOrderHistory({ customer }) {
                         </p>
                         <div className="flex items-center gap-2 mt-1 text-xs text-slate-400">
                           <Calendar className="w-3 h-3" />
-                          {order.createdDate ? format(new Date(order.createdDate), 'MMM d, yyyy') : '—'}
+                          {order.createdDate
+                            ? format(new Date(order.createdDate), 'MMM d, yyyy')
+                            : '—'}
                         </div>
                       </div>
                     </div>
@@ -311,7 +325,9 @@ export default function CustomerOrderHistory({ customer }) {
                 </div>
                 <div>
                   <p className="text-slate-500">Weight</p>
-                  <p className="font-medium">{selectedOrder.weightKg ? `${selectedOrder.weightKg} kg` : '—'}</p>
+                  <p className="font-medium">
+                    {selectedOrder.weightKg ? `${selectedOrder.weightKg} kg` : '—'}
+                  </p>
                 </div>
                 <div>
                   <p className="text-slate-500">Payment</p>
@@ -325,19 +341,25 @@ export default function CustomerOrderHistory({ customer }) {
                 </p>
                 <p className="font-medium">{selectedOrder.description}</p>
                 {selectedOrder.sourceType === 'shopping' && selectedOrder.raw?.product_links && (
-                  <p className="text-xs text-slate-500 mt-2 break-all">{selectedOrder.raw.product_links}</p>
+                  <p className="text-xs text-slate-500 mt-2 break-all">
+                    {selectedOrder.raw.product_links}
+                  </p>
                 )}
               </div>
 
               <div className="pt-4 border-t flex justify-between items-center">
                 <span className="text-slate-500">Total Amount</span>
-                <span className="text-2xl font-bold">฿{selectedOrder.totalAmount.toLocaleString()}</span>
+                <span className="text-2xl font-bold">
+                  ฿{selectedOrder.totalAmount.toLocaleString()}
+                </span>
               </div>
 
               {selectedOrder.sourceType === 'shopping' && (
                 <div className="p-3 rounded-lg bg-purple-50 text-purple-700 text-sm flex items-start gap-2">
                   <Truck className="w-4 h-4 mt-0.5" />
-                  <span>This shopping order will be purchased in Thailand before shipment to Yangon.</span>
+                  <span>
+                    This shopping order will be purchased in Thailand before shipment to Yangon.
+                  </span>
                 </div>
               )}
             </div>

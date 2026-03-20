@@ -63,9 +63,7 @@ serve(async (req: Request) => {
         const userId = session.metadata?.supabase_user_id;
         if (userId && session.subscription) {
           // Fetch the subscription to get tier details
-          const subscription = await stripe.subscriptions.retrieve(
-            session.subscription as string
-          );
+          const subscription = await stripe.subscriptions.retrieve(session.subscription as string);
           await updateSubscription(supabase, userId, subscription);
         }
         break;
@@ -88,18 +86,24 @@ serve(async (req: Request) => {
         const subscription = event.data.object as Stripe.Subscription;
         const userId = subscription.metadata?.supabase_user_id;
         if (userId) {
-          await supabase.from('profiles').update({
-            subscription_status: 'canceled',
-            subscription_tier: 'free',
-            subscription_current_period_end: null,
-          }).eq('id', userId);
+          await supabase
+            .from('profiles')
+            .update({
+              subscription_status: 'canceled',
+              subscription_tier: 'free',
+              subscription_current_period_end: null,
+            })
+            .eq('id', userId);
         } else {
           const customerId = subscription.customer as string;
-          await supabase.from('profiles').update({
-            subscription_status: 'canceled',
-            subscription_tier: 'free',
-            subscription_current_period_end: null,
-          }).eq('stripe_customer_id', customerId);
+          await supabase
+            .from('profiles')
+            .update({
+              subscription_status: 'canceled',
+              subscription_tier: 'free',
+              subscription_current_period_end: null,
+            })
+            .eq('stripe_customer_id', customerId);
         }
         break;
       }
@@ -107,9 +111,12 @@ serve(async (req: Request) => {
       case 'invoice.payment_failed': {
         const invoice = event.data.object as Stripe.Invoice;
         const customerId = invoice.customer as string;
-        await supabase.from('profiles').update({
-          subscription_status: 'past_due',
-        }).eq('stripe_customer_id', customerId);
+        await supabase
+          .from('profiles')
+          .update({
+            subscription_status: 'past_due',
+          })
+          .eq('stripe_customer_id', customerId);
         break;
       }
 
@@ -125,9 +132,12 @@ serve(async (req: Request) => {
             await updateSubscriptionByCustomerId(supabase, subscription);
           }
         } else if (invoice.customer) {
-          await supabase.from('profiles').update({
-            subscription_status: 'active',
-          }).eq('stripe_customer_id', invoice.customer as string);
+          await supabase
+            .from('profiles')
+            .update({
+              subscription_status: 'active',
+            })
+            .eq('stripe_customer_id', invoice.customer as string);
         }
         break;
       }
@@ -169,12 +179,17 @@ async function updateSubscription(
   const priceId = subscription.items.data[0]?.price?.id || '';
   const tier = priceIdToTier(priceId);
 
-  await supabase.from('profiles').update({
-    subscription_status: subscription.status, // active, trialing, past_due, etc.
-    subscription_tier: tier,
-    subscription_stripe_id: subscription.id,
-    subscription_current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-  }).eq('id', userId);
+  await supabase
+    .from('profiles')
+    .update({
+      subscription_status: subscription.status, // active, trialing, past_due, etc.
+      subscription_tier: tier,
+      subscription_stripe_id: subscription.id,
+      subscription_current_period_end: new Date(
+        subscription.current_period_end * 1000
+      ).toISOString(),
+    })
+    .eq('id', userId);
 }
 
 /** Fallback: find user by stripe_customer_id and update. */
@@ -186,10 +201,15 @@ async function updateSubscriptionByCustomerId(
   const priceId = subscription.items.data[0]?.price?.id || '';
   const tier = priceIdToTier(priceId);
 
-  await supabase.from('profiles').update({
-    subscription_status: subscription.status,
-    subscription_tier: tier,
-    subscription_stripe_id: subscription.id,
-    subscription_current_period_end: new Date(subscription.current_period_end * 1000).toISOString(),
-  }).eq('stripe_customer_id', customerId);
+  await supabase
+    .from('profiles')
+    .update({
+      subscription_status: subscription.status,
+      subscription_tier: tier,
+      subscription_stripe_id: subscription.id,
+      subscription_current_period_end: new Date(
+        subscription.current_period_end * 1000
+      ).toISOString(),
+    })
+    .eq('stripe_customer_id', customerId);
 }

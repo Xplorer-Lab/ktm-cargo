@@ -352,8 +352,9 @@ export default function ClientPortal() {
         try {
           newCustomer = await db.customers.create(newCustomerPayload);
         } catch (createErr) {
-          const isForbiddenInsert =
-            /forbidden|permission denied|row-level|rls/i.test(createErr.message || '');
+          const isForbiddenInsert = /forbidden|permission denied|row-level|rls/i.test(
+            createErr.message || ''
+          );
           const missingAuthUserColumn =
             /auth_user_id/i.test(createErr.message || '') &&
             /does not exist|column/i.test(createErr.message || '');
@@ -367,7 +368,7 @@ export default function ClientPortal() {
             // Keep the user in portal with a temporary client profile instead of hard-failing.
             setPortalSetupNotice(
               'Your account is active, but customer provisioning is restricted by database policies. ' +
-              'Please ask support/admin to apply portal migrations.'
+                'Please ask support/admin to apply portal migrations.'
             );
             newCustomer = buildTemporaryCustomer();
           } else {
@@ -414,10 +415,14 @@ export default function ClientPortal() {
       if (error) {
         // Handle specific Supabase auth errors
         if (error.message.includes('Invalid login credentials')) {
-          throw new Error('Invalid email or password. Please check your credentials and try again.');
+          throw new Error(
+            'Invalid email or password. Please check your credentials and try again.'
+          );
         }
         if (error.message.includes('Email not confirmed')) {
-          throw new Error('Please confirm your email address before signing in. Check your inbox for a confirmation link.');
+          throw new Error(
+            'Please confirm your email address before signing in. Check your inbox for a confirmation link.'
+          );
         }
         throw error;
       }
@@ -469,9 +474,14 @@ export default function ClientPortal() {
       if (error) {
         // Handle specific Supabase auth errors
         if (error.message.includes('Anonymous sign-ins are disabled')) {
-          throw new Error('Email signup is not enabled. Please contact the administrator to enable email authentication in Supabase.');
+          throw new Error(
+            'Email signup is not enabled. Please contact the administrator to enable email authentication in Supabase.'
+          );
         }
-        if (error.message.includes('already registered') || error.message.includes('already exists')) {
+        if (
+          error.message.includes('already registered') ||
+          error.message.includes('already exists')
+        ) {
           throw new Error('This email is already registered. Please sign in instead.');
         }
         if (error.message.includes('Password')) {
@@ -730,7 +740,8 @@ export default function ClientPortal() {
             </div>
             <h2 className="text-xl font-bold text-slate-900">Unable to load your portal</h2>
             <p className="text-slate-500 text-sm">
-              We had trouble setting up your account. This is usually a temporary issue — please try again.
+              We had trouble setting up your account. This is usually a temporary issue — please try
+              again.
             </p>
             <div className="flex flex-col gap-2 pt-2">
               <Button
@@ -787,7 +798,11 @@ export default function ClientPortal() {
           <div className="flex items-center justify-between h-16">
             <div className="flex items-center gap-3">
               {companyLogo ? (
-                <img src={companyLogo} alt={`${companyName} logo`} className="w-10 h-10 object-contain rounded-lg" />
+                <img
+                  src={companyLogo}
+                  alt={`${companyName} logo`}
+                  className="w-10 h-10 object-contain rounded-lg"
+                />
               ) : (
                 <div className="p-2 bg-blue-600 rounded-xl">
                   <Plane className="w-5 h-5 text-white" />
@@ -862,7 +877,11 @@ export default function ClientPortal() {
             </TabsList>
 
             <TabsContent value="dashboard">
-              <CustomerPortalDashboard customer={clientData} user={user} onNavigate={setActiveTab} />
+              <CustomerPortalDashboard
+                customer={clientData}
+                user={user}
+                onNavigate={setActiveTab}
+              />
             </TabsContent>
             <TabsContent value="track">
               <CustomerShipmentTracker

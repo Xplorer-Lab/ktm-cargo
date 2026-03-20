@@ -78,7 +78,11 @@ async function auditDatabase() {
         .select('*', { count: 'exact', head: true });
 
       if (error) {
-        if (error.code === '42P01' || error.message.includes('relation') || error.message.includes('does not exist')) {
+        if (
+          error.code === '42P01' ||
+          error.message.includes('relation') ||
+          error.message.includes('does not exist')
+        ) {
           AUDIT_REPORT.database.tables[table] = { status: 'missing', error: 'Table not found' };
           tablesMissing++;
           issues.push(`Table '${table}' does not exist`);
@@ -124,7 +128,9 @@ async function auditDatabase() {
     issues: issues.length,
   };
 
-  console.log(`✅ Database Audit Complete: ${tablesFound}/${TABLES.length} tables found, ${issues.length} issues`);
+  console.log(
+    `✅ Database Audit Complete: ${tablesFound}/${TABLES.length} tables found, ${issues.length} issues`
+  );
 }
 
 async function auditSecurity() {
@@ -169,7 +175,11 @@ async function auditSecurity() {
       }
 
       // Check for innerHTML without sanitization
-      if (content.includes('.innerHTML') && !content.includes('DOMPurify') && !content.includes('sanitize')) {
+      if (
+        content.includes('.innerHTML') &&
+        !content.includes('DOMPurify') &&
+        !content.includes('sanitize')
+      ) {
         const context = getContext(content, '.innerHTML');
         if (!context.includes('sanitize') && !context.includes('DOMPurify')) {
           issues.push({
@@ -214,7 +224,10 @@ async function auditSecurity() {
 
       // Check for mock admin bypass
       if (content.includes('mock') && content.includes('admin') && content.includes('role')) {
-        if (content.includes('MOCK ADMIN') || (content.includes('mock-admin') && !content.includes('// REMOVED'))) {
+        if (
+          content.includes('MOCK ADMIN') ||
+          (content.includes('mock-admin') && !content.includes('// REMOVED'))
+        ) {
           issues.push({
             severity: 'critical',
             file: relativePath,
@@ -241,7 +254,9 @@ async function auditSecurity() {
   AUDIT_REPORT.security.low = low;
   AUDIT_REPORT.security.status = critical > 0 ? 'fail' : high > 0 ? 'warning' : 'pass';
 
-  console.log(`✅ Security Audit Complete: ${critical} critical, ${high} high, ${medium} medium issues`);
+  console.log(
+    `✅ Security Audit Complete: ${critical} critical, ${high} high, ${medium} medium issues`
+  );
 }
 
 async function auditCodeQuality() {
@@ -268,7 +283,11 @@ async function auditCodeQuality() {
       }
 
       // Check for empty catch blocks
-      if (content.includes('catch') && content.includes('catch ()') || content.includes('catch (_e) {}') || content.includes('catch (err) {}')) {
+      if (
+        (content.includes('catch') && content.includes('catch ()')) ||
+        content.includes('catch (_e) {}') ||
+        content.includes('catch (err) {}')
+      ) {
         const emptyCatchPattern = /catch\s*\([^)]*\)\s*\{\s*\}/;
         if (emptyCatchPattern.test(content)) {
           warnings.push({
@@ -303,7 +322,6 @@ async function auditCodeQuality() {
 
     // Check for unused imports (basic check)
     // This would require a more sophisticated parser
-
   } catch (err) {
     issues.push({
       file: 'audit_script',
@@ -315,7 +333,9 @@ async function auditCodeQuality() {
   AUDIT_REPORT.codeQuality.warnings = warnings;
   AUDIT_REPORT.codeQuality.status = issues.length === 0 ? 'pass' : 'warning';
 
-  console.log(`✅ Code Quality Audit Complete: ${issues.length} issues, ${warnings.length} warnings`);
+  console.log(
+    `✅ Code Quality Audit Complete: ${issues.length} issues, ${warnings.length} warnings`
+  );
 }
 
 async function auditDependencies() {
@@ -326,7 +346,11 @@ async function auditDependencies() {
   try {
     // Run npm audit
     try {
-      const auditOutput = execSync('npm audit --json', { cwd: __dirname, encoding: 'utf8', stdio: 'pipe' });
+      const auditOutput = execSync('npm audit --json', {
+        cwd: __dirname,
+        encoding: 'utf8',
+        stdio: 'pipe',
+      });
       const auditData = JSON.parse(auditOutput);
       if (auditData.vulnerabilities) {
         Object.entries(auditData.vulnerabilities).forEach(([name, vuln]) => {
@@ -362,7 +386,11 @@ async function auditDependencies() {
 
     // Check for outdated packages
     try {
-      const outdatedOutput = execSync('npm outdated --json', { cwd: __dirname, encoding: 'utf8', stdio: 'pipe' });
+      const outdatedOutput = execSync('npm outdated --json', {
+        cwd: __dirname,
+        encoding: 'utf8',
+        stdio: 'pipe',
+      });
       const outdatedData = JSON.parse(outdatedOutput);
       Object.entries(outdatedData).forEach(([name, info]) => {
         outdated.push({
@@ -406,7 +434,9 @@ async function auditDependencies() {
         ? 'warning'
         : 'pass';
 
-  console.log(`✅ Dependencies Audit Complete: ${vulnerabilities.length} vulnerabilities, ${outdated.length} outdated packages`);
+  console.log(
+    `✅ Dependencies Audit Complete: ${vulnerabilities.length} vulnerabilities, ${outdated.length} outdated packages`
+  );
 }
 
 async function auditPerformance() {
@@ -458,7 +488,8 @@ async function auditPerformance() {
   }
 
   AUDIT_REPORT.performance.issues = issues;
-  AUDIT_REPORT.performance.status = issues.filter((i) => i.severity === 'high').length > 0 ? 'warning' : 'pass';
+  AUDIT_REPORT.performance.status =
+    issues.filter((i) => i.severity === 'high').length > 0 ? 'warning' : 'pass';
 
   console.log(`✅ Performance Audit Complete: ${issues.length} issues found`);
 }
@@ -476,7 +507,11 @@ async function auditArchitecture() {
       const relativePath = path.relative(__dirname, file);
 
       // Check for mock code in production
-      if (content.includes('MOCK') && content.includes('async') && !content.includes('// TEST ONLY')) {
+      if (
+        content.includes('MOCK') &&
+        content.includes('async') &&
+        !content.includes('// TEST ONLY')
+      ) {
         if (relativePath.includes('api/') || relativePath.includes('components/')) {
           issues.push({
             file: relativePath,
@@ -499,7 +534,8 @@ async function auditArchitecture() {
   }
 
   AUDIT_REPORT.architecture.issues = issues;
-  AUDIT_REPORT.architecture.status = issues.filter((i) => i.severity === 'high').length > 0 ? 'warning' : 'pass';
+  AUDIT_REPORT.architecture.status =
+    issues.filter((i) => i.severity === 'high').length > 0 ? 'warning' : 'pass';
 
   console.log(`✅ Architecture Audit Complete: ${issues.length} issues found`);
 }
@@ -684,4 +720,3 @@ async function main() {
 }
 
 main();
-

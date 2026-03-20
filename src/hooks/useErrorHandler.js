@@ -14,13 +14,13 @@ export const useErrorHandler = () => {
 
     // Ensure we have a proper Error instance for Sentry
     let errorToCapture = error;
-    
+
     // If error is not an Error instance (e.g., plain object), convert it
     if (!(error instanceof Error)) {
       const errorMessage = error?.message || error?.details || error?.hint || customMessage;
       errorToCapture = new Error(errorMessage);
       errorToCapture.name = error?.name || 'ApplicationError';
-      
+
       // Preserve original error properties
       if (error?.code) errorToCapture.code = error.code;
       if (error?.details) errorToCapture.details = error.details;
@@ -48,19 +48,19 @@ export const useErrorHandler = () => {
     // Extract user-friendly message
     let message = customMessage;
     const isDev = import.meta.env.DEV;
-    
+
     // Handle Supabase/PostgREST errors (they have code, details, hint, message structure)
     if (error?.code && error?.message) {
       // Common Supabase error codes → safe, user-friendly messages
       const errorMessages = {
-        '23505': 'This record already exists. Please check for duplicates.',
-        '23503': 'Cannot create this record. Related data is missing or invalid.',
-        '23502': 'Required field is missing. Please fill in all required fields.',
-        '42501': 'You do not have permission to perform this action.',
-        'PGRST116': 'No rows found. The record may have been deleted.',
-        'PGRST301': 'Invalid request. Please check your input data.',
+        23505: 'This record already exists. Please check for duplicates.',
+        23503: 'Cannot create this record. Related data is missing or invalid.',
+        23502: 'Required field is missing. Please fill in all required fields.',
+        42501: 'You do not have permission to perform this action.',
+        PGRST116: 'No rows found. The record may have been deleted.',
+        PGRST301: 'Invalid request. Please check your input data.',
       };
-      
+
       if (errorMessages[error.code]) {
         // Known code → always safe to show
         message = errorMessages[error.code];
@@ -69,7 +69,7 @@ export const useErrorHandler = () => {
         message = error.details || error.hint || error.message || customMessage;
       }
       // PROD: keep the generic customMessage — never leak details/hint
-      
+
       // Log full details to console in dev for quick debugging
       if (isDev) {
         console.warn('[Supabase Error]', {
@@ -111,7 +111,7 @@ export const useErrorHandler = () => {
       const firstError = zodError.errors?.[0];
       const message = firstError?.message || `${fieldName} validation failed`;
       const field = firstError?.path?.join('.') || fieldName;
-      
+
       // Capture in Sentry with Zod-specific context
       Sentry.captureException(zodError, {
         tags: {
@@ -127,16 +127,17 @@ export const useErrorHandler = () => {
         },
         level: 'warning',
       });
-      
+
       toast.error(message, {
         duration: 5000,
       });
-      
+
       return { message, error: zodError, field };
     }
-    
+
     // Fallback for non-Zod validation errors
-    const message = error?.message || error?.errors?.[0]?.message || `${fieldName} validation failed`;
+    const message =
+      error?.message || error?.errors?.[0]?.message || `${fieldName} validation failed`;
     return handleError(error, message, {
       component: 'validation',
       action: 'validate',

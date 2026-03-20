@@ -174,11 +174,12 @@ export default function Shipments() {
         toast.error('Shipment created, but notification could not be sent.');
       });
     },
-    onError: (err) => handleError(err, 'Failed to create shipment', {
-      component: 'Shipments',
-      action: 'create',
-      data: { shipmentData: err?.data || 'unknown' },
-    }),
+    onError: (err) =>
+      handleError(err, 'Failed to create shipment', {
+        component: 'Shipments',
+        action: 'create',
+        data: { shipmentData: err?.data || 'unknown' },
+      }),
   });
 
   const updateMutation = useMutation({
@@ -191,7 +192,7 @@ export default function Shipments() {
       const oldPoId = oldShipment?.vendor_po_id ?? null;
       const newPoId = 'vendor_po_id' in data ? (data.vendor_po_id ?? null) : oldPoId;
       const oldWeight = parseFloat(oldShipment?.weight_kg) || 0;
-      const newWeight = 'weight_kg' in data ? (parseFloat(data.weight_kg) || 0) : oldWeight;
+      const newWeight = 'weight_kg' in data ? parseFloat(data.weight_kg) || 0 : oldWeight;
 
       if (oldPoId === newPoId && oldPoId && oldWeight !== newWeight) {
         // Same PO, only weight changed — net adjustment
@@ -320,7 +321,9 @@ export default function Shipments() {
 
       // Remind to create invoice when shipment is delivered and paid
       if (shipment.payment_status === 'paid') {
-        toast.info('Shipment delivered & paid. Remember to create an invoice from the Invoices page.');
+        toast.info(
+          'Shipment delivered & paid. Remember to create an invoice from the Invoices page.'
+        );
       }
     }
   };
@@ -543,10 +546,14 @@ export default function Shipments() {
                       const StepIcon = step.icon;
 
                       return (
-                        <div key={step.status} className="flex flex-col items-center bg-white cursor-default">
+                        <div
+                          key={step.status}
+                          className="flex flex-col items-center bg-white cursor-default"
+                        >
                           <div
-                            className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all ${isComplete ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-400'
-                              } ${isCurrent ? 'ring-4 ring-blue-100' : ''}`}
+                            className={`w-8 h-8 sm:w-10 sm:h-10 rounded-full flex items-center justify-center transition-all ${
+                              isComplete ? 'bg-blue-600 text-white' : 'bg-slate-200 text-slate-400'
+                            } ${isCurrent ? 'ring-4 ring-blue-100' : ''}`}
                           >
                             <StepIcon className="w-4 h-4 sm:w-5 sm:h-5" />
                           </div>
@@ -564,13 +571,17 @@ export default function Shipments() {
                   <div className="absolute top-6 sm:top-7 left-8 right-8 h-0.5 bg-slate-200 z-0 hidden sm:block">
                     <div
                       className="h-full bg-blue-600 transition-all"
-                      style={{ width: `${(Math.max(0, STATUS_INDEX[selectedShipment.status]) / 5) * 100}%` }}
+                      style={{
+                        width: `${(Math.max(0, STATUS_INDEX[selectedShipment.status]) / 5) * 100}%`,
+                      }}
                     />
                   </div>
                   <div className="absolute top-[1.125rem] left-6 right-6 h-0.5 bg-slate-200 z-0 sm:hidden">
                     <div
                       className="h-full bg-blue-600 transition-all"
-                      style={{ width: `${(Math.max(0, STATUS_INDEX[selectedShipment.status]) / 5) * 100}%` }}
+                      style={{
+                        width: `${(Math.max(0, STATUS_INDEX[selectedShipment.status]) / 5) * 100}%`,
+                      }}
                     />
                   </div>
                 </div>

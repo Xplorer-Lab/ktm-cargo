@@ -21,4 +21,5 @@ if (typeof window !== 'undefined' && !window.matchMedia) {
       dispatchEvent: jest.fn(),
     })),
   });
-}globalThis.__APP_IS_PROD__ = false;
+}
+globalThis.__APP_IS_PROD__ = false;

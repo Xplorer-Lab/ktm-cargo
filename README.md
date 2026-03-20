@@ -11,22 +11,22 @@ KTM Cargo Express handles two distinct order types:
 
 The platform serves three user roles:
 
-| Role | Features |
-|---|---|
-| Customers | Order tracking, invoice access |
-| Staff | Dashboard, order and shipment management |
-| Vendors | Purchase order management |
+| Role      | Features                                 |
+| --------- | ---------------------------------------- |
+| Customers | Order tracking, invoice access           |
+| Staff     | Dashboard, order and shipment management |
+| Vendors   | Purchase order management                |
 
 ## 💻 Tech Stack
 
-| Layer | Technology |
-|---|---|
-| Frontend | React 18, Vite 6, TypeScript, Tailwind CSS |
-| UI Components | Radix UI, Framer Motion |
-| Data Fetching | TanStack Query |
-| Database | Supabase |
-| Testing | Jest |
-| Monitoring | Sentry |
+| Layer         | Technology                                 |
+| ------------- | ------------------------------------------ |
+| Frontend      | React 18, Vite 6, TypeScript, Tailwind CSS |
+| UI Components | Radix UI, Framer Motion                    |
+| Data Fetching | TanStack Query                             |
+| Database      | Supabase                                   |
+| Testing       | Jest                                       |
+| Monitoring    | Sentry                                     |
 
 ## Status
 

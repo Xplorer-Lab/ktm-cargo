@@ -323,7 +323,7 @@ async function analyzeCodeUsage() {
 
     // Check for direct role checks instead of hasPermission
     if (
-      (content.includes("user.role === 'admin'") || content.includes("user.staff_role === ")) &&
+      (content.includes("user.role === 'admin'") || content.includes('user.staff_role === ')) &&
       !content.includes('hasPermission') &&
       !file.includes('RolePermissions')
     ) {
@@ -345,7 +345,11 @@ async function analyzeCodeUsage() {
       'manage_settings',
     ];
     sensitiveOps.forEach((op) => {
-      if (content.includes(op) && !content.includes('hasPermission') && !content.includes('role ===')) {
+      if (
+        content.includes(op) &&
+        !content.includes('hasPermission') &&
+        !content.includes('role ===')
+      ) {
         issues.push({
           file: relativePath,
           issue: `Sensitive operation "${op}" without permission check`,
@@ -412,14 +416,16 @@ async function generateReport() {
   if (AUDIT_REPORT.logicErrors.found.some((e) => e.issue.includes('default'))) {
     AUDIT_REPORT.recommendations.push({
       priority: 'high',
-      recommendation: 'Require explicit staff_role assignment - do not default to marketing_manager',
+      recommendation:
+        'Require explicit staff_role assignment - do not default to marketing_manager',
     });
   }
 
   if (AUDIT_REPORT.inconsistencies.found.length > 0) {
     AUDIT_REPORT.recommendations.push({
       priority: 'high',
-      recommendation: 'Fix permission inconsistencies - manage permissions should include view permissions',
+      recommendation:
+        'Fix permission inconsistencies - manage permissions should include view permissions',
     });
   }
 
@@ -530,4 +536,3 @@ async function main() {
 }
 
 main();
-

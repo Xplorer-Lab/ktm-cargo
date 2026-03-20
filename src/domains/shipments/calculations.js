@@ -68,7 +68,8 @@ export function chargeableWeight(actualKg, dimensionsCm, useVolumetric) {
  * @returns {number}
  */
 export function packagingFeeByWeight(weightKg, overrideFee) {
-  if (typeof overrideFee === 'number' && Number.isFinite(overrideFee)) return roundMoney(overrideFee);
+  if (typeof overrideFee === 'number' && Number.isFinite(overrideFee))
+    return roundMoney(overrideFee);
   const w = safeNum(weightKg);
   if (w < 5) return 50;
   if (w < 15) return 100;
@@ -113,9 +114,10 @@ export function computeOrderTotals(params) {
   const useVolumetric = Boolean(params.useVolumetric);
 
   // 1. Calculate the final working weight
-  const w = useVolumetric && params.dimensionsCm
-    ? chargeableWeight(actualWeight, params.dimensionsCm, true)
-    : actualWeight;
+  const w =
+    useVolumetric && params.dimensionsCm
+      ? chargeableWeight(actualWeight, params.dimensionsCm, true)
+      : actualWeight;
 
   const sellingPricePerKg = Math.max(0, safeNum(params.pricePerKg));
   const cargoCostPerKg = Math.max(0, safeNum(params.costPerKg));
@@ -132,8 +134,12 @@ export function computeOrderTotals(params) {
   const cargoCost = roundMoney(cargoCostPerKg * w);
 
   // 3. Optional MVP Features (Packing & Insurance)
-  const insuranceFee = includeInsurance ? roundMoney(customerShippingFee * (insuranceRate / 100)) : 0;
-  const packagingFee = includePackingFee ? roundMoney(packagingFeeByWeight(w, params.packagingFee)) : 0;
+  const insuranceFee = includeInsurance
+    ? roundMoney(customerShippingFee * (insuranceRate / 100))
+    : 0;
+  const packagingFee = includePackingFee
+    ? roundMoney(packagingFeeByWeight(w, params.packagingFee))
+    : 0;
 
   const isShopping = String(serviceType).startsWith('shopping');
   const commission = isShopping ? roundMoney(productCost * (commissionRate / 100)) : 0;
@@ -149,7 +155,9 @@ export function computeOrderTotals(params) {
       (s.applies_to === 'express' && serviceType === 'express');
     if (applies) {
       surchargeTotal +=
-        s.surcharge_type === 'fixed' ? safeNum(s.amount) : roundMoney((customerShippingFee * safeNum(s.amount)) / 100);
+        s.surcharge_type === 'fixed'
+          ? safeNum(s.amount)
+          : roundMoney((customerShippingFee * safeNum(s.amount)) / 100);
     }
   }
   surchargeTotal = roundMoney(surchargeTotal);

@@ -252,7 +252,8 @@ export async function createInvoiceFromShoppingOrder(order, customer) {
   const commissionAmount = parseFloat(order.commission_amount) || 0;
   const shippingCost = parseFloat(order.shipping_cost) || 0;
   const weight = parseFloat(order.actual_weight || order.estimated_weight) || 0;
-  const totalAmount = parseFloat(order.total_amount) || (productCost + commissionAmount + shippingCost);
+  const totalAmount =
+    parseFloat(order.total_amount) || productCost + commissionAmount + shippingCost;
   // Avoid hardcoded fallback: use derived rate or 0; prefer company_settings.default_shopping_price_per_kg when available
   const pricePerKg = weight > 0 ? Math.round((shippingCost / weight) * 100) / 100 : 0;
 
@@ -343,7 +344,9 @@ export async function recordPayment(invoiceId, paymentDetails = {}) {
     // Allow ±0.01 tolerance for floating-point rounding on both sides
     const TOLERANCE = 0.01;
     if (paymentAmount > currentBalance + TOLERANCE) {
-      throw new Error(`Payment amount cannot exceed balance due (฿${currentBalance.toLocaleString()})`);
+      throw new Error(
+        `Payment amount cannot exceed balance due (฿${currentBalance.toLocaleString()})`
+      );
     }
   }
 
@@ -423,11 +426,11 @@ export async function getInvoiceStats(invoices) {
         break;
       case 'partially_paid':
         stats.partially_paid++;
-        stats.paidAmount += (inv.amount_paid || 0);
-        stats.pendingAmount += (inv.balance_due || (amount - (inv.amount_paid || 0)));
+        stats.paidAmount += inv.amount_paid || 0;
+        stats.pendingAmount += inv.balance_due || amount - (inv.amount_paid || 0);
         if (inv.due_date && new Date(inv.due_date) < today) {
           stats.overdue++;
-          stats.overdueAmount += (inv.balance_due || (amount - (inv.amount_paid || 0)));
+          stats.overdueAmount += inv.balance_due || amount - (inv.amount_paid || 0);
         }
         break;
       case 'paid':

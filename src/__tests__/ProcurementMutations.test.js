@@ -85,10 +85,7 @@ describe('Procurement mutation paths', () => {
     });
 
     it('routes to update when editing PO exists', () => {
-      const result = handlePOSubmit(
-        { total_weight_kg: 200 },
-        { id: 'po-1', po_number: 'PO-001' }
-      );
+      const result = handlePOSubmit({ total_weight_kg: 200 }, { id: 'po-1', po_number: 'PO-001' });
       expect(result.action).toBe('update');
       expect(result.id).toBe('po-1');
     });
@@ -109,7 +106,9 @@ describe('Procurement mutation paths', () => {
 
       expect(mockSubmitPOForApproval).toHaveBeenCalledWith(po, rules, vendors);
       expect(queryClient.invalidateQueries).toHaveBeenCalledWith({ queryKey: ['purchase-orders'] });
-      expect(queryClient.invalidateQueries).toHaveBeenCalledWith({ queryKey: ['approval-history'] });
+      expect(queryClient.invalidateQueries).toHaveBeenCalledWith({
+        queryKey: ['approval-history'],
+      });
       expect(queryClient.invalidateQueries).toHaveBeenCalledWith({ queryKey: ['notifications'] });
       expect(result.approver.approver_name).toBe('Manager');
     });
@@ -124,9 +123,9 @@ describe('Procurement mutation paths', () => {
     it('propagates service errors', async () => {
       mockSubmitPOForApproval.mockRejectedValueOnce(new Error('Approval rules not configured'));
 
-      await expect(
-        handleSubmitForApproval(po, [], vendors, queryClient)
-      ).rejects.toThrow('Approval rules not configured');
+      await expect(handleSubmitForApproval(po, [], vendors, queryClient)).rejects.toThrow(
+        'Approval rules not configured'
+      );
     });
   });
 
@@ -138,12 +137,7 @@ describe('Procurement mutation paths', () => {
 
       await handleApprovePOWorkflow(po, currentUser, 'Looks good', queryClient);
 
-      expect(mockApprovePO).toHaveBeenCalledWith(
-        po,
-        'admin@ktm.com',
-        'Admin User',
-        'Looks good'
-      );
+      expect(mockApprovePO).toHaveBeenCalledWith(po, 'admin@ktm.com', 'Admin User', 'Looks good');
     });
 
     it('invalidates all three query keys after approval', async () => {
@@ -157,9 +151,9 @@ describe('Procurement mutation paths', () => {
     it('propagates approval errors', async () => {
       mockApprovePO.mockRejectedValueOnce(new Error('Not authorized'));
 
-      await expect(
-        handleApprovePOWorkflow(po, currentUser, '', queryClient)
-      ).rejects.toThrow('Not authorized');
+      await expect(handleApprovePOWorkflow(po, currentUser, '', queryClient)).rejects.toThrow(
+        'Not authorized'
+      );
     });
   });
 
@@ -185,7 +179,9 @@ describe('Procurement mutation paths', () => {
       await handleRejectPOWorkflow(po, currentUser, '', queryClient);
 
       expect(queryClient.invalidateQueries).toHaveBeenCalledWith({ queryKey: ['purchase-orders'] });
-      expect(queryClient.invalidateQueries).toHaveBeenCalledWith({ queryKey: ['approval-history'] });
+      expect(queryClient.invalidateQueries).toHaveBeenCalledWith({
+        queryKey: ['approval-history'],
+      });
     });
   });
 });

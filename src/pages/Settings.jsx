@@ -178,8 +178,6 @@ export default function Settings() {
     updateProfileMutation.mutate(profile);
   };
 
-
-
   const handleSaveBusinessSettings = () => {
     updateProfileMutation.mutate({ business_settings: businessSettings });
   };
