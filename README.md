@@ -1,37 +1,29 @@
-# 🚚 logistics-express
+# KTM Cargo Express
 
-Logistics and shopping management platform for KTM Cargo Express operations.
+KTM Cargo Express is the logistics, shopping proxy, procurement, invoicing, and customer/vendor portal system for the business.
 
-## What It Does
+## Start Here
 
-KTM Cargo Express handles two distinct order types:
+- [System Spec](./SYSTEM_SPEC.md)
+- [Deployment Guide](./DEPLOYMENT.md)
+- [Database Migrations](./migrations/README.md)
+- [Playwright Workflow Smoke Test](./scripts/playwright/README.md)
 
-- **Shopping orders** — product cost + commission + per-kg shipping fee
-- **Cargo shipments** — weight-based pricing with insurance and packaging options
+## Current Stack
 
-The platform serves three user roles:
+- React 19 + Vite 6
+- JavaScript/JSX with Tailwind CSS 4
+- Supabase for auth and data
+- TanStack Query for server state
+- Jest and Playwright for tests
+- Vercel for preview and production deploys
 
-| Role      | Features                                 |
-| --------- | ---------------------------------------- |
-| Customers | Order tracking, invoice access           |
-| Staff     | Dashboard, order and shipment management |
-| Vendors   | Purchase order management                |
+## What the system does
 
-## 💻 Tech Stack
+- Public intake: landing page, price calculator, client portal, vendor registration
+- Staff operations: dashboard, operations hub, shipments, shopping orders, procurement, invoices, customers, vendors, inventory, reports, tasks, shipment documents, feedback, and settings
+- Portals: customer and vendor views for tracking, orders, invoices, support, and profile management
 
-| Layer         | Technology                                 |
-| ------------- | ------------------------------------------ |
-| Frontend      | React 18, Vite 6, TypeScript, Tailwind CSS |
-| UI Components | Radix UI, Framer Motion                    |
-| Data Fetching | TanStack Query                             |
-| Database      | Supabase                                   |
-| Testing       | Jest                                       |
-| Monitoring    | Sentry                                     |
+## Notes
 
-## Status
-
-**Active** — last pushed March 2026.
-
-## Context
-
-Built for real-world KTM Cargo operations, handling both physical cargo shipments and shopping proxy orders.
+The master workflow and module contract reference is `SYSTEM_SPEC.md`.

@@ -1,12 +1,11 @@
-# Playwright Workflow Automation
+# Client Portal Workflow Smoke Test
 
-Automated workflow script:
+This is the repo's lightweight browser smoke path for validating public portal
+routing and the client portal workflow.
 
-- `scripts/playwright/client_portal_workflow.sh`
-
-This script uses the Codex Playwright wrapper (`$PWCLI`) and writes artifacts to:
-
-- `output/playwright/client-portal-workflow/`
+- Script: `scripts/playwright/client_portal_workflow.sh`
+- Runner: Codex Playwright wrapper (`$PWCLI`)
+- Artifacts: `output/playwright/client-portal-workflow/`
 
 ## Run steps
 
@@ -37,3 +36,8 @@ npm run playwright:client-portal
 - `PLAYWRIGHT_CLI_SESSION` (default: auto-generated session name)
 - `RESET_SESSION` (`true` or `false`, default: `true`)
 - `ARTIFACT_DIR` (default: `output/playwright/client-portal-workflow`)
+
+## Notes
+
+- Keep the output directory local-only; it is ignored by git.
+- Use this smoke path before broader e2e coverage when routing or portal flows change.
