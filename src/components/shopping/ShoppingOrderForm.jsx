@@ -49,6 +49,7 @@ import { useQuery } from '@tanstack/react-query';
 import { db } from '@/api/db';
 import { auth } from '@/api/auth';
 import { computeShoppingOrderTotals } from '@/domains/shipments/calculations';
+import { getShoppingOrderAllocationWeight } from '@/lib/poAllocation';
 
 const statusOptions = [
   { value: 'pending', label: 'Pending', color: 'bg-slate-100 text-slate-700' },
@@ -129,6 +130,10 @@ export default function ShoppingOrderForm({
   });
 
   const watchedValues = watch();
+  const currentLinkedWeight =
+    order?.vendor_po_id && order.vendor_po_id === watchedValues.vendor_po_id
+      ? getShoppingOrderAllocationWeight(order)
+      : 0;
 
   // Calculation Logic (central module for consistency)
   const calculated = useMemo(() => {
@@ -175,9 +180,9 @@ export default function ShoppingOrderForm({
       purchaseOrders.filter(
         (po) =>
           ['approved', 'sent', 'partial_received', 'received'].includes(po.status) &&
-          (po.remaining_weight_kg > 0 || !po.total_weight_kg)
+          (po.remaining_weight_kg > 0 || !po.total_weight_kg || po.id === order?.vendor_po_id)
       ),
-    [purchaseOrders]
+    [order?.vendor_po_id, purchaseOrders]
   );
 
   const handleCustomerSelect = (customerName) => {
@@ -500,6 +505,7 @@ export default function ShoppingOrderForm({
                 requestedWeight={
                   parseFloat(watchedValues.actual_weight || watchedValues.estimated_weight) || 0
                 }
+                currentLinkedWeight={currentLinkedWeight}
               />
             )}
 

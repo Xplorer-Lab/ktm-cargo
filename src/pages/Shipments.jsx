@@ -82,6 +82,12 @@ import { startTour } from '@/components/common/TourGuide';
 import { useErrorHandler } from '@/hooks/useErrorHandler';
 import { useUser } from '@/components/auth/UserContext';
 import { hasPermission } from '@/components/auth/RolePermissions';
+import {
+  applyPORebalanceOperations,
+  buildPORebalanceOperations,
+  getShipmentAllocationWeight,
+  rollbackPORebalanceOperations,
+} from '@/lib/poAllocation';
 
 export default function Shipments() {
   const [showForm, setShowForm] = useState(false);
@@ -95,6 +101,17 @@ export default function Shipments() {
   const { handleError } = useErrorHandler();
   const { user } = useUser();
   const location = useLocation();
+
+  const findLinkedPurchaseOrder = (poId) => {
+    if (!poId) return null;
+    const po = purchaseOrders.find((item) => item.id === poId) || null;
+    if (!po) {
+      throw new Error('Linked Purchase Order not found');
+    }
+    return po;
+  };
+
+  const updatePurchaseOrderAllocation = (poId, data) => db.purchaseOrders.update(poId, data);
 
   useEffect(() => {
     if (location.state?.createFromShoppingOrder) {
@@ -151,23 +168,21 @@ export default function Shipments() {
 
   const createMutation = useMutation({
     mutationFn: async (data) => {
-      // Validate data before creating
       const validatedData = shipmentSchema.parse(data);
-      const shipment = await db.shipments.create(validatedData);
+      const nextPo = findLinkedPurchaseOrder(validatedData.vendor_po_id);
+      const operations = buildPORebalanceOperations({
+        nextPo,
+        nextWeight: getShipmentAllocationWeight(validatedData),
+      });
 
-      // Update PO allocated weight if linked to a PO
-      if (data.vendor_po_id && data.weight_kg) {
-        const po = purchaseOrders.find((p) => p.id === data.vendor_po_id);
-        if (po) {
-          const newAllocated = (po.allocated_weight_kg || 0) + parseFloat(data.weight_kg);
-          const remaining = (po.total_weight_kg || 0) - newAllocated;
-          await db.purchaseOrders.update(data.vendor_po_id, {
-            allocated_weight_kg: newAllocated,
-            remaining_weight_kg: Math.max(0, remaining),
-          });
-        }
+      await applyPORebalanceOperations(updatePurchaseOrderAllocation, operations);
+
+      try {
+        return await db.shipments.create(validatedData);
+      } catch (error) {
+        await rollbackPORebalanceOperations(updatePurchaseOrderAllocation, operations);
+        throw error;
       }
-      return shipment;
     },
     onSuccess: (newShipment) => {
       queryClient.invalidateQueries({ queryKey: ['shipments'] });
@@ -190,50 +205,25 @@ export default function Shipments() {
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }) => {
       const validatedData = shipmentSchema.partial().parse(data);
-      const result = await db.shipments.update(id, validatedData);
-
-      // Rebalance PO weight allocation when PO link or weight changes
       const oldShipment = shipments.find((s) => s.id === id);
-      const oldPoId = oldShipment?.vendor_po_id ?? null;
-      const newPoId = 'vendor_po_id' in data ? (data.vendor_po_id ?? null) : oldPoId;
-      const oldWeight = parseFloat(oldShipment?.weight_kg) || 0;
-      const newWeight = 'weight_kg' in data ? parseFloat(data.weight_kg) || 0 : oldWeight;
+      const nextShipment = oldShipment ? { ...oldShipment, ...validatedData } : validatedData;
+      const previousPo = findLinkedPurchaseOrder(oldShipment?.vendor_po_id);
+      const nextPo = findLinkedPurchaseOrder(nextShipment.vendor_po_id);
+      const operations = buildPORebalanceOperations({
+        previousPo,
+        nextPo,
+        previousWeight: getShipmentAllocationWeight(oldShipment),
+        nextWeight: getShipmentAllocationWeight(nextShipment),
+      });
 
-      if (oldPoId === newPoId && oldPoId && oldWeight !== newWeight) {
-        // Same PO, only weight changed — net adjustment
-        const po = purchaseOrders.find((p) => p.id === oldPoId);
-        if (po) {
-          const newAllocated = Math.max(0, (po.allocated_weight_kg || 0) - oldWeight + newWeight);
-          await db.purchaseOrders.update(oldPoId, {
-            allocated_weight_kg: newAllocated,
-            remaining_weight_kg: Math.max(0, (po.total_weight_kg || 0) - newAllocated),
-          });
-        }
-      } else if (oldPoId !== newPoId) {
-        // PO changed — subtract from old, add to new
-        if (oldPoId) {
-          const oldPo = purchaseOrders.find((p) => p.id === oldPoId);
-          if (oldPo) {
-            const newAllocated = Math.max(0, (oldPo.allocated_weight_kg || 0) - oldWeight);
-            await db.purchaseOrders.update(oldPoId, {
-              allocated_weight_kg: newAllocated,
-              remaining_weight_kg: Math.max(0, (oldPo.total_weight_kg || 0) - newAllocated),
-            });
-          }
-        }
-        if (newPoId) {
-          const newPo = purchaseOrders.find((p) => p.id === newPoId);
-          if (newPo) {
-            const newAllocated = (newPo.allocated_weight_kg || 0) + newWeight;
-            await db.purchaseOrders.update(newPoId, {
-              allocated_weight_kg: newAllocated,
-              remaining_weight_kg: Math.max(0, (newPo.total_weight_kg || 0) - newAllocated),
-            });
-          }
-        }
+      await applyPORebalanceOperations(updatePurchaseOrderAllocation, operations);
+
+      try {
+        return await db.shipments.update(id, validatedData);
+      } catch (error) {
+        await rollbackPORebalanceOperations(updatePurchaseOrderAllocation, operations);
+        throw error;
       }
-
-      return result;
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['shipments'] });
@@ -254,37 +244,18 @@ export default function Shipments() {
       }
 
       const shipment = shipments.find((item) => item.id === id);
-      const linkedPoId = shipment?.vendor_po_id || null;
-      const weight = Number(shipment?.weight_kg) || 0;
-      const linkedPo = linkedPoId
-        ? purchaseOrders.find((po) => po.id === linkedPoId) || null
-        : null;
+      const previousPo = findLinkedPurchaseOrder(shipment?.vendor_po_id);
+      const operations = buildPORebalanceOperations({
+        previousPo,
+        previousWeight: getShipmentAllocationWeight(shipment),
+      });
 
-      let originalPoState = null;
-      if (linkedPo && weight > 0) {
-        originalPoState = {
-          allocated_weight_kg: Number(linkedPo.allocated_weight_kg) || 0,
-          remaining_weight_kg: Number(linkedPo.remaining_weight_kg) || 0,
-          total_weight_kg: Number(linkedPo.total_weight_kg) || 0,
-        };
-
-        const nextAllocated = Math.max(0, originalPoState.allocated_weight_kg - weight);
-        const nextRemaining = Math.max(0, originalPoState.total_weight_kg - nextAllocated);
-        await db.purchaseOrders.update(linkedPoId, {
-          allocated_weight_kg: nextAllocated,
-          remaining_weight_kg: nextRemaining,
-        });
-      }
+      await applyPORebalanceOperations(updatePurchaseOrderAllocation, operations);
 
       try {
         return await db.shipments.delete(id);
       } catch (error) {
-        if (linkedPo && originalPoState) {
-          await db.purchaseOrders.update(linkedPoId, {
-            allocated_weight_kg: originalPoState.allocated_weight_kg,
-            remaining_weight_kg: originalPoState.remaining_weight_kg,
-          });
-        }
+        await rollbackPORebalanceOperations(updatePurchaseOrderAllocation, operations);
         throw error;
       }
     },

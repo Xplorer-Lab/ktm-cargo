@@ -63,6 +63,7 @@ import { sendShoppingOrderNotification } from '@/components/notifications/Shippi
 
 import { filterShoppingOrders, isUnpaidShoppingOrder } from '@/pages/shoppingOrderFilters';
 import { appendE2EFixture } from '@/lib/e2e';
+import { buildShoppingOrderAllocationPlan } from '@/lib/shoppingOrderAllocation';
 const STATUS_CONFIG = {
   pending: { label: 'Pending', color: 'bg-amber-100 text-amber-800', icon: Clock },
 
@@ -155,14 +156,45 @@ export default function ShoppingOrders() {
 
   const { handleError } = useErrorHandler();
 
+  const applyPurchaseOrderAllocationPlan = async (plan) => {
+    for (const step of plan) {
+      await db.purchaseOrders.update(step.poId, step.nextState);
+    }
+  };
+
+  const rollbackPurchaseOrderAllocationPlan = async (plan) => {
+    for (const step of [...plan].reverse()) {
+      await db.purchaseOrders.update(step.poId, step.previousState);
+    }
+  };
+
   const createMutation = useMutation({
-    mutationFn: (data) =>
-      db.shoppingOrders.create({
+    mutationFn: async (data) => {
+      const createdOrder = await db.shoppingOrders.create({
         ...data,
         order_number: `SHOP-${Date.now().toString(36).toUpperCase()}`,
-      }),
+      });
+
+      const plan = buildShoppingOrderAllocationPlan({
+        purchaseOrders,
+        previousOrder: null,
+        nextOrder: createdOrder,
+      });
+
+      if (plan.length === 0) return createdOrder;
+
+      try {
+        await applyPurchaseOrderAllocationPlan(plan);
+      } catch (error) {
+        await db.shoppingOrders.delete(createdOrder.id);
+        throw error;
+      }
+
+      return createdOrder;
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['shopping-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['purchase-orders'] });
       setShowForm(false);
       setEditingOrder(null);
       toast.success('Shopping order created');
@@ -172,7 +204,27 @@ export default function ShoppingOrders() {
 
   const updateMutation = useMutation({
     mutationFn: async ({ id, data, sendNotification, customerEmail }) => {
-      const result = await db.shoppingOrders.update(id, data);
+      const previousOrder = orders.find((order) => order.id === id);
+      const nextOrder = previousOrder ? { ...previousOrder, ...data } : data;
+      const plan = buildShoppingOrderAllocationPlan({
+        purchaseOrders,
+        previousOrder,
+        nextOrder,
+      });
+
+      if (plan.length > 0) {
+        await applyPurchaseOrderAllocationPlan(plan);
+      }
+
+      let result;
+      try {
+        result = await db.shoppingOrders.update(id, data);
+      } catch (error) {
+        if (plan.length > 0) {
+          await rollbackPurchaseOrderAllocationPlan(plan);
+        }
+        throw error;
+      }
       // Send notification if status changed to shipping or delivered
       if (
         sendNotification &&
@@ -189,6 +241,7 @@ export default function ShoppingOrders() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['shopping-orders'] });
       queryClient.invalidateQueries({ queryKey: ['customer-invoices'] });
+      queryClient.invalidateQueries({ queryKey: ['purchase-orders'] });
       setShowForm(false);
       setEditingOrder(null);
       toast.success('Order updated');
@@ -197,26 +250,34 @@ export default function ShoppingOrders() {
   });
 
   const deleteMutation = useMutation({
-    mutationFn: (id) => db.shoppingOrders.delete(id),
+    mutationFn: async (id) => {
+      const order = orders.find((item) => item.id === id);
+      const plan = buildShoppingOrderAllocationPlan({
+        purchaseOrders,
+        previousOrder: order,
+        nextOrder: null,
+      });
+
+      if (plan.length > 0) {
+        await applyPurchaseOrderAllocationPlan(plan);
+      }
+
+      try {
+        return await db.shoppingOrders.delete(id);
+      } catch (error) {
+        if (plan.length > 0) {
+          await rollbackPurchaseOrderAllocationPlan(plan);
+        }
+        throw error;
+      }
+    },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['shopping-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['purchase-orders'] });
       toast.success('Order deleted');
     },
     onError: (err) => handleError(err, 'Failed to delete shopping order'),
   });
-
-  const updatePOMutation = useMutation({
-    mutationFn: ({ id, data }) => db.purchaseOrders.update(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['purchase-orders'] });
-    },
-    onError: (err) => handleError(err, 'Failed to update PO'),
-  });
-
-  // Handle PO allocation update
-  const handleUpdatePO = async (poId, data) => {
-    await updatePOMutation.mutateAsync({ id: poId, data });
-  };
 
   // Handle order update for allocation
   const handleUpdateOrderForAllocation = async (orderId, data) => {
@@ -485,7 +546,6 @@ export default function ShoppingOrders() {
               orders={orders}
               purchaseOrders={purchaseOrders}
               onUpdateOrder={handleUpdateOrderForAllocation}
-              onUpdatePO={handleUpdatePO}
               isLoading={isLoading}
             />
           </TabsContent>

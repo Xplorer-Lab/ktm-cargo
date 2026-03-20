@@ -48,6 +48,7 @@ import { cn } from '@/lib/utils';
 import VendorCapacityAlert from '@/components/shared/VendorCapacityAlert';
 import { useUser } from '@/components/auth/UserContext';
 import { SERVICE_TYPE_DEFAULTS } from '@/lib/defaults';
+import { canAllocateToPO, getShipmentAllocationWeight } from '@/lib/poAllocation';
 
 // Map icon for each service type (icons can't live in defaults.js — they're React components)
 const SERVICE_TYPE_ICONS = {
@@ -105,6 +106,10 @@ export default function ShipmentForm({
   });
 
   const watchedValues = watch();
+  const currentLinkedWeight =
+    shipment?.vendor_po_id && shipment.vendor_po_id === watchedValues.vendor_po_id
+      ? getShipmentAllocationWeight(shipment)
+      : 0;
 
   // Filter POs that are approved/received and have remaining weight
   const availablePOs = useMemo(
@@ -112,9 +117,9 @@ export default function ShipmentForm({
       purchaseOrders.filter(
         (po) =>
           ['approved', 'sent', 'partial_received', 'received'].includes(po.status) &&
-          (po.remaining_weight_kg > 0 || !po.total_weight_kg)
+          (po.remaining_weight_kg > 0 || !po.total_weight_kg || po.id === shipment?.vendor_po_id)
       ),
-    [purchaseOrders]
+    [purchaseOrders, shipment?.vendor_po_id]
   );
 
   // Calculation Logic
@@ -169,11 +174,12 @@ export default function ShipmentForm({
     if (watchedValues.vendor_po_id && weight > 0) {
       const po = purchaseOrders.find((p) => p.id === watchedValues.vendor_po_id);
       if (po && po.total_weight_kg) {
-        const remaining = po.remaining_weight_kg || 0;
-        const isOverLimit = weight > remaining;
+        const remaining = (po.remaining_weight_kg || 0) + currentLinkedWeight;
+        const isOverLimit = !canAllocateToPO(po, weight, currentLinkedWeight);
+        const effectiveAllocated = Math.max(0, (po.allocated_weight_kg || 0) - currentLinkedWeight);
         const percentUsed = Math.min(
           100,
-          (((po.allocated_weight_kg || 0) + weight) / po.total_weight_kg) * 100
+          ((effectiveAllocated + weight) / po.total_weight_kg) * 100
         );
 
         setPoWeightStatus({
@@ -188,7 +194,7 @@ export default function ShipmentForm({
     } else {
       setPoWeightStatus(null);
     }
-  }, [watchedValues.vendor_po_id, watchedValues.weight_kg, purchaseOrders]);
+  }, [currentLinkedWeight, purchaseOrders, watchedValues.vendor_po_id, watchedValues.weight_kg]);
 
   const handlePOChange = (poId) => {
     if (!poId || poId === 'none') {
@@ -424,6 +430,7 @@ export default function ShipmentForm({
             <VendorCapacityAlert
               purchaseOrder={purchaseOrders.find((po) => po.id === watchedValues.vendor_po_id)}
               requestedWeight={parseFloat(watchedValues.weight_kg) || 0}
+              currentLinkedWeight={currentLinkedWeight}
             />
           )}
 

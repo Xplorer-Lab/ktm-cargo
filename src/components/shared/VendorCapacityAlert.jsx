@@ -18,14 +18,19 @@ import { cn } from '@/lib/utils';
  * VendorCapacityAlert - Real-time visual display of vendor's available cargo capacity
  * Shows capacity status with animations, color coding, and clear visual feedback
  */
-export default function VendorCapacityAlert({ purchaseOrder, requestedWeight = 0, className }) {
+export default function VendorCapacityAlert({
+  purchaseOrder,
+  requestedWeight = 0,
+  currentLinkedWeight = 0,
+  className,
+}) {
   const capacityData = useMemo(() => {
     if (!purchaseOrder || !purchaseOrder.total_weight_kg) {
       return null;
     }
     const total = purchaseOrder.total_weight_kg || 0;
-    const allocated = purchaseOrder.allocated_weight_kg || 0;
-    const remaining = purchaseOrder.remaining_weight_kg || total - allocated;
+    const allocated = Math.max(0, (purchaseOrder.allocated_weight_kg || 0) - currentLinkedWeight);
+    const remaining = total - allocated;
     const afterRequest = remaining - requestedWeight;
     const percentUsed = total > 0 ? (allocated / total) * 100 : 0;
     const percentAfterRequest = total > 0 ? ((allocated + requestedWeight) / total) * 100 : 0;
@@ -61,7 +66,7 @@ export default function VendorCapacityAlert({ purchaseOrder, requestedWeight = 0
       statusColor,
       isOverCapacity: requestedWeight > remaining,
     };
-  }, [purchaseOrder, requestedWeight]);
+  }, [currentLinkedWeight, purchaseOrder, requestedWeight]);
 
   if (!capacityData) {
     return null;

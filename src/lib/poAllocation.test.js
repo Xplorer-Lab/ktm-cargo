@@ -1,0 +1,86 @@
+import {
+  applyPORebalanceOperations,
+  buildPORebalanceOperations,
+  canAllocateToPO,
+  getPOAllocationSnapshot,
+  getShipmentAllocationWeight,
+  getShoppingOrderAllocationWeight,
+  rollbackPORebalanceOperations,
+} from './poAllocation';
+
+describe('poAllocation helpers', () => {
+  const basePO = {
+    id: 'po-1',
+    total_weight_kg: 10,
+    allocated_weight_kg: 6,
+    remaining_weight_kg: 4,
+  };
+
+  it('derives allocation weights for shopping orders and shipments', () => {
+    expect(getShoppingOrderAllocationWeight({ actual_weight: 2.5, estimated_weight: 3 })).toBe(2.5);
+    expect(getShoppingOrderAllocationWeight({ actual_weight: 0, estimated_weight: 3 })).toBe(3);
+    expect(getShipmentAllocationWeight({ weight_kg: '4.2' })).toBe(4.2);
+  });
+
+  it('normalizes PO allocation snapshot from total and allocated weight', () => {
+    expect(getPOAllocationSnapshot(basePO)).toEqual({
+      total_weight_kg: 10,
+      allocated_weight_kg: 6,
+      remaining_weight_kg: 4,
+    });
+  });
+
+  it('builds rebalance operations when moving weight between purchase orders', () => {
+    const nextPO = {
+      id: 'po-2',
+      total_weight_kg: 8,
+      allocated_weight_kg: 1,
+      remaining_weight_kg: 7,
+    };
+
+    expect(
+      buildPORebalanceOperations({
+        previousPo: basePO,
+        nextPo: nextPO,
+        previousWeight: 2,
+        nextWeight: 3,
+      })
+    ).toEqual([
+      {
+        poId: 'po-1',
+        previousPatch: { allocated_weight_kg: 6, remaining_weight_kg: 4 },
+        nextPatch: { allocated_weight_kg: 4, remaining_weight_kg: 6 },
+      },
+      {
+        poId: 'po-2',
+        previousPatch: { allocated_weight_kg: 1, remaining_weight_kg: 7 },
+        nextPatch: { allocated_weight_kg: 4, remaining_weight_kg: 4 },
+      },
+    ]);
+  });
+
+  it('allows current linked weight to count toward available capacity', () => {
+    expect(canAllocateToPO(basePO, 6, 2)).toBe(true);
+    expect(canAllocateToPO(basePO, 7, 2)).toBe(false);
+  });
+
+  it('applies and rolls back rebalance operations in order', async () => {
+    const updatePO = jest.fn().mockResolvedValue(undefined);
+    const operations = buildPORebalanceOperations({
+      previousPo: basePO,
+      previousWeight: 2,
+    });
+
+    await applyPORebalanceOperations(updatePO, operations);
+    await rollbackPORebalanceOperations(updatePO, operations);
+
+    expect(updatePO).toHaveBeenNthCalledWith(1, 'po-1', {
+      allocated_weight_kg: 4,
+      remaining_weight_kg: 6,
+    });
+    expect(updatePO).toHaveBeenNthCalledWith(2, 'po-1', {
+      allocated_weight_kg: 6,
+      remaining_weight_kg: 4,
+    });
+  });
+});
