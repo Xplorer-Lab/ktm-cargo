@@ -1,5 +1,6 @@
 import {
   applyPORebalanceOperations,
+  assertPORebalanceCapacity,
   buildPORebalanceOperations,
   canAllocateToPO,
   getPOAllocationSnapshot,
@@ -45,7 +46,7 @@ describe('poAllocation helpers', () => {
         previousWeight: 2,
         nextWeight: 3,
       })
-    ).toEqual([
+    ).toMatchObject([
       {
         poId: 'po-1',
         previousPatch: { allocated_weight_kg: 6, remaining_weight_kg: 4 },
@@ -59,9 +60,83 @@ describe('poAllocation helpers', () => {
     ]);
   });
 
+  it('builds allocation-only operations when only the destination PO is present', () => {
+    const nextPO = {
+      id: 'po-2',
+      total_weight_kg: 8,
+      allocated_weight_kg: 1,
+      remaining_weight_kg: 7,
+    };
+
+    expect(
+      buildPORebalanceOperations({
+        nextPo: nextPO,
+        nextWeight: 3,
+      })
+    ).toMatchObject([
+      {
+        poId: 'po-2',
+        previousPatch: { allocated_weight_kg: 1, remaining_weight_kg: 7 },
+        nextPatch: { allocated_weight_kg: 4, remaining_weight_kg: 4 },
+      },
+    ]);
+  });
+
+  it('builds deallocation-only operations when only the source PO is present', () => {
+    expect(
+      buildPORebalanceOperations({
+        previousPo: basePO,
+        previousWeight: 2,
+      })
+    ).toMatchObject([
+      {
+        poId: 'po-1',
+        previousPatch: { allocated_weight_kg: 6, remaining_weight_kg: 4 },
+        nextPatch: { allocated_weight_kg: 4, remaining_weight_kg: 6 },
+      },
+    ]);
+  });
+
+  it('returns no operations when the rebalance is a no-op', () => {
+    expect(
+      buildPORebalanceOperations({
+        previousPo: basePO,
+        nextPo: basePO,
+        previousWeight: 2,
+        nextWeight: 2,
+      })
+    ).toEqual([]);
+  });
+
   it('allows current linked weight to count toward available capacity', () => {
     expect(canAllocateToPO(basePO, 6, 2)).toBe(true);
     expect(canAllocateToPO(basePO, 7, 2)).toBe(false);
+  });
+
+  it('throws when an operation would exceed purchase order capacity', () => {
+    expect(() =>
+      assertPORebalanceCapacity([
+        {
+          poId: 'po-1',
+          poNumber: 'PO-001',
+          totalWeightKg: 10,
+          nextPatch: { allocated_weight_kg: 11, remaining_weight_kg: 0 },
+        },
+      ])
+    ).toThrow('Shipment exceeds available purchase order capacity for PO-001');
+  });
+
+  it('allows unbounded purchase orders through the capacity assertion', () => {
+    expect(() =>
+      assertPORebalanceCapacity([
+        {
+          poId: 'po-open',
+          poNumber: null,
+          totalWeightKg: 0,
+          nextPatch: { allocated_weight_kg: 50, remaining_weight_kg: 0 },
+        },
+      ])
+    ).not.toThrow();
   });
 
   it('applies and rolls back rebalance operations in order', async () => {

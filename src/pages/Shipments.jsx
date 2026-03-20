@@ -84,6 +84,7 @@ import { useUser } from '@/components/auth/UserContext';
 import { hasPermission } from '@/components/auth/RolePermissions';
 import {
   applyPORebalanceOperations,
+  assertPORebalanceCapacity,
   buildPORebalanceOperations,
   getShipmentAllocationWeight,
   rollbackPORebalanceOperations,
@@ -102,16 +103,54 @@ export default function Shipments() {
   const { user } = useUser();
   const location = useLocation();
 
-  const findLinkedPurchaseOrder = (poId) => {
+  const updatePurchaseOrderAllocation = (poId, data) => db.purchaseOrders.update(poId, data);
+  const fetchPurchaseOrder = async (poId) => {
     if (!poId) return null;
-    const po = purchaseOrders.find((item) => item.id === poId) || null;
-    if (!po) {
-      throw new Error('Linked Purchase Order not found');
-    }
-    return po;
+    return db.purchaseOrders.get(poId);
+  };
+  const fetchShipment = async (shipmentId) => {
+    if (!shipmentId) throw new Error('Shipment ID is required');
+    return db.shipments.get(shipmentId);
   };
 
-  const updatePurchaseOrderAllocation = (poId, data) => db.purchaseOrders.update(poId, data);
+  const buildFreshRebalanceContext = async ({
+    shipmentId = null,
+    nextShipmentData = null,
+  } = {}) => {
+    const previousShipment = shipmentId ? await fetchShipment(shipmentId) : null;
+    if (shipmentId && !previousShipment) {
+      throw new Error('Unable to load the latest shipment snapshot');
+    }
+
+    const nextShipment = previousShipment
+      ? { ...previousShipment, ...(nextShipmentData || {}) }
+      : nextShipmentData || {};
+
+    const previousPoId = previousShipment?.vendor_po_id ?? null;
+    const nextPoId = nextShipment.vendor_po_id ?? null;
+
+    const [previousPo, nextPo] = await Promise.all([
+      fetchPurchaseOrder(previousPoId),
+      nextPoId === previousPoId ? fetchPurchaseOrder(previousPoId) : fetchPurchaseOrder(nextPoId),
+    ]);
+
+    const operations = buildPORebalanceOperations({
+      previousPo,
+      nextPo,
+      previousWeight: getShipmentAllocationWeight(previousShipment),
+      nextWeight: getShipmentAllocationWeight(nextShipment),
+    });
+
+    assertPORebalanceCapacity(operations);
+
+    return {
+      previousShipment,
+      nextShipment,
+      previousPo,
+      nextPo,
+      operations,
+    };
+  };
 
   useEffect(() => {
     if (location.state?.createFromShoppingOrder) {
@@ -169,11 +208,12 @@ export default function Shipments() {
   const createMutation = useMutation({
     mutationFn: async (data) => {
       const validatedData = shipmentSchema.parse(data);
-      const nextPo = findLinkedPurchaseOrder(validatedData.vendor_po_id);
+      const nextPo = await fetchPurchaseOrder(validatedData.vendor_po_id);
       const operations = buildPORebalanceOperations({
         nextPo,
         nextWeight: getShipmentAllocationWeight(validatedData),
       });
+      assertPORebalanceCapacity(operations);
 
       await applyPORebalanceOperations(updatePurchaseOrderAllocation, operations);
 
@@ -205,15 +245,9 @@ export default function Shipments() {
   const updateMutation = useMutation({
     mutationFn: async ({ id, data }) => {
       const validatedData = shipmentSchema.partial().parse(data);
-      const oldShipment = shipments.find((s) => s.id === id);
-      const nextShipment = oldShipment ? { ...oldShipment, ...validatedData } : validatedData;
-      const previousPo = findLinkedPurchaseOrder(oldShipment?.vendor_po_id);
-      const nextPo = findLinkedPurchaseOrder(nextShipment.vendor_po_id);
-      const operations = buildPORebalanceOperations({
-        previousPo,
-        nextPo,
-        previousWeight: getShipmentAllocationWeight(oldShipment),
-        nextWeight: getShipmentAllocationWeight(nextShipment),
+      const { operations } = await buildFreshRebalanceContext({
+        shipmentId: id,
+        nextShipmentData: validatedData,
       });
 
       await applyPORebalanceOperations(updatePurchaseOrderAllocation, operations);
@@ -243,11 +277,8 @@ export default function Shipments() {
         throw new Error('You do not have permission to delete shipments');
       }
 
-      const shipment = shipments.find((item) => item.id === id);
-      const previousPo = findLinkedPurchaseOrder(shipment?.vendor_po_id);
-      const operations = buildPORebalanceOperations({
-        previousPo,
-        previousWeight: getShipmentAllocationWeight(shipment),
+      const { operations } = await buildFreshRebalanceContext({
+        shipmentId: id,
       });
 
       await applyPORebalanceOperations(updatePurchaseOrderAllocation, operations);
