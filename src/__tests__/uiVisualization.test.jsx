@@ -120,13 +120,13 @@ describe('UI Visualization', () => {
       );
 
       await waitFor(() => {
-        expect(
-          screen.getByRole('heading', { name: /Need a quote from KTM Cargo\?/i })
-        ).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: /ထိုင်းမှ မြန်မာသို့/i })).toBeInTheDocument();
       });
-      expect(screen.getByText(/Express Logistics/i)).toBeInTheDocument();
-      expect(screen.getAllByRole('link', { name: /View KTM Profile/i }).length).toBeGreaterThan(0);
-      expect(screen.getByText(/no self-service checkout or web ordering/i)).toBeInTheDocument();
+      expect(screen.getAllByText(/Cargo Express/i).length).toBeGreaterThan(0);
+      expect(screen.getAllByRole('link', { name: /ကုမ္ပဏီအကြောင်း/i }).length).toBeGreaterThan(0);
+      expect(
+        screen.getByText(/website မှ တိုက်ရိုက် order တင်မယ့် flow မဟုတ်ဘဲ/i)
+      ).toBeInTheDocument();
     });
   });
 

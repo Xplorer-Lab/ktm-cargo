@@ -3,658 +3,617 @@ import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import {
-  Plane,
-  Package,
-  ShoppingBag,
-  CheckCircle,
-  Shield,
-  Globe,
-  Menu,
-  X,
-  Truck,
-  Star,
-  Users,
   ArrowRight,
+  BadgeCheck,
+  CircleDollarSign,
+  Facebook,
+  Menu,
+  Package,
+  Phone,
+  ShieldCheck,
+  ShoppingBag,
+  Truck,
+  X,
 } from 'lucide-react';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
+
+const CONTACT_NUMBERS = ['0633301746', '0826705571'];
+const FACEBOOK_URL = 'https://www.facebook.com/profile.php?id=61584321765274';
+
+const SERVICE_CARDS = [
+  {
+    icon: Package,
+    title: 'ကုန်ပစ္စည်းပို့ဆောင်ခြင်း',
+    body: 'ထိုင်းဘက်မှ မြန်မာဘက်သို့ cargo ပို့ဆောင်ရာတွင် စုစည်းပို့ခြင်းမှ door-to-door delivery အထိ KTM team က စီမံပေးပါသည်။',
+  },
+  {
+    icon: ShoppingBag,
+    title: 'ထိုင်းဘက်ဝယ်ယူပေးခြင်း',
+    body: 'ပစ္စည်း link သို့မဟုတ် photo ပို့လိုက်ရုံဖြင့် KTM team က ဝယ်ယူခြင်း၊ စစ်ဆေးခြင်း၊ ထုပ်ပိုးခြင်းများကို ကူညီဆောင်ရွက်ပေးပါသည်။',
+  },
+  {
+    icon: Truck,
+    title: 'လုပ်ငန်းသုံး shipment စီမံခြင်း',
+    body: 'bulk order, စုစည်းပို့ဆောင်မှု, cargo booking နှင့် reconciliation လိုအပ်သော လုပ်ငန်းသုံး shipment များကို support လုပ်ပေးပါသည်။',
+  },
+];
+
+const WORKFLOW_STEPS = [
+  {
+    number: '၁',
+    title: 'မေးမြန်းမှုလက်ခံခြင်း',
+    body: 'Facebook မှာ link, photo, quantity နဲ့ delivery address ပို့ပြီး KTM ကို မေးမြန်းနိုင်ပါသည်။',
+  },
+  {
+    number: '၂',
+    title: 'ဈေးနှုန်းတွက်ချက်ပြီး အတည်ပြုခြင်း',
+    body: 'ပစ္စည်းဈေး၊ Thai local delivery, cargo fee, Myanmar delivery စရိတ်များကို KTM team က တွက်ချက်ပေးပါသည်။',
+  },
+  {
+    number: '၃',
+    title: 'ထိုင်းဘက်ဝယ်ယူခြင်း သို့မဟုတ် စုဆောင်းခြင်း',
+    body: 'ဝယ်ယူပေးရမည့် order များကို KTM က စီမံပြီး cargo only shipment များကိုတော့ ထိုင်းဘက်မှ လက်ခံစစ်ဆေးပါသည်။',
+  },
+  {
+    number: '၄',
+    title: 'Cargo booking နှင့် စုစည်းပို့ဆောင်ခြင်း',
+    body: 'shipment များကို အလေးချိန်နှင့် package အလိုက် စုစည်းပြီး partner cargo company များနှင့် booking လုပ်ပါသည်။',
+  },
+  {
+    number: '၅',
+    title: 'မြန်မာဘက်ပို့ဆောင်ခြင်း',
+    body: 'Myanmar side partner များနှင့် ချိတ်ဆက်ပြီး arrival, separation, delivery schedule များကို ဆက်လက်စီမံပါသည်။',
+  },
+  {
+    number: '၆',
+    title: 'လက်ခံအတည်ပြုနှင့် after-sales',
+    body: 'ပစ္စည်းလက်ခံပြီးနောက် proof of delivery, extra kg, reconcile, issue follow-up များကို KTM မှ ဆက်လက်စောင့်ရှောက်ပေးပါသည်။',
+  },
+];
+
+const VALUE_STRIPS = [
+  'ထိုင်းမှ မြန်မာသို့ အထူးပြုဝန်ဆောင်မှု',
+  'door-to-door delivery support',
+  'shopping assist + cargo consolidation',
+  'KTM team က တိုက်ရိုက်စီမံပေးသော workflow',
+];
+
+const TRUST_POINTS = [
+  {
+    icon: ShieldCheck,
+    title: 'Team-handled service',
+    body: 'Website မှာ self-service order မတင်ဘဲ KTM team ကို တိုက်ရိုက်မေးမြန်းပြီး ဝန်ဆောင်မှုရယူရပါသည်။',
+  },
+  {
+    icon: CircleDollarSign,
+    title: 'Cargo workflow အပြည့်စုံ',
+    body: 'quotation မှစ၍ Thailand-side collection, booking, transit, delivery အထိ KTM workflow တစ်ကြောင်းတည်းဖြင့် စီမံပေးပါသည်။',
+  },
+  {
+    icon: BadgeCheck,
+    title: 'After-sales follow-up',
+    body: 'delivery ပြီးနောက် proof of delivery, additional charges, reconcile နှင့် customer follow-up များကို ဆက်လက်ကူညီပေးပါသည်။',
+  },
+];
+
+function SpeedMark({ compact = false }) {
+  return (
+    <div className={`inline-grid gap-1.5 ${compact ? 'mr-1' : 'mr-2'}`}>
+      {[1, 2, 3].map((index) => (
+        <span
+          key={index}
+          className={`${compact ? 'h-1.5 w-6' : 'h-2 w-10'} rounded-full bg-gradient-to-r from-[#B6851F] via-[#D4A63A] to-[#F3D470] shadow-[0_2px_8px_rgba(182,133,31,0.28)]`}
+        />
+      ))}
+    </div>
+  );
+}
+
+function BrandMark() {
+  return (
+    <div className="flex items-center gap-3">
+      <div className="rounded-[1.35rem] border border-[#D4A63A]/30 bg-[#1F1914] px-3 py-3 shadow-[0_20px_50px_rgba(44,29,10,0.22)]">
+        <div className="flex items-center text-[2rem] font-black uppercase leading-none tracking-[0.18em] text-[#D4A63A] sm:text-[2.3rem]">
+          <SpeedMark compact />
+          KTM
+        </div>
+      </div>
+      <div className="hidden sm:block">
+        <p className="text-[0.68rem] font-semibold uppercase tracking-[0.35em] text-[#8F8374]">
+          Cargo Express
+        </p>
+        <p className="mt-1 text-sm text-[#5B5147]">
+          ထိုင်းမှ မြန်မာသို့ ယုံကြည်စိတ်ချရသော ဝန်ဆောင်မှု
+        </p>
+      </div>
+    </div>
+  );
+}
 
 export default function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   return (
-    <div className="min-h-screen bg-white font-sans text-slate-900 selection:bg-blue-100 selection:text-blue-900">
-      {/* Navigation */}
-      <nav className="fixed top-0 left-0 right-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-100 transition-all duration-300">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex items-center justify-between h-20">
-            {/* Logo */}
-            <div
-              className="flex items-center gap-3 cursor-pointer"
-              onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
-            >
-              <div className="p-2 bg-gradient-to-br from-blue-600 to-indigo-600 rounded-xl shadow-lg shadow-blue-600/20">
-                <Plane className="w-6 h-6 text-white" />
-              </div>
-              <div>
-                <h1 className="text-xl font-bold tracking-tight text-slate-900">KTM Cargo</h1>
-                <p className="text-[10px] font-medium text-slate-500 uppercase tracking-wider">
-                  Express Logistics
-                </p>
-              </div>
-            </div>
+    <div
+      className="min-h-screen bg-[#F6F1E7] text-[#1F1914] selection:bg-[#D4A63A]/25 selection:text-[#1F1914]"
+      style={{ fontFamily: "'Noto Sans Myanmar', 'Pyidaungsu', sans-serif" }}
+    >
+      <div className="fixed inset-x-0 top-0 z-50 border-b border-[#d8ccb8] bg-[#F6F1E7]/92 backdrop-blur-xl">
+        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
+          <button
+            className="text-left"
+            onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })}
+            type="button"
+          >
+            <BrandMark />
+          </button>
 
-            {/* Desktop Menu */}
-            <div className="hidden md:flex items-center gap-8">
-              <a
-                href="#services"
-                className="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors"
-              >
-                Services
-              </a>
-              <a
-                href="#how-it-works"
-                className="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors"
-              >
-                How it Works
-              </a>
-              <a
-                href="#testimonials"
-                className="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors"
-              >
-                Reviews
-              </a>
-              <a
-                href="#faq"
-                className="text-sm font-medium text-slate-600 hover:text-blue-600 transition-colors"
-              >
-                FAQ
-              </a>
-              <div className="flex items-center gap-3 ml-4">
-                <Link to="/StaffLogin">
-                  <Button
-                    variant="outline"
-                    className="font-medium border-slate-200 hover:bg-slate-50"
-                  >
-                    Staff Login
-                  </Button>
-                </Link>
-                <Link to="/ClientPortal">
-                  <Button
-                    variant="ghost"
-                    className="font-medium hover:bg-blue-50 hover:text-blue-600"
-                  >
-                    View KTM Profile
-                  </Button>
-                </Link>
-                <Link to="/ClientPortal">
-                  <Button className="bg-blue-600 hover:bg-blue-700 text-white shadow-lg shadow-blue-600/20 rounded-full px-6 transition-all hover:scale-105 active:scale-95">
-                    Business Workflow
-                  </Button>
-                </Link>
-              </div>
-            </div>
-
-            {/* Mobile Menu Button */}
-            <button
-              className="md:hidden p-2 text-slate-600 hover:bg-slate-100 rounded-lg transition-colors"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          <div className="hidden items-center gap-6 lg:flex">
+            <a
+              className="text-sm font-semibold text-[#4F463D] transition hover:text-[#B6851F]"
+              href="#services"
             >
-              {mobileMenuOpen ? <X /> : <Menu />}
-            </button>
+              ဝန်ဆောင်မှုများ
+            </a>
+            <a
+              className="text-sm font-semibold text-[#4F463D] transition hover:text-[#B6851F]"
+              href="#workflow"
+            >
+              လုပ်ငန်းစဉ်
+            </a>
+            <a
+              className="text-sm font-semibold text-[#4F463D] transition hover:text-[#B6851F]"
+              href="#contact"
+            >
+              ဆက်သွယ်ရန်
+            </a>
+            <Link
+              to="/ClientPortal"
+              className="text-sm font-semibold text-[#4F463D] transition hover:text-[#B6851F]"
+            >
+              ကုမ္ပဏီအကြောင်း
+            </Link>
+            <Button
+              asChild
+              variant="outline"
+              className="rounded-full border-[#cdbfa9] bg-white/70 text-[#2A221B] hover:border-[#D4A63A] hover:bg-white"
+            >
+              <Link to="/StaffLogin">Staff Login</Link>
+            </Button>
+            <Button
+              asChild
+              className="rounded-full bg-[#1F1914] px-6 text-[#F6F1E7] hover:bg-[#2A221B]"
+            >
+              <a href={FACEBOOK_URL} rel="noreferrer" target="_blank">
+                ဆက်သွယ်မေးမြန်းရန်
+              </a>
+            </Button>
           </div>
+
+          <button
+            className="rounded-full border border-[#d8ccb8] p-2 text-[#5B5147] lg:hidden"
+            onClick={() => setMobileMenuOpen((value) => !value)}
+            type="button"
+          >
+            {mobileMenuOpen ? <X className="h-5 w-5" /> : <Menu className="h-5 w-5" />}
+          </button>
         </div>
 
-        {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden bg-white border-t border-slate-100 p-4 space-y-4 shadow-xl absolute w-full animate-in slide-in-from-top-5">
-            <a
-              href="#services"
-              className="block text-sm font-medium text-slate-600 p-2 hover:bg-slate-50 rounded-lg"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Services
-            </a>
-            <a
-              href="#how-it-works"
-              className="block text-sm font-medium text-slate-600 p-2 hover:bg-slate-50 rounded-lg"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              How it Works
-            </a>
-            <a
-              href="#testimonials"
-              className="block text-sm font-medium text-slate-600 p-2 hover:bg-slate-50 rounded-lg"
-              onClick={() => setMobileMenuOpen(false)}
-            >
-              Reviews
-            </a>
-            <div className="pt-4 border-t border-slate-100 flex flex-col gap-3">
-              <Link to="/StaffLogin" onClick={() => setMobileMenuOpen(false)}>
-                <Button variant="outline" className="w-full justify-center">
+          <div className="border-t border-[#d8ccb8] bg-[#F6F1E7] px-4 py-4 lg:hidden">
+            <div className="flex flex-col gap-3">
+              <a
+                className="rounded-2xl px-4 py-3 text-sm font-semibold text-[#4F463D] hover:bg-white/70"
+                href="#services"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                ဝန်ဆောင်မှုများ
+              </a>
+              <a
+                className="rounded-2xl px-4 py-3 text-sm font-semibold text-[#4F463D] hover:bg-white/70"
+                href="#workflow"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                လုပ်ငန်းစဉ်
+              </a>
+              <a
+                className="rounded-2xl px-4 py-3 text-sm font-semibold text-[#4F463D] hover:bg-white/70"
+                href="#contact"
+                onClick={() => setMobileMenuOpen(false)}
+              >
+                ဆက်သွယ်ရန်
+              </a>
+              <Link
+                className="rounded-2xl px-4 py-3 text-sm font-semibold text-[#4F463D] hover:bg-white/70"
+                onClick={() => setMobileMenuOpen(false)}
+                to="/ClientPortal"
+              >
+                ကုမ္ပဏီအကြောင်း
+              </Link>
+              <Link onClick={() => setMobileMenuOpen(false)} to="/StaffLogin">
+                <Button
+                  variant="outline"
+                  className="w-full rounded-full border-[#cdbfa9] bg-white/70 text-[#2A221B] hover:border-[#D4A63A] hover:bg-white"
+                >
                   Staff Login
                 </Button>
               </Link>
-              <Link to="/ClientPortal" onClick={() => setMobileMenuOpen(false)}>
-                <Button variant="outline" className="w-full justify-center">
-                  View KTM Profile
+              <a href={FACEBOOK_URL} rel="noreferrer" target="_blank">
+                <Button className="w-full rounded-full bg-[#1F1914] text-[#F6F1E7] hover:bg-[#2A221B]">
+                  ဆက်သွယ်မေးမြန်းရန်
                 </Button>
-              </Link>
-              <Link to="/ClientPortal" onClick={() => setMobileMenuOpen(false)}>
-                <Button className="w-full justify-center bg-blue-600">Business Workflow</Button>
-              </Link>
+              </a>
             </div>
           </div>
         )}
-      </nav>
+      </div>
 
-      {/* Hero Section */}
-      <section className="relative pt-32 pb-20 lg:pt-48 lg:pb-32 overflow-hidden">
-        <div className="absolute inset-0 -z-10 bg-[radial-gradient(ellipse_at_top_right,_var(--tw-gradient-stops))] from-blue-100/50 via-slate-50 to-white"></div>
+      <main>
+        <section className="relative overflow-hidden px-4 pb-16 pt-32 sm:px-6 lg:px-8 lg:pb-24 lg:pt-40">
+          <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top_right,_rgba(212,166,58,0.24),transparent_28%),radial-gradient(circle_at_bottom_left,_rgba(31,25,20,0.10),transparent_32%)]" />
+          <div className="absolute left-[6%] top-28 hidden h-40 w-40 rounded-full border border-[#D4A63A]/20 lg:block" />
+          <div className="absolute right-[10%] top-20 hidden h-60 w-60 rounded-full bg-[#E6DDCF]/60 blur-3xl lg:block" />
 
-        {/* Animated Background Elements */}
-        <div className="absolute top-20 left-10 w-72 h-72 bg-blue-400/10 rounded-full blur-3xl animate-pulse-slow"></div>
-        <div className="absolute bottom-20 right-10 w-96 h-96 bg-indigo-400/10 rounded-full blur-3xl animate-pulse-slow delay-1000"></div>
-
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div className="space-y-8 relative z-10">
-              <div className="inline-flex items-center gap-2 px-3 py-1 rounded-full bg-blue-50 text-blue-700 text-xs font-medium border border-blue-100 shadow-sm">
-                <span className="relative flex h-2 w-2">
-                  <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
-                  <span className="relative inline-flex rounded-full h-2 w-2 bg-blue-500"></span>
-                </span>
-                Now shipping daily from Bangkok to Yangon
+          <div className="mx-auto grid max-w-7xl gap-12 lg:grid-cols-[1.05fr_0.95fr] lg:items-center">
+            <div className="space-y-8">
+              <div className="inline-flex items-center gap-3 rounded-full border border-[#D4A63A]/30 bg-white/75 px-4 py-2 text-xs font-semibold tracking-[0.24em] text-[#8B6A23] shadow-[0_10px_30px_rgba(212,166,58,0.12)]">
+                <span className="inline-flex h-2.5 w-2.5 rounded-full bg-[#D4A63A]" />
+                Thailand to Myanmar Cargo
               </div>
-              <h1 className="text-5xl lg:text-7xl font-bold tracking-tight text-slate-900 leading-[1.1]">
-                Seamless Logistics <br />
-                <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600">
-                  Across Borders
-                </span>
-              </h1>
-              <p className="text-lg text-slate-600 max-w-xl leading-relaxed">
-                The most reliable cargo service connecting Thailand and Myanmar. Clients send
-                inquiries through our staff channels, and KTM Cargo handles the quote, collection,
-                booking, and delivery work behind the scenes.
-              </p>
 
-              <div className="max-w-xl rounded-3xl border border-white/10 bg-slate-900/70 p-5 shadow-xl shadow-slate-950/20">
-                <div className="flex flex-wrap gap-3">
-                  <Button
-                    asChild
-                    variant="outline"
-                    className="rounded-full border-white/15 bg-white/5 px-6 text-white hover:bg-white/10"
-                  >
-                    <Link to="/StaffLogin">Staff Login</Link>
-                  </Button>
-                  <Button
-                    asChild
-                    className="rounded-full bg-cyan-400 px-6 text-slate-950 hover:bg-cyan-300"
-                  >
-                    <Link to="/ClientPortal">
-                      View KTM Profile
-                      <ArrowRight className="h-4 w-4" />
-                    </Link>
-                  </Button>
-                  <Button
-                    asChild
-                    variant="outline"
-                    className="rounded-full border-white/15 bg-white/5 px-6 text-white hover:bg-white/10"
-                  >
-                    <a href="#workflow">View Workflow</a>
-                  </Button>
-                </div>
-                <p className="mt-4 text-sm leading-6 text-slate-300">
-                  There is no self-service checkout or web ordering. All live requests are handled
-                  by the KTM team through the operating workflow.
+              <div className="space-y-5">
+                <h1
+                  className="max-w-4xl text-5xl font-black leading-[1.04] tracking-tight text-[#1F1914] sm:text-6xl lg:text-7xl"
+                  style={{ fontFamily: "'Oswald', 'Bebas Neue', sans-serif" }}
+                >
+                  ထိုင်းမှ မြန်မာသို့
+                  <br />
+                  စိတ်ချယုံကြည်စွာ
+                  <br />
+                  ပို့ဆောင်ပေးနေသော
+                  <br />
+                  KTM ဝန်ဆောင်မှု
+                </h1>
+                <p className="max-w-2xl text-base leading-8 text-[#5B5147] sm:text-lg">
+                  ပစ္စည်း link, photo, quantity နှင့် delivery address ပို့လိုက်ရုံဖြင့် KTM team က
+                  quotation မှစ၍ ဝယ်ယူခြင်း၊ collection, cargo booking, door-to-door delivery နှင့်
+                  after-sales follow-up အထိ တစ်ဆက်တည်း စီမံပေးပါသည်။
                 </p>
               </div>
 
-              <div className="flex items-center gap-6 text-sm text-slate-500 font-medium">
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 text-emerald-500" />
-                  <span>Staff-led Quotes</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 text-emerald-500" />
-                  <span>Consolidated Cargo</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <CheckCircle className="w-4 h-4 text-emerald-500" />
-                  <span>Door-to-door Delivery</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Hero Visual */}
-            <div className="relative lg:h-[600px] w-full hidden lg:block perspective-1000">
-              {/* Main Image Container */}
-              <div className="relative w-full h-full transform transition-transform duration-500 hover:rotate-y-2">
-                <div className="absolute inset-0 bg-gradient-to-br from-blue-600 to-indigo-700 rounded-[3rem] shadow-2xl overflow-hidden">
-                  <img
-                    src="/hero-logistics.png"
-                    alt="Logistics Network"
-                    className="w-full h-full object-cover opacity-90 mix-blend-overlay"
-                  />
-                  <div className="absolute inset-0 bg-gradient-to-t from-blue-900/50 to-transparent"></div>
-                </div>
-
-                {/* Floating Info Cards */}
-                <div className="absolute top-10 right-10 bg-white/10 backdrop-blur-md border border-white/20 p-4 rounded-2xl text-white shadow-xl animate-float">
-                  <div className="flex items-center gap-3">
-                    <div className="p-2 bg-white/20 rounded-lg">
-                      <Plane className="w-6 h-6 text-white" />
-                    </div>
-                    <div>
-                      <p className="text-xs text-blue-100">Next Flight</p>
-                      <p className="font-bold">Today, 18:00</p>
-                    </div>
-                  </div>
-                </div>
-
-                <div className="absolute bottom-20 left-10 bg-white p-4 rounded-2xl shadow-xl shadow-slate-900/20 border border-slate-100 max-w-[240px] animate-float delay-700">
-                  <div className="flex items-center gap-3 mb-3">
-                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center">
-                      <Users className="w-5 h-5 text-blue-600" />
-                    </div>
-                    <div>
-                      <p className="font-bold text-slate-900">Trusted Partner</p>
-                      <p className="text-xs text-slate-500">For 500+ Businesses</p>
-                    </div>
-                  </div>
-                  <div className="h-1.5 w-full bg-slate-100 rounded-full overflow-hidden">
-                    <div className="h-full bg-blue-600 w-[85%] rounded-full"></div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Services Section */}
-      <section id="services" className="py-24 bg-slate-50 relative">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <h2 className="text-3xl font-bold text-slate-900 mb-4">Our Premium Services</h2>
-            <p className="text-slate-600 text-lg">
-              Tailored logistics solutions designed for individuals and businesses.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-8">
-            {/* Service 1 */}
-            <Card className="border-0 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 group">
-              <CardContent className="p-8">
-                <div className="w-14 h-14 bg-blue-100 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-blue-600 transition-colors duration-300">
-                  <Package className="w-7 h-7 text-blue-600 group-hover:text-white transition-colors duration-300" />
-                </div>
-                <h3 className="text-xl font-bold text-slate-900 mb-3">Cargo Shipping</h3>
-                <p className="text-slate-600 mb-6 leading-relaxed">
-                  Door-to-door delivery from Bangkok to Yangon. We handle customs, packaging, and
-                  insurance for your peace of mind.
-                </p>
-                <ul className="space-y-3 mb-8">
-                  <li className="flex items-center gap-2 text-sm text-slate-600">
-                    <CheckCircle className="w-4 h-4 text-emerald-500" /> 3-5 Day Delivery
-                  </li>
-                  <li className="flex items-center gap-2 text-sm text-slate-600">
-                    <CheckCircle className="w-4 h-4 text-emerald-500" /> Staff status updates
-                  </li>
-                  <li className="flex items-center gap-2 text-sm text-slate-600">
-                    <CheckCircle className="w-4 h-4 text-emerald-500" /> Free Insurance up to ฿5,000
-                  </li>
-                </ul>
+              <div className="flex flex-col gap-4 sm:flex-row">
+                <Button
+                  asChild
+                  className="rounded-full bg-[#D4A63A] px-8 py-6 text-base font-bold text-[#1F1914] shadow-[0_18px_40px_rgba(182,133,31,0.25)] hover:bg-[#E2B652]"
+                >
+                  <a href={FACEBOOK_URL} rel="noreferrer" target="_blank">
+                    Facebook မှ ဆက်သွယ်မေးမြန်းရန်
+                    <ArrowRight className="ml-1 h-4 w-4" />
+                  </a>
+                </Button>
                 <Button
                   asChild
                   variant="outline"
-                  className="w-full group-hover:bg-blue-50 group-hover:text-blue-600 group-hover:border-blue-200"
+                  className="rounded-full border-[#cdbfa9] bg-white/70 px-8 py-6 text-base font-bold text-[#2A221B] hover:border-[#D4A63A] hover:bg-white"
                 >
-                  <a href="#workflow">Read Workflow</a>
+                  <a href="#workflow">လုပ်ငန်းစဉ်ကြည့်ရန်</a>
                 </Button>
-              </CardContent>
-            </Card>
-
-            {/* Service 2 */}
-            <Card className="border-0 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 relative overflow-hidden group">
-              <div className="absolute top-0 right-0 bg-orange-500 text-white text-xs font-bold px-3 py-1 rounded-bl-xl z-10">
-                POPULAR
               </div>
-              <CardContent className="p-8">
-                <div className="w-14 h-14 bg-orange-100 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-orange-500 transition-colors duration-300">
-                  <ShoppingBag className="w-7 h-7 text-orange-600 group-hover:text-white transition-colors duration-300" />
-                </div>
-                <h3 className="text-xl font-bold text-slate-900 mb-3">Buy for Me</h3>
-                <p className="text-slate-600 mb-6 leading-relaxed">
-                  Can't shop in Thailand? Send us the links, and we'll buy, inspect, and ship the
-                  items directly to you.
-                </p>
-                <ul className="space-y-3 mb-8">
-                  <li className="flex items-center gap-2 text-sm text-slate-600">
-                    <CheckCircle className="w-4 h-4 text-emerald-500" /> Low Service Fee (10%)
-                  </li>
-                  <li className="flex items-center gap-2 text-sm text-slate-600">
-                    <CheckCircle className="w-4 h-4 text-emerald-500" /> Quality Inspection
-                  </li>
-                  <li className="flex items-center gap-2 text-sm text-slate-600">
-                    <CheckCircle className="w-4 h-4 text-emerald-500" /> Consolidated Shipping
-                  </li>
-                </ul>
-                <Button
-                  asChild
-                  className="w-full bg-slate-900 text-white hover:bg-slate-800 group-hover:shadow-lg"
-                >
-                  <Link to="/ClientPortal">View KTM Profile</Link>
-                </Button>
-              </CardContent>
-            </Card>
 
-            {/* Service 3 */}
-            <Card className="border-0 shadow-lg hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 group">
-              <CardContent className="p-8">
-                <div className="w-14 h-14 bg-purple-100 rounded-2xl flex items-center justify-center mb-6 group-hover:bg-purple-600 transition-colors duration-300">
-                  <Truck className="w-7 h-7 text-purple-600 group-hover:text-white transition-colors duration-300" />
-                </div>
-                <h3 className="text-xl font-bold text-slate-900 mb-3">B2B Logistics</h3>
-                <p className="text-slate-600 mb-6 leading-relaxed">
-                  Scalable solutions for businesses. Bulk shipping, warehousing, and inventory
-                  management for your supply chain.
-                </p>
-                <ul className="space-y-3 mb-8">
-                  <li className="flex items-center gap-2 text-sm text-slate-600">
-                    <CheckCircle className="w-4 h-4 text-emerald-500" /> Volume Discounts
-                  </li>
-                  <li className="flex items-center gap-2 text-sm text-slate-600">
-                    <CheckCircle className="w-4 h-4 text-emerald-500" /> Priority Handling
-                  </li>
-                  <li className="flex items-center gap-2 text-sm text-slate-600">
-                    <CheckCircle className="w-4 h-4 text-emerald-500" /> Dedicated Account Manager
-                  </li>
-                </ul>
-                <Button
-                  asChild
-                  variant="outline"
-                  className="w-full group-hover:bg-purple-50 group-hover:text-purple-600 group-hover:border-purple-200"
-                >
-                  <a href="#services">View Services</a>
-                </Button>
-              </CardContent>
-            </Card>
-          </div>
-        </div>
-      </section>
-
-      {/* How It Works Section */}
-      <section id="how-it-works" className="py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <h2 className="text-3xl font-bold text-slate-900 mb-4">How It Works</h2>
-            <p className="text-slate-600 text-lg">
-              Shipping is staff-led. Customers send inquiries and KTM Cargo handles the rest.
-            </p>
-          </div>
-
-          <div className="grid md:grid-cols-3 gap-12 relative">
-            {/* Connecting Line */}
-            <div className="hidden md:block absolute top-12 left-[16%] right-[16%] h-0.5 bg-slate-100 -z-0">
-              <div className="absolute inset-0 bg-gradient-to-r from-transparent via-blue-200 to-transparent"></div>
+              <div className="grid gap-3 sm:grid-cols-3">
+                {[
+                  ['Staff-led Quote', 'KTM team က ဈေးနှုန်းတွက်ချက်ပေးပါသည်'],
+                  ['Cargo Consolidation', 'စုစည်းပို့ဆောင်မှုနှင့် booking ကို KTM က စီမံပါသည်'],
+                  ['Door-to-door', 'Myanmar side delivery အထိ ဆက်လက်ချိတ်ဆက်ပေးပါသည်'],
+                ].map(([title, text]) => (
+                  <div
+                    key={title}
+                    className="rounded-3xl border border-[#d8ccb8] bg-white/70 p-4 shadow-[0_20px_40px_rgba(94,74,39,0.06)]"
+                  >
+                    <p className="text-sm font-bold text-[#1F1914]">{title}</p>
+                    <p className="mt-2 text-sm leading-6 text-[#5B5147]">{text}</p>
+                  </div>
+                ))}
+              </div>
             </div>
 
-            {[
-              {
-                icon: Users,
-                title: '1. Send Inquiry',
-                desc: 'Share links, photos, quantities, and delivery details through our social channels.',
-              },
-              {
-                icon: ShoppingBag,
-                title: '2. Quote & Confirm',
-                desc: 'Our team calculates product cost, cargo fees, and local delivery before confirming.',
-              },
-              {
-                icon: Package,
-                title: '3. We Deliver',
-                desc: 'We purchase, consolidate, ship, and deliver the order through the KTM workflow.',
-              },
-            ].map((step, idx) => (
-              <div key={idx} className="relative z-10 text-center group">
-                <div className="w-24 h-24 mx-auto bg-white rounded-full border-4 border-slate-50 shadow-xl flex items-center justify-center mb-6 group-hover:scale-110 transition-transform duration-300 group-hover:border-blue-50">
-                  <div className="w-16 h-16 bg-blue-600 rounded-full flex items-center justify-center text-white">
-                    <step.icon className="w-8 h-8" />
+            <div className="relative">
+              <div className="absolute -right-6 top-10 hidden h-24 w-24 rounded-full bg-[#D4A63A]/20 blur-2xl lg:block" />
+              <div className="overflow-hidden rounded-[2rem] border border-[#cfbfaa] bg-[#1F1914] p-4 shadow-[0_35px_70px_rgba(31,25,20,0.24)]">
+                <div className="rounded-[1.6rem] border border-white/10 bg-gradient-to-br from-[#2A221B] via-[#1F1914] to-[#17120E] p-5">
+                  <div className="flex items-center justify-between border-b border-white/10 pb-4">
+                    <BrandMark />
+                    <div className="rounded-full border border-[#D4A63A]/25 bg-[#D4A63A]/10 px-3 py-1 text-xs font-semibold text-[#F3D470]">
+                      premium logistics
+                    </div>
+                  </div>
+
+                  <div className="mt-5 grid gap-4">
+                    <div className="rounded-[1.6rem] bg-gradient-to-br from-[#D4A63A] via-[#C59227] to-[#9B6D17] p-5 text-[#1F1914]">
+                      <p className="text-xs font-bold uppercase tracking-[0.3em] text-[#4D360F]">
+                        KTM Workflow
+                      </p>
+                      <p className="mt-3 text-2xl font-black leading-tight">
+                        မေးမြန်းမှုမှ delivery အထိ
+                        <br />
+                        KTM team က စီမံပေးပါသည်
+                      </p>
+                    </div>
+
+                    <img
+                      src="/hero-logistics.png"
+                      alt="KTM logistics"
+                      className="h-[300px] w-full rounded-[1.5rem] object-cover opacity-90"
+                    />
+
+                    <div className="grid gap-4 md:grid-cols-2">
+                      <div className="rounded-[1.4rem] border border-white/10 bg-white/5 p-4 text-white">
+                        <p className="text-xs uppercase tracking-[0.25em] text-[#D4A63A]">
+                          Route Focus
+                        </p>
+                        <p className="mt-2 text-lg font-bold">Bangkok → Yangon</p>
+                        <p className="mt-2 text-sm leading-6 text-[#D8CCBC]">
+                          Cargo booking, consolidation နှင့် arrival coordination ကို KTM team က
+                          လက်တွေ့စီမံပါသည်။
+                        </p>
+                      </div>
+                      <div className="rounded-[1.4rem] border border-white/10 bg-white/5 p-4 text-white">
+                        <p className="text-xs uppercase tracking-[0.25em] text-[#D4A63A]">
+                          Contact First
+                        </p>
+                        <div className="mt-2 space-y-1 text-sm leading-6 text-[#D8CCBC]">
+                          {CONTACT_NUMBERS.map((phone) => (
+                            <p key={phone}>{phone}</p>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
                   </div>
                 </div>
-                <h3 className="text-xl font-bold text-slate-900 mb-3">{step.title}</h3>
-                <p className="text-slate-600 leading-relaxed max-w-xs mx-auto">{step.desc}</p>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <section className="border-y border-[#d8ccb8] bg-[#ECE3D4] px-4 py-6 sm:px-6 lg:px-8">
+          <div className="mx-auto grid max-w-7xl gap-3 md:grid-cols-4">
+            {VALUE_STRIPS.map((item) => (
+              <div
+                key={item}
+                className="rounded-2xl border border-[#d0c2ad] bg-[#F8F4EC] px-4 py-4 text-sm font-semibold text-[#4F463D]"
+              >
+                {item}
               </div>
             ))}
           </div>
-        </div>
-      </section>
+        </section>
 
-      {/* Testimonials Section */}
-      <section id="testimonials" className="py-24 bg-slate-50">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center max-w-2xl mx-auto mb-16">
-            <h2 className="text-3xl font-bold text-slate-900 mb-4">Trusted by Thousands</h2>
-            <p className="text-slate-600 text-lg">
-              Don't just take our word for it. Here's what our customers say.
-            </p>
+        <section id="services" className="px-4 py-20 sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-7xl">
+            <div className="max-w-3xl">
+              <p className="text-sm font-bold uppercase tracking-[0.34em] text-[#B6851F]">
+                ဝန်ဆောင်မှုများ
+              </p>
+              <h2
+                className="mt-3 text-4xl font-black leading-tight text-[#1F1914] sm:text-5xl"
+                style={{ fontFamily: "'Oswald', 'Bebas Neue', sans-serif" }}
+              >
+                KTM က ဘာတွေကို
+                <br />
+                လက်တွေ့ကူညီပေးပါသလဲ
+              </h2>
+              <p className="mt-4 max-w-2xl text-base leading-8 text-[#5B5147]">
+                cargo shipping, assisted shopping, business shipment coordination စသော
+                လုပ်ငန်းစဉ်များကို KTM team က client များအစား တက်ကြွစွာစီမံပေးပါသည်။
+              </p>
+            </div>
+
+            <div className="mt-10 grid gap-6 lg:grid-cols-3">
+              {SERVICE_CARDS.map((service) => {
+                const Icon = service.icon;
+                return (
+                  <Card
+                    key={service.title}
+                    className="overflow-hidden rounded-[2rem] border border-[#d7c9b4] bg-[#FBF8F3] shadow-[0_24px_60px_rgba(86,66,35,0.08)]"
+                  >
+                    <CardContent className="p-7">
+                      <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-[#1F1914] text-[#D4A63A]">
+                        <Icon className="h-7 w-7" />
+                      </div>
+                      <h3 className="mt-6 text-2xl font-black text-[#1F1914]">{service.title}</h3>
+                      <p className="mt-4 text-sm leading-7 text-[#5B5147]">{service.body}</p>
+                    </CardContent>
+                  </Card>
+                );
+              })}
+            </div>
           </div>
+        </section>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            {[
-              {
-                name: 'Thandar Hlaing',
-                role: 'Online Seller',
-                text: 'KTM Cargo has been a game changer for my business. Fast shipping and great rates!',
-              },
-              {
-                name: 'Kyaw Zin',
-                role: 'Gadget Enthusiast',
-                text: "I buy electronics from Thailand all the time. The 'Buy for Me' service is super convenient.",
-              },
-              {
-                name: 'May Myat',
-                role: 'Fashion Boutique Owner',
-                text: 'Reliable and professional. My stock always arrives on time and in perfect condition.',
-              },
-            ].map((review, idx) => (
-              <Card key={idx} className="border-0 shadow-sm hover:shadow-md transition-shadow">
-                <CardContent className="p-8">
-                  <div className="flex gap-1 text-amber-400 mb-4">
-                    {[1, 2, 3, 4, 5].map((i) => (
-                      <Star key={i} className="w-4 h-4 fill-current" />
+        <section id="workflow" className="bg-[#1F1914] px-4 py-20 text-[#F6F1E7] sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-7xl">
+            <div className="max-w-3xl">
+              <p className="text-sm font-bold uppercase tracking-[0.34em] text-[#D4A63A]">
+                လုပ်ငန်းစဉ်
+              </p>
+              <h2
+                className="mt-3 text-4xl font-black leading-tight sm:text-5xl"
+                style={{ fontFamily: "'Oswald', 'Bebas Neue', sans-serif" }}
+              >
+                KTM Cargo ရဲ့
+                <br />
+                အလုပ်လုပ်ပုံ တစ်ဆင့်ချင်း
+              </h2>
+              <p className="mt-4 text-base leading-8 text-[#D8CCBC]">
+                website မှ တိုက်ရိုက် order တင်မယ့် flow မဟုတ်ဘဲ inquiry-led workflow
+                အပေါ်အခြေခံပြီး KTM team က တစ်ဆင့်ချင်းစီ ဆောင်ရွက်ပေးပါသည်။
+              </p>
+            </div>
+
+            <div className="mt-12 grid gap-5 lg:grid-cols-2">
+              {WORKFLOW_STEPS.map((step) => (
+                <div
+                  key={step.number}
+                  className="rounded-[1.8rem] border border-white/10 bg-white/5 p-6 shadow-[0_20px_50px_rgba(0,0,0,0.18)]"
+                >
+                  <div className="flex items-start gap-4">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-full border border-[#D4A63A]/40 bg-[#D4A63A]/12 text-xl font-black text-[#F3D470]">
+                      {step.number}
+                    </div>
+                    <div>
+                      <h3 className="text-xl font-black text-white">{step.title}</h3>
+                      <p className="mt-3 text-sm leading-7 text-[#D8CCBC]">{step.body}</p>
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </section>
+
+        <section className="px-4 py-20 sm:px-6 lg:px-8">
+          <div className="mx-auto grid max-w-7xl gap-8 lg:grid-cols-[0.9fr_1.1fr]">
+            <div className="rounded-[2rem] border border-[#d9ccb8] bg-[#FBF8F3] p-8 shadow-[0_24px_60px_rgba(86,66,35,0.08)]">
+              <p className="text-sm font-bold uppercase tracking-[0.34em] text-[#B6851F]">
+                KTM ကိုရွေးသင့်တဲ့အကြောင်း
+              </p>
+              <h2
+                className="mt-4 text-4xl font-black leading-tight text-[#1F1914]"
+                style={{ fontFamily: "'Oswald', 'Bebas Neue', sans-serif" }}
+              >
+                Cargo service တစ်ခုထက်ပိုတဲ့
+                <br />
+                လုပ်ငန်းစဉ်အပြည့်စုံ
+              </h2>
+              <p className="mt-4 text-base leading-8 text-[#5B5147]">
+                KTM သည် ပို့ဆောင်ရေးတစ်ခုတည်းမဟုတ်ဘဲ quotation, collection, booking, delivery,
+                follow-up အထိ customer journey တစ်ခုလုံးကို စီမံပေးသော service model ဖြစ်ပါသည်။
+              </p>
+            </div>
+
+            <div className="grid gap-5 md:grid-cols-3">
+              {TRUST_POINTS.map((point) => {
+                const Icon = point.icon;
+                return (
+                  <div
+                    key={point.title}
+                    className="rounded-[1.8rem] border border-[#d9ccb8] bg-white/75 p-6 shadow-[0_20px_50px_rgba(86,66,35,0.08)]"
+                  >
+                    <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#1F1914] text-[#D4A63A]">
+                      <Icon className="h-5 w-5" />
+                    </div>
+                    <h3 className="mt-5 text-xl font-black text-[#1F1914]">{point.title}</h3>
+                    <p className="mt-3 text-sm leading-7 text-[#5B5147]">{point.body}</p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </section>
+
+        <section id="contact" className="bg-[#2A221B] px-4 py-20 text-[#F6F1E7] sm:px-6 lg:px-8">
+          <div className="mx-auto max-w-7xl">
+            <div className="grid gap-10 lg:grid-cols-[0.9fr_1.1fr]">
+              <div>
+                <p className="text-sm font-bold uppercase tracking-[0.34em] text-[#D4A63A]">
+                  ဆက်သွယ်ရန်
+                </p>
+                <h2
+                  className="mt-3 text-4xl font-black leading-tight sm:text-5xl"
+                  style={{ fontFamily: "'Oswald', 'Bebas Neue', sans-serif" }}
+                >
+                  မေးမြန်းလိုပါက
+                  <br />
+                  KTM ကို တိုက်ရိုက်ဆက်သွယ်ပါ
+                </h2>
+                <p className="mt-4 max-w-xl text-base leading-8 text-[#D8CCBC]">
+                  Facebook page မှာ inquiry ပို့နိုင်သလို phone နံပါတ်များမှလည်း
+                  တိုက်ရိုက်ဆက်သွယ်နိုင်ပါသည်။ နောက်ပိုင်း channel များကို လိုအပ်သလို
+                  ဆက်လက်တိုးချဲ့သွားပါမည်။
+                </p>
+
+                <div className="mt-8 flex flex-col gap-4 sm:flex-row">
+                  <Button
+                    asChild
+                    className="rounded-full bg-[#D4A63A] px-8 py-6 text-base font-bold text-[#1F1914] hover:bg-[#E2B652]"
+                  >
+                    <a href={FACEBOOK_URL} rel="noreferrer" target="_blank">
+                      Facebook Page သို့သွားရန်
+                      <Facebook className="ml-2 h-4 w-4" />
+                    </a>
+                  </Button>
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="rounded-full border-white/15 bg-white/5 px-8 py-6 text-base font-bold text-[#F6F1E7] hover:bg-white/10"
+                  >
+                    <Link to="/ClientPortal">ကုမ္ပဏီအကြောင်းဖတ်ရန်</Link>
+                  </Button>
+                </div>
+              </div>
+
+              <div className="grid gap-5 md:grid-cols-2">
+                <div className="rounded-[1.8rem] border border-white/10 bg-white/5 p-6">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#D4A63A]/16 text-[#F3D470]">
+                    <Facebook className="h-5 w-5" />
+                  </div>
+                  <h3 className="mt-5 text-xl font-black">Facebook Inquiry</h3>
+                  <p className="mt-3 text-sm leading-7 text-[#D8CCBC]">
+                    product link, photo, quantity, address များနှင့်အတူ Facebook page မှာ
+                    တိုက်ရိုက်မေးမြန်းနိုင်ပါသည်။
+                  </p>
+                  <a
+                    className="mt-5 inline-flex items-center text-sm font-bold text-[#F3D470]"
+                    href={FACEBOOK_URL}
+                    rel="noreferrer"
+                    target="_blank"
+                  >
+                    page သို့သွားရန် <ArrowRight className="ml-1 h-4 w-4" />
+                  </a>
+                </div>
+
+                <div className="rounded-[1.8rem] border border-white/10 bg-white/5 p-6">
+                  <div className="flex h-12 w-12 items-center justify-center rounded-2xl bg-[#D4A63A]/16 text-[#F3D470]">
+                    <Phone className="h-5 w-5" />
+                  </div>
+                  <h3 className="mt-5 text-xl font-black">ဖုန်းဆက်သွယ်ရန်</h3>
+                  <div className="mt-4 space-y-3">
+                    {CONTACT_NUMBERS.map((phone) => (
+                      <a
+                        key={phone}
+                        className="flex items-center justify-between rounded-2xl border border-white/10 bg-black/10 px-4 py-3 text-sm font-semibold text-[#F6F1E7]"
+                        href={`tel:${phone}`}
+                      >
+                        <span>{phone}</span>
+                        <Phone className="h-4 w-4 text-[#F3D470]" />
+                      </a>
                     ))}
                   </div>
-                  <p className="text-slate-600 mb-6 italic">"{review.text}"</p>
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-slate-200 flex items-center justify-center font-bold text-slate-500">
-                      {review.name.charAt(0)}
-                    </div>
-                    <div>
-                      <p className="font-bold text-slate-900 text-sm">{review.name}</p>
-                      <p className="text-xs text-slate-500">{review.role}</p>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* FAQ Section */}
-      <section id="faq" className="py-24 bg-white">
-        <div className="max-w-3xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-12">
-            <h2 className="text-3xl font-bold text-slate-900 mb-4">Frequently Asked Questions</h2>
-          </div>
-
-          <Accordion type="single" collapsible className="w-full">
-            <AccordionItem value="item-1">
-              <AccordionTrigger>How long does shipping take?</AccordionTrigger>
-              <AccordionContent>
-                Our standard shipping from Bangkok to Yangon takes 3-5 business days. We have daily
-                departures to ensure the fastest delivery.
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem value="item-2">
-              <AccordionTrigger>What are your shipping rates?</AccordionTrigger>
-              <AccordionContent>
-                Rates depend on item type, weight, route, and delivery location. KTM Cargo gives a
-                staff quote after we receive your inquiry so the full workflow is clear before
-                shipping starts.
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem value="item-3">
-              <AccordionTrigger>Do you offer insurance?</AccordionTrigger>
-              <AccordionContent>
-                Yes! Every shipment includes basic insurance coverage up to ฿5,000. Additional
-                insurance is available for high-value items at a small fee.
-              </AccordionContent>
-            </AccordionItem>
-            <AccordionItem value="item-4">
-              <AccordionTrigger>How does 'Buy for Me' work?</AccordionTrigger>
-              <AccordionContent>
-                Send the product link or photo through Facebook, Line, or Telegram. Our team will
-                purchase or collect the item, inspect it, and move it through the KTM Cargo
-                workflow.
-              </AccordionContent>
-            </AccordionItem>
-          </Accordion>
-        </div>
-      </section>
-
-      {/* CTA Section */}
-      <section id="contact" className="py-24 bg-white">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-[2.5rem] p-12 lg:p-24 text-center relative overflow-hidden shadow-2xl">
-            <div className="absolute top-0 left-0 w-full h-full bg-[url('https://www.transparenttextures.com/patterns/cubes.png')] opacity-10"></div>
-
-            {/* Decorative circles */}
-            <div className="absolute top-0 right-0 w-64 h-64 bg-white/10 rounded-full blur-3xl transform translate-x-1/2 -translate-y-1/2"></div>
-            <div className="absolute bottom-0 left-0 w-64 h-64 bg-white/10 rounded-full blur-3xl transform -translate-x-1/2 translate-y-1/2"></div>
-
-            <div className="relative z-10 max-w-3xl mx-auto">
-              <h2 className="text-3xl lg:text-5xl font-bold text-white mb-6">
-                Need a quote from KTM Cargo?
-              </h2>
-              <p className="text-blue-100 text-lg mb-10">
-                Send your inquiry through Facebook, Line, or Telegram and our staff will guide the
-                shipment from quote to delivery.
-              </p>
-              <div className="flex flex-col sm:flex-row gap-4 justify-center">
-                <Link to="/ClientPortal">
-                  <Button className="bg-white text-blue-600 hover:bg-blue-50 h-14 px-8 rounded-full text-lg font-bold w-full sm:w-auto shadow-lg">
-                    View KTM Profile
-                  </Button>
-                </Link>
-                <Button
-                  asChild
-                  variant="outline"
-                  className="border-blue-400 text-blue-100 hover:bg-blue-700 hover:text-white h-14 px-8 rounded-full text-lg font-medium w-full sm:w-auto"
-                >
-                  <a href="#workflow">See Workflow</a>
-                </Button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </section>
-
-      {/* Footer */}
-      <footer className="bg-slate-900 text-slate-400 py-16">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="grid md:grid-cols-4 gap-12 mb-12">
-            <div className="col-span-1 md:col-span-2">
-              <div className="flex items-center gap-3 mb-6">
-                <div className="p-2 bg-blue-600 rounded-lg">
-                  <Plane className="w-5 h-5 text-white" />
                 </div>
-                <span className="text-xl font-bold text-white">KTM Cargo</span>
               </div>
-              <p className="max-w-sm mb-6 leading-relaxed">
-                Connecting Thailand and Myanmar with reliable, fast, and secure logistics solutions.
-                Your trusted partner in cross-border trade.
-              </p>
-              <div className="flex gap-4">
-                <a
-                  href="#services"
-                  className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-blue-600 transition-colors text-white"
-                >
-                  <Globe className="w-5 h-5" />
-                </a>
-                <a
-                  href="#workflow"
-                  className="w-10 h-10 rounded-full bg-slate-800 flex items-center justify-center hover:bg-blue-600 transition-colors text-white"
-                >
-                  <Users className="w-5 h-5" />
-                </a>
-              </div>
-            </div>
-
-            <div>
-              <h4 className="text-white font-bold mb-6">Services</h4>
-              <ul className="space-y-4">
-                <li>
-                  <a href="#services" className="hover:text-white transition-colors">
-                    Cargo Shipping
-                  </a>
-                </li>
-                <li>
-                  <a href="#services" className="hover:text-white transition-colors">
-                    Buy for Me
-                  </a>
-                </li>
-                <li>
-                  <a href="#workflow" className="hover:text-white transition-colors">
-                    Warehousing
-                  </a>
-                </li>
-                <li>
-                  <a href="#workflow" className="hover:text-white transition-colors">
-                    Customs Clearance
-                  </a>
-                </li>
-              </ul>
-            </div>
-
-            <div>
-              <h4 className="text-white font-bold mb-6">Company</h4>
-              <ul className="space-y-4">
-                <li>
-                  <a href="#workflow" className="hover:text-white transition-colors">
-                    About Us
-                  </a>
-                </li>
-                <li>
-                  <a href="#contact" className="hover:text-white transition-colors">
-                    Contact
-                  </a>
-                </li>
-                <li>
-                  <a href="#workflow" className="hover:text-white transition-colors">
-                    Careers
-                  </a>
-                </li>
-                <li>
-                  <a href="#faq" className="hover:text-white transition-colors">
-                    Privacy Policy
-                  </a>
-                </li>
-              </ul>
             </div>
           </div>
+        </section>
+      </main>
 
-          <div className="pt-8 border-t border-slate-800 flex flex-col md:flex-row justify-between items-center gap-4">
-            <p>© 2024 KTM Cargo Express. All rights reserved.</p>
-            <p className="flex items-center gap-2">
-              <Shield className="w-4 h-4" /> Secure Payments
-            </p>
+      <footer className="border-t border-[#d8ccb8] bg-[#F6F1E7] px-4 py-8 sm:px-6 lg:px-8">
+        <div className="mx-auto flex max-w-7xl flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
+          <BrandMark />
+          <div className="flex flex-col gap-3 text-sm text-[#5B5147] sm:flex-row sm:items-center sm:gap-6">
+            <Link className="font-semibold hover:text-[#B6851F]" to="/ClientPortal">
+              ကုမ္ပဏီအကြောင်း
+            </Link>
+            <a className="font-semibold hover:text-[#B6851F]" href="#workflow">
+              လုပ်ငန်းစဉ်
+            </a>
+            <a
+              className="font-semibold hover:text-[#B6851F]"
+              href={FACEBOOK_URL}
+              rel="noreferrer"
+              target="_blank"
+            >
+              Facebook
+            </a>
+            <span>0633301746 / 0826705571</span>
           </div>
         </div>
       </footer>

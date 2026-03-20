@@ -4,9 +4,9 @@ test.describe('KTM route and workflow smoke', () => {
   test('landing page renders core public entry points', async ({ page }) => {
     await page.goto('/?__e2e=public');
 
-    await expect(page.getByRole('heading', { name: /Seamless Logistics/i })).toBeVisible();
-    await expect(page.getByRole('link', { name: /View KTM Profile/i }).first()).toBeVisible();
-    await expect(page.getByText(/no self-service checkout or web ordering/i)).toBeVisible();
+    await expect(page.getByRole('heading', { name: /ထိုင်းမှ မြန်မာသို့/i })).toBeVisible();
+    await expect(page.getByRole('link', { name: /ကုမ္ပဏီအကြောင်း/i }).first()).toBeVisible();
+    await expect(page.getByText(/website မှ တိုက်ရိုက် order တင်မယ့် flow မဟုတ်ဘဲ/i)).toBeVisible();
   });
 
   test('protected operations route redirects unauthenticated users to staff login', async ({
@@ -22,9 +22,9 @@ test.describe('KTM route and workflow smoke', () => {
   test('client portal renders the brochure instead of client actions', async ({ page }) => {
     await page.goto('/ClientPortal?__e2e=public');
 
-    await expect(page.getByRole('heading', { name: /Company Profile/i })).toBeVisible();
-    await expect(page.getByText(/public brochure/i)).toBeVisible();
-    await expect(page.getByText(/no self-service ordering/i)).toBeVisible();
+    await expect(page.getByRole('heading', { name: /ကုမ္ပဏီအကြောင်း/i })).toBeVisible();
+    await expect(page.getByText(/KTM က self-service portal မဟုတ်ပါ/i)).toBeVisible();
+    await expect(page.getByText(/လက်ရှိ public release တွင် Facebook page/i)).toBeVisible();
   });
 
   test('authenticated staff lands on operations workflow instead of legacy dashboard', async ({

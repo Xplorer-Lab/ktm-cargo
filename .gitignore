@@ -28,13 +28,13 @@ blob-report/
 .DS_Store
 
 # Documentation (local/generated)
-docs
 *.suo
 *.ntvs*
 *.njsproj
 *.sln
 *.sw?
 .docs
+.superpowers/
 .env
 .vercel
 test-results
