@@ -9,13 +9,14 @@ test.describe('KTM route and workflow smoke', () => {
     await expect(page.getByText(/no self-service checkout or web ordering/i)).toBeVisible();
   });
 
-  test('protected operations route redirects unauthenticated users to the public home page', async ({
+  test('protected operations route redirects unauthenticated users to staff login', async ({
     page,
   }) => {
     await page.goto('/Operations?__e2e=public');
 
-    await page.waitForURL(/\/\?__e2e=public$/);
-    await expect(page.getByRole('heading', { name: /Seamless Logistics/i })).toBeVisible();
+    await expect(page).toHaveURL(/\/StaffLogin\?/);
+    await expect(page.getByText(/Staff Login/i)).toBeVisible();
+    await expect(page.getByText(/Continue to \/Operations/i)).toBeVisible();
   });
 
   test('client portal renders the brochure instead of client actions', async ({ page }) => {
@@ -33,6 +34,33 @@ test.describe('KTM route and workflow smoke', () => {
 
     await expect(page.getByRole('heading', { name: /KTM Cargo Workflow Spine/i })).toBeVisible();
     await expect(page.getByText(/One canonical journey for staff operations/i)).toBeVisible();
+  });
+
+  test('staff login returns users to the protected page they originally requested', async ({
+    page,
+  }) => {
+    await page.goto('/Shipments?__e2e=staff-login');
+
+    await page.waitForURL(/\/StaffLogin\?next=%2FShipments&__e2e=staff-login$/);
+    await page.getByLabel('Email').fill('ops.workflow@ktm.test');
+    await page.getByLabel('Password').fill('demo-password');
+    await page.getByRole('button', { name: /sign in/i }).click();
+
+    await page.waitForURL(/\/Shipments\?__e2e=staff-login$/);
+    await expect(page.getByRole('heading', { name: /Shipments/i })).toBeVisible();
+  });
+
+  test('non-staff login is blocked from staff operations', async ({ page }) => {
+    await page.goto('/StaffLogin?__e2e=customer-login');
+
+    await page.getByLabel('Email').fill('mya.workflow@ktm.test');
+    await page.getByLabel('Password').fill('demo-password');
+    await page.getByRole('button', { name: /sign in/i }).click();
+
+    await expect(page.getByText(/Account Not Configured/i)).toBeVisible();
+    await expect(
+      page.getByText(/This account is not configured for staff operations/i)
+    ).toBeVisible();
   });
 
   test('legacy dashboard route redirects into the operations workflow', async ({ page }) => {

@@ -5,6 +5,7 @@ import { AlertTriangle, Loader2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { auth } from '@/api/auth';
 import { appendE2EFixture } from '@/lib/e2e';
+import { buildStaffLoginPath, buildStaffNext } from '@/lib/staffAuthRouting';
 
 export default function ProtectedRoute({ children, pageName }) {
   const { user, loading } = useUser();
@@ -19,8 +20,8 @@ export default function ProtectedRoute({ children, pageName }) {
   }
 
   if (!user) {
-    // Public landing page is the only entry point for unauthenticated visitors.
-    return <Navigate to={appendE2EFixture('/', location.search)} replace />;
+    const nextPath = buildStaffNext(location.pathname, location.search);
+    return <Navigate to={buildStaffLoginPath(nextPath, location.search)} replace />;
   }
 
   // If pageName is provided, check permissions
@@ -40,9 +41,11 @@ export default function ProtectedRoute({ children, pageName }) {
             <div className="mt-6 flex gap-3">
               <Button
                 variant="outline"
-                onClick={() => window.location.assign(appendE2EFixture('/', location.search))}
+                onClick={() =>
+                  window.location.assign(appendE2EFixture('/Operations', location.search))
+                }
               >
-                Back Home
+                Back to Operations
               </Button>
               <Button onClick={() => auth.logout()}>Sign Out</Button>
             </div>
@@ -51,10 +54,8 @@ export default function ProtectedRoute({ children, pageName }) {
       );
     }
 
-    if (canAccessPage(user, 'Operations')) {
-      return <Navigate to={appendE2EFixture('/Operations', location.search)} replace />;
-    }
-    return <Navigate to={appendE2EFixture('/', location.search)} replace />;
+    const nextPath = buildStaffNext(location.pathname, location.search);
+    return <Navigate to={buildStaffLoginPath(nextPath, location.search)} replace />;
   }
 
   return children;

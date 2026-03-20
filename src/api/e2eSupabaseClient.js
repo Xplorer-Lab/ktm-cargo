@@ -641,6 +641,14 @@ const FIXTURES = {
       ],
     },
   },
+  'staff-login': {
+    ...WORKFLOW_STAFF,
+    initialSession: null,
+  },
+  'customer-login': {
+    ...WORKFLOW_CUSTOMER,
+    initialSession: null,
+  },
   'workflow-staff': WORKFLOW_STAFF,
   'workflow-customer': WORKFLOW_CUSTOMER,
   'workflow-vendor': WORKFLOW_VENDOR,
@@ -806,7 +814,7 @@ export function getE2EFixtureFromLocation() {
 export function createE2ESupabaseClient(fixtureName) {
   const fixture = getFixture(fixtureName);
   const listeners = new Set();
-  let session = fixture.session;
+  let session = fixture.initialSession !== undefined ? fixture.initialSession : fixture.session;
 
   const emitAuthChange = (event) => {
     for (const listener of listeners) {

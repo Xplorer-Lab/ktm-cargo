@@ -107,6 +107,13 @@ export default function ClientPortal() {
               variant="outline"
               className="border-white/15 bg-white/5 text-white hover:bg-white/10"
             >
+              <Link to="/StaffLogin">Staff Login</Link>
+            </Button>
+            <Button
+              asChild
+              variant="outline"
+              className="border-white/15 bg-white/5 text-white hover:bg-white/10"
+            >
               <Link to="/">Back Home</Link>
             </Button>
           </div>
@@ -131,6 +138,13 @@ export default function ClientPortal() {
             </div>
 
             <div className="flex flex-wrap gap-3">
+              <Button
+                asChild
+                variant="outline"
+                className="rounded-full border-white/15 bg-white/5 px-6 text-white hover:bg-white/10"
+              >
+                <Link to="/StaffLogin">Staff Login</Link>
+              </Button>
               <Button
                 asChild
                 className="rounded-full bg-cyan-500 px-6 text-slate-950 hover:bg-cyan-400"

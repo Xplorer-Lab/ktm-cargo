@@ -20,7 +20,7 @@ KTM Cargo Express is the staff-led logistics operating system for the business. 
 
 ## What the system does
 
-- Public pages: landing page, price calculator, brochure-style company profile, customer feedback form, and vendor registration
+- Public pages: landing page, price calculator, brochure-style company profile, customer feedback form, vendor registration, and a dedicated staff login entry
 - Staff operations: operations hub, shipments, shopping orders, procurement, invoices, customers, vendors, inventory, reports, tasks, shipment documents, feedback queue, feedback analytics, and settings
 - Workflow spine: `Inquiry -> Quote -> Confirm -> Buy/Collect -> Consolidate -> Transit -> Deliver -> Reconcile`
 

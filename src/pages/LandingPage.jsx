@@ -75,6 +75,14 @@ export default function LandingPage() {
                 FAQ
               </a>
               <div className="flex items-center gap-3 ml-4">
+                <Link to="/StaffLogin">
+                  <Button
+                    variant="outline"
+                    className="font-medium border-slate-200 hover:bg-slate-50"
+                  >
+                    Staff Login
+                  </Button>
+                </Link>
                 <Link to="/ClientPortal">
                   <Button
                     variant="ghost"
@@ -126,6 +134,11 @@ export default function LandingPage() {
               Reviews
             </a>
             <div className="pt-4 border-t border-slate-100 flex flex-col gap-3">
+              <Link to="/StaffLogin" onClick={() => setMobileMenuOpen(false)}>
+                <Button variant="outline" className="w-full justify-center">
+                  Staff Login
+                </Button>
+              </Link>
               <Link to="/ClientPortal" onClick={() => setMobileMenuOpen(false)}>
                 <Button variant="outline" className="w-full justify-center">
                   View KTM Profile
@@ -171,6 +184,13 @@ export default function LandingPage() {
 
               <div className="max-w-xl rounded-3xl border border-white/10 bg-slate-900/70 p-5 shadow-xl shadow-slate-950/20">
                 <div className="flex flex-wrap gap-3">
+                  <Button
+                    asChild
+                    variant="outline"
+                    className="rounded-full border-white/15 bg-white/5 px-6 text-white hover:bg-white/10"
+                  >
+                    <Link to="/StaffLogin">Staff Login</Link>
+                  </Button>
                   <Button
                     asChild
                     className="rounded-full bg-cyan-400 px-6 text-slate-950 hover:bg-cyan-300"
