@@ -187,6 +187,7 @@ export const shoppingOrderSchema = z.object({
   vendor_cost: z.preprocess(numberPreprocess, z.number().optional()),
   profit: z.preprocess(numberPreprocess, z.number().optional()),
   margin_percentage: z.preprocess(numberPreprocess, z.number().optional()),
+  deposit_amount: z.preprocess(numberPreprocess, z.number().min(0).optional()),
   journey_id: z.string().optional(),
   notes: z.string().optional(),
 });

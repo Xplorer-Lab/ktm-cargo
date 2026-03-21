@@ -125,6 +125,7 @@ export default function ShoppingOrderForm({
       vendor_name: '',
       vendor_cost_per_kg: 0,
       vendor_cost: 0,
+      deposit_amount: 0,
       ...order,
     },
   });
@@ -141,10 +142,8 @@ export default function ShoppingOrderForm({
       parseFloat(watchedValues.actual_product_cost || watchedValues.estimated_product_cost) || 0;
     const weight = parseFloat(watchedValues.actual_weight || watchedValues.estimated_weight) || 0;
     const commissionRate = parseFloat(watchedValues.commission_rate) || 0;
-    const vendorCostPerKg =
-      watchedValues.vendor_po_id && watchedValues.vendor_cost_per_kg
-        ? parseFloat(watchedValues.vendor_cost_per_kg)
-        : 0;
+    // Use vendor_cost_per_kg whether from PO link or entered manually
+    const vendorCostPerKg = parseFloat(watchedValues.vendor_cost_per_kg) || 0;
 
     const result = computeShoppingOrderTotals({
       productCost,
@@ -577,6 +576,60 @@ export default function ShoppingOrderForm({
               />
             </div>
           </div>
+
+          {/* Deposit — shown when payment_status is deposit_paid */}
+          {watchedValues.payment_status === 'deposit_paid' && (
+            <div className="p-4 bg-amber-50 rounded-xl border border-amber-200 space-y-2">
+              <Label className="flex items-center gap-2 text-amber-800 font-medium">
+                <CreditCard className="w-4 h-4 text-amber-600" />
+                Deposit Amount Received (THB)
+              </Label>
+              <Input
+                type="number"
+                step="0.01"
+                {...register('deposit_amount')}
+                placeholder="0.00"
+                className="h-11 border-amber-300 focus-visible:ring-amber-500"
+              />
+              {watchedValues.total_amount > 0 && (
+                <p className="text-xs text-amber-700">
+                  Balance due on delivery: ฿
+                  {Math.max(
+                    0,
+                    (watchedValues.total_amount || 0) - (watchedValues.deposit_amount || 0)
+                  ).toLocaleString()}
+                </p>
+              )}
+            </div>
+          )}
+
+          {/* Carrier Cost — manual entry when no PO linked */}
+          {!watchedValues.vendor_po_id && (
+            <div className="p-4 bg-slate-50 rounded-xl border border-slate-200 space-y-3">
+              <Label className="flex items-center gap-2 font-medium text-slate-700">
+                <Truck className="w-4 h-4 text-slate-500" />
+                Carrier Cost (optional — if known without PO)
+              </Label>
+              <div className="grid grid-cols-2 gap-3">
+                <div className="space-y-1">
+                  <Label className="text-xs text-slate-500">Cost per kg (THB)</Label>
+                  <Input
+                    type="number"
+                    step="0.01"
+                    {...register('vendor_cost_per_kg')}
+                    placeholder="0.00"
+                    className="h-10"
+                  />
+                </div>
+                <div className="space-y-1">
+                  <Label className="text-xs text-slate-500">Total Carrier Cost</Label>
+                  <div className="h-10 px-3 flex items-center bg-white border rounded-md text-sm font-medium text-slate-700">
+                    ฿{calculated.vendorCost?.toLocaleString() || '0'}
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
 
           <div className="space-y-2">
             <Label>Internal Notes</Label>

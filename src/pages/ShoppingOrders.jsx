@@ -64,6 +64,7 @@ import { sendShoppingOrderNotification } from '@/components/notifications/Shippi
 import { filterShoppingOrders, isUnpaidShoppingOrder } from '@/pages/shoppingOrderFilters';
 import { appendE2EFixture } from '@/lib/e2e';
 import { buildShoppingOrderAllocationPlan } from '@/lib/shoppingOrderAllocation';
+import { createInvoiceFromShoppingOrder } from '@/components/invoices/InvoiceService';
 const STATUS_CONFIG = {
   pending: { label: 'Pending', color: 'bg-amber-100 text-amber-800', icon: Clock },
 
@@ -740,6 +741,27 @@ export default function ShoppingOrders() {
                     {PAYMENT_CONFIG[selectedOrder.payment_status]?.label}
                   </Badge>
                 </div>
+                {selectedOrder.payment_status === 'deposit_paid' &&
+                  selectedOrder.deposit_amount > 0 && (
+                    <div className="p-3 bg-amber-50 rounded-lg border border-amber-200 text-sm space-y-1">
+                      <div className="flex justify-between">
+                        <span className="text-amber-700">Deposit Received:</span>
+                        <span className="font-medium text-amber-800">
+                          ฿{(selectedOrder.deposit_amount || 0).toLocaleString()}
+                        </span>
+                      </div>
+                      <div className="flex justify-between border-t border-amber-200 pt-1">
+                        <span className="text-amber-700 font-semibold">Balance Due:</span>
+                        <span className="font-bold text-rose-600">
+                          ฿
+                          {Math.max(
+                            0,
+                            (selectedOrder.total_amount || 0) - (selectedOrder.deposit_amount || 0)
+                          ).toLocaleString()}
+                        </span>
+                      </div>
+                    </div>
+                  )}
 
                 {/* Quick Actions */}
                 <div className="flex flex-wrap gap-2 pt-2">
@@ -764,20 +786,33 @@ export default function ShoppingOrders() {
                       <CheckCircle className="w-4 h-4 mr-2" /> Mark Paid
                     </Button>
                   )}
-                  {selectedOrder.status === 'delivered' &&
-                    selectedOrder.payment_status === 'paid' && (
-                      <Button
-                        variant="outline"
-                        className="flex-1"
-                        onClick={() => {
-                          toast.info(
-                            'Review invoice reconciliation from the Invoices page for this order.'
+                  {selectedOrder.status === 'delivered' && (
+                    <Button
+                      className="flex-1 bg-emerald-600 hover:bg-emerald-700 text-white"
+                      onClick={async () => {
+                        try {
+                          const customer = customers.find(
+                            (c) => c.id === selectedOrder.customer_id
                           );
-                        }}
-                      >
-                        <Receipt className="w-4 h-4 mr-2" /> Review Invoice Flow
-                      </Button>
-                    )}
+                          const result = await createInvoiceFromShoppingOrder(
+                            selectedOrder,
+                            customer
+                          );
+                          if (result.isNew) {
+                            toast.success(`Invoice ${result.invoice.invoice_number} created`);
+                          } else {
+                            toast.info(`Invoice already exists: ${result.invoice.invoice_number}`);
+                          }
+                          setShowDetails(false);
+                          navigate('/Invoices');
+                        } catch (err) {
+                          toast.error(`Failed to create invoice: ${err.message}`);
+                        }
+                      }}
+                    >
+                      <Receipt className="w-4 h-4 mr-2" /> Create Invoice
+                    </Button>
+                  )}
                   {canConvertOrderToShipment(selectedOrder) && (
                     <Button
                       className="flex-1 bg-blue-600 hover:bg-blue-700 text-white"
