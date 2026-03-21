@@ -683,7 +683,7 @@ export default function ShoppingOrders() {
                     <span className="text-right">
                       ฿{(selectedOrder.commission_amount || 0).toLocaleString()}
                     </span>
-                    <span className="text-purple-600">Shipping:</span>
+                    <span className="text-purple-600">Shipping (charged):</span>
                     <span className="text-right">
                       ฿{(selectedOrder.shipping_cost || 0).toLocaleString()}
                     </span>
@@ -695,6 +695,43 @@ export default function ShoppingOrders() {
                     </span>
                   </div>
                 </div>
+
+                {/* P&L */}
+                {(() => {
+                  const revenue = selectedOrder.total_amount || 0;
+                  const productCost =
+                    selectedOrder.actual_product_cost || selectedOrder.estimated_product_cost || 0;
+                  const carrierCost = selectedOrder.vendor_cost || 0;
+                  const profit = revenue - productCost - carrierCost;
+                  const margin = revenue > 0 ? ((profit / revenue) * 100).toFixed(1) : 0;
+                  return (
+                    <div className="p-4 bg-emerald-50 rounded-lg border border-emerald-200">
+                      <p className="text-xs font-semibold text-emerald-700 uppercase tracking-wider mb-2">
+                        P&amp;L Summary
+                      </p>
+                      <div className="grid grid-cols-2 gap-2 text-sm">
+                        <span className="text-slate-600">Revenue:</span>
+                        <span className="text-right">฿{revenue.toLocaleString()}</span>
+                        <span className="text-slate-600">Product Cost:</span>
+                        <span className="text-right text-rose-600">
+                          -฿{productCost.toLocaleString()}
+                        </span>
+                        <span className="text-slate-600">Carrier Cost:</span>
+                        <span className="text-right text-rose-600">
+                          -฿{carrierCost.toLocaleString()}
+                        </span>
+                        <span className="font-bold text-emerald-800 pt-2 border-t border-emerald-200">
+                          Profit:
+                        </span>
+                        <span
+                          className={`text-right font-bold pt-2 border-t border-emerald-200 ${profit >= 0 ? 'text-emerald-700' : 'text-rose-600'}`}
+                        >
+                          ฿{profit.toLocaleString()} ({margin}%)
+                        </span>
+                      </div>
+                    </div>
+                  );
+                })()}
 
                 {/* Payment Status */}
                 <div className="flex items-center justify-between">
