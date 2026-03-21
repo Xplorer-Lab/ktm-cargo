@@ -69,8 +69,8 @@ test.describe('KTM workflow slice', () => {
     await expect(page.getByText(/^paid$/i).first()).toBeVisible();
   });
 
-  test('public client portal reads as a brochure only', async ({ page }) => {
-    await page.goto('/ClientPortal?__e2e=public');
+  test('public landing page reads as a brochure only', async ({ page }) => {
+    await page.goto('/?__e2e=public');
 
     await expect(page.getByRole('heading', { name: /KTM က ဘာတွေ လုပ်ပေးလဲ/i })).toBeVisible();
     await expect(page.getByText(/Online checkout မပါ — inquiry only/i)).toBeVisible();

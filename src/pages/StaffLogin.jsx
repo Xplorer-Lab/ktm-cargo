@@ -76,27 +76,27 @@ export default function StaffLogin() {
 
   if (signedInButNotStaff) {
     return (
-      <div className="min-h-screen bg-slate-950 px-4 py-10 text-slate-50">
+      <div className="min-h-screen bg-slate-50 px-4 py-10 text-slate-900">
         <div className="mx-auto max-w-xl">
-          <Card className="border-amber-400/20 bg-slate-900/80 shadow-2xl shadow-slate-950/40">
+          <Card className="border-amber-200 bg-white shadow-xl shadow-slate-200/50">
             <CardHeader className="space-y-3">
               <Badge className="w-fit border-amber-400/20 bg-amber-500/10 text-amber-100 hover:bg-amber-500/10">
                 Staff access required
               </Badge>
-              <CardTitle className="flex items-center gap-3 text-2xl text-white">
+              <CardTitle className="flex items-center gap-3 text-2xl text-slate-900">
                 <AlertTriangle className="h-6 w-6 text-amber-300" />
                 Account Not Configured
               </CardTitle>
-              <CardDescription className="text-sm leading-6 text-slate-300">
+              <CardDescription className="text-sm leading-6 text-slate-600">
                 This account is signed in, but it is not configured for staff modules like
                 shipments, procurement, or invoices.
               </CardDescription>
             </CardHeader>
             <CardContent className="space-y-4">
-              <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-slate-300">
+              <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
                 <p>
                   Use a staff or admin account to continue to{' '}
-                  <span className="font-medium text-white">{nextPath}</span>.
+                  <span className="font-medium text-slate-900">{nextPath}</span>.
                 </p>
               </div>
               {errorMessage && (
@@ -108,7 +108,7 @@ export default function StaffLogin() {
                 <Button
                   asChild
                   variant="outline"
-                  className="border-white/15 bg-white/5 text-white hover:bg-white/10"
+                  className="border-slate-200 bg-white text-slate-700 hover:bg-slate-100"
                 >
                   <Link to={appendE2EFixture('/', location.search)}>Back Home</Link>
                 </Button>
@@ -124,19 +124,19 @@ export default function StaffLogin() {
   }
 
   return (
-    <div className="min-h-screen bg-slate-950 px-4 py-10 text-slate-50">
-      <div className="absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,_rgba(56,189,248,0.18),transparent_35%),radial-gradient(circle_at_bottom_right,_rgba(99,102,241,0.16),transparent_30%),linear-gradient(180deg,rgba(2,6,23,1)_0%,rgba(15,23,42,1)_100%)]" />
+    <div className="min-h-screen bg-slate-50 px-4 py-10 text-slate-900">
+      <div className="absolute inset-0 -z-10 bg-slate-50" />
 
       <div className="mx-auto grid max-w-6xl gap-8 lg:grid-cols-[1fr_420px] lg:items-center">
         <div className="space-y-6">
-          <Badge className="border-cyan-400/20 bg-cyan-500/10 text-cyan-100 hover:bg-cyan-500/10">
+          <Badge className="border-blue-200 bg-blue-50 text-blue-800 hover:bg-blue-100">
             Internal access
           </Badge>
           <div className="space-y-4">
-            <h1 className="max-w-3xl text-4xl font-bold tracking-tight text-white sm:text-5xl">
+            <h1 className="max-w-3xl text-4xl font-bold tracking-tight text-slate-900 sm:text-5xl">
               Staff operations run through one secured workflow.
             </h1>
-            <p className="max-w-2xl text-lg leading-8 text-slate-300">
+            <p className="max-w-2xl text-lg leading-8 text-slate-600">
               Use your KTM staff account to manage shopping intake, cargo shipments, procurement,
               invoicing, and after-sales work from the operations console.
             </p>
@@ -148,25 +148,25 @@ export default function StaffLogin() {
               ['Role-aware', 'Only staff and admin accounts can enter the internal workflow.'],
               ['Back office only', 'Customers stay on the public brochure and feedback pages.'],
             ].map(([title, text]) => (
-              <Card key={title} className="border-white/10 bg-white/5 shadow-none">
+              <Card key={title} className="border-slate-200 bg-white shadow-sm">
                 <CardContent className="p-4">
-                  <p className="font-semibold text-white">{title}</p>
-                  <p className="mt-2 text-sm leading-6 text-slate-300">{text}</p>
+                  <p className="font-semibold text-slate-900">{title}</p>
+                  <p className="mt-2 text-sm leading-6 text-slate-600">{text}</p>
                 </CardContent>
               </Card>
             ))}
           </div>
         </div>
 
-        <Card className="border-white/10 bg-slate-900/80 shadow-2xl shadow-slate-950/40">
+        <Card className="border-slate-200 bg-white shadow-xl shadow-slate-200/50">
           <CardHeader className="space-y-3">
             <div className="flex items-center gap-3">
-              <div className="rounded-2xl bg-cyan-500/15 p-3 ring-1 ring-cyan-400/20">
-                <ShieldCheck className="h-6 w-6 text-cyan-300" />
+              <div className="rounded-2xl bg-blue-50 p-3 ring-1 ring-blue-100">
+                <ShieldCheck className="h-6 w-6 text-blue-600" />
               </div>
               <div>
-                <CardTitle className="text-2xl text-white">Staff Login</CardTitle>
-                <CardDescription className="text-slate-300">
+                <CardTitle className="text-2xl text-slate-900">Staff Login</CardTitle>
+                <CardDescription className="text-slate-500">
                   Continue to {nextPath === STAFF_HOME_PATH ? 'Operations' : nextPath}
                 </CardDescription>
               </div>
@@ -175,7 +175,7 @@ export default function StaffLogin() {
           <CardContent className="space-y-5">
             <form className="space-y-4" onSubmit={handleSubmit}>
               <div className="space-y-2">
-                <Label htmlFor="staff-email" className="text-slate-200">
+                <Label htmlFor="staff-email" className="text-slate-700">
                   Email
                 </Label>
                 <Input
@@ -185,12 +185,12 @@ export default function StaffLogin() {
                   value={email}
                   onChange={(event) => setEmail(event.target.value)}
                   placeholder="staff@ktmcargo.com"
-                  className="h-11 border-white/10 bg-white/5 text-white placeholder:text-slate-500"
+                  className="h-11 border-slate-200 bg-white text-slate-900 placeholder:text-slate-400"
                   required
                 />
               </div>
               <div className="space-y-2">
-                <Label htmlFor="staff-password" className="text-slate-200">
+                <Label htmlFor="staff-password" className="text-slate-700">
                   Password
                 </Label>
                 <Input
@@ -200,7 +200,7 @@ export default function StaffLogin() {
                   value={password}
                   onChange={(event) => setPassword(event.target.value)}
                   placeholder="Enter your password"
-                  className="h-11 border-white/10 bg-white/5 text-white placeholder:text-slate-500"
+                  className="h-11 border-slate-200 bg-white text-slate-900 placeholder:text-slate-400"
                   required
                 />
               </div>
@@ -213,7 +213,7 @@ export default function StaffLogin() {
 
               <Button
                 type="submit"
-                className="h-11 w-full bg-cyan-400 text-slate-950 hover:bg-cyan-300"
+                className="h-11 w-full bg-blue-600 text-white hover:bg-blue-700"
                 disabled={submitting}
               >
                 {submitting ? (
@@ -230,8 +230,8 @@ export default function StaffLogin() {
               </Button>
             </form>
 
-            <div className="rounded-2xl border border-white/10 bg-white/5 p-4 text-sm text-slate-300">
-              <p className="font-medium text-white">Need access?</p>
+            <div className="rounded-2xl border border-slate-200 bg-slate-50 p-4 text-sm text-slate-600">
+              <p className="font-medium text-slate-900">Need access?</p>
               <p className="mt-1 leading-6">
                 Ask your KTM administrator to create a staff account and assign the correct
                 `staff_role` in the profile record.
@@ -241,7 +241,7 @@ export default function StaffLogin() {
             <Button
               asChild
               variant="outline"
-              className="w-full border-white/15 bg-white/5 text-white hover:bg-white/10"
+              className="w-full border-slate-200 bg-white text-slate-700 hover:bg-slate-100"
             >
               <Link to={appendE2EFixture('/', location.search)}>Back Home</Link>
             </Button>

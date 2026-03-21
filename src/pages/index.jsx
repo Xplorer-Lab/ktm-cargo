@@ -23,7 +23,6 @@ const Procurement = lazy(() => import('./Procurement'));
 const VendorRegistration = lazy(() => import('./VendorRegistration'));
 const ClientPortal = lazy(() => import('./ClientPortal'));
 const Invoices = lazy(() => import('./Invoices'));
-const LandingPage = lazy(() => import('./LandingPage'));
 const NotFound = lazy(() => import('./NotFound'));
 
 const PAGES = {
@@ -97,8 +96,8 @@ function PagesContent() {
       <Suspense fallback={<PageLoader />}>
         <Routes>
           {/* Public Routes */}
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/ClientPortal" element={<ClientPortal />} />
+          <Route path="/" element={<ClientPortal />} />
+          <Route path="/ClientPortal" element={<Navigate to="/" replace />} />
           <Route path="/Feedback" element={<Feedback />} />
           <Route path="/StaffLogin" element={<StaffLogin />} />
           <Route

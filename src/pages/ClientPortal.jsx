@@ -48,7 +48,7 @@ function SpeedMark({ size = 'md' }) {
         display: 'flex',
         flexDirection: 'column',
         gap: size === 'sm' ? 3 : 5,
-        paddingBottom: 2,
+        
       }}
     >
       {bars.map((b, i) => (
@@ -73,7 +73,7 @@ function SpeedMark({ size = 'md' }) {
 function KtmMark({ size = 'md' }) {
   const fontSize = size === 'sm' ? 22 : size === 'lg' ? 42 : 32;
   return (
-    <div style={{ display: 'flex', alignItems: 'flex-end', gap: size === 'sm' ? 6 : 10 }}>
+    <div style={{ display: 'flex', alignItems: 'center', gap: size === 'sm' ? 6 : 10 }}>
       <SpeedMark size={size} />
       <div>
         <div
@@ -232,14 +232,14 @@ export default function ClientPortal() {
   };
 
   return (
-    <div style={{ minHeight: '100vh', background: '#0C0A07', color: '#E8DFC8', ...bodyStyle }}>
+    <div style={{ minHeight: '100vh', background: '#FFFFFF', color: '#111827', ...bodyStyle }}>
       <style>{`
         .mm { font-family: 'Noto Sans Myanmar', 'Pyidaungsu', sans-serif; }
         .gold-btn {
           display: inline-flex; align-items: center; gap: 8px;
           padding: 10px 22px; font-size: 13px; font-weight: 500;
           background: linear-gradient(135deg, #E8C968 0%, #C9A030 50%, #9A6E10 100%);
-          color: #0C0A07; letter-spacing: 0.05em; border: none; cursor: pointer;
+          color: #FFFFFF; letter-spacing: 0.05em; border: none; cursor: pointer;
           clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
           transition: filter 0.15s;
         }
@@ -252,8 +252,8 @@ export default function ClientPortal() {
           clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
           transition: all 0.15s;
         }
-        .outline-btn:hover { border-color: rgba(201,168,76,0.6); color: #E8DFC8; }
-        .service-card { background: #111009; border: 1px solid rgba(201,168,76,0.1); transition: border-color 0.2s; }
+        .outline-btn:hover { border-color: rgba(201,168,76,0.6); color: #111827; }
+        .service-card { background: #FAFAFA; border: 1px solid rgba(201,168,76,0.1); transition: border-color 0.2s; }
         .service-card:hover { border-color: rgba(201,168,76,0.3); }
         .faq-item summary::-webkit-details-marker { display: none; }
         .faq-item[open] .faq-arrow { transform: rotate(90deg); }
@@ -261,7 +261,7 @@ export default function ClientPortal() {
         .gold-rule { height: 1px; background: linear-gradient(90deg, #D4A63A 0%, rgba(212,166,58,0.08) 100%); }
         .step-num {
           font-family: 'Oswald', sans-serif; font-weight: 700; font-style: italic;
-          font-size: 64px; line-height: 1; color: rgba(212,166,58,0.07);
+          font-size: 64px; line-height: 1; color: rgba(212,166,58,0.15);
           position: absolute; right: 12px; top: 8px; pointer-events: none; user-select: none;
         }
         @keyframes slideUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
@@ -276,8 +276,8 @@ export default function ClientPortal() {
           position: 'sticky',
           top: 0,
           zIndex: 50,
-          borderBottom: '1px solid rgba(201,168,76,0.12)',
-          background: 'rgba(12,10,7,0.96)',
+          borderBottom: '1px solid rgba(201,168,76,0.25)',
+          background: 'rgba(255,255,255,0.96)',
           backdropFilter: 'blur(8px)',
         }}
       >
@@ -353,7 +353,7 @@ export default function ClientPortal() {
                 style={{
                   ...headingStyle,
                   fontSize: 'clamp(26px, 4vw, 40px)',
-                  color: '#F0E8D0',
+                  color: '#1F2937',
                   marginTop: 20,
                   lineHeight: 1.2,
                   fontFamily: "'Oswald', 'Noto Sans Myanmar', sans-serif",
@@ -370,7 +370,7 @@ export default function ClientPortal() {
                 style={{
                   fontSize: 13,
                   lineHeight: 1.9,
-                  color: '#8A7E6E',
+                  color: '#4B5563',
                   marginTop: 14,
                   maxWidth: 520,
                 }}
@@ -404,7 +404,7 @@ export default function ClientPortal() {
             className="hero-in-3"
             style={{
               width: 240,
-              background: '#111009',
+              background: '#FAFAFA',
               border: '1px solid rgba(201,168,76,0.18)',
               padding: '20px 18px',
               flexShrink: 0,
@@ -422,10 +422,10 @@ export default function ClientPortal() {
               <div key={t} style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
                 <Icon size={14} style={{ color: '#C9A030', flexShrink: 0, marginTop: 2 }} />
                 <div>
-                  <p style={{ fontSize: 12, fontWeight: 500, color: '#D8CEB8' }}>{t}</p>
+                  <p style={{ fontSize: 12, fontWeight: 500, color: '#374151' }}>{t}</p>
                   <p
                     className="mm"
-                    style={{ fontSize: 11, color: '#6B6050', lineHeight: 1.6, marginTop: 1 }}
+                    style={{ fontSize: 11, color: '#6B7280', lineHeight: 1.6, marginTop: 1 }}
                   >
                     {d}
                   </p>
@@ -445,7 +445,7 @@ export default function ClientPortal() {
         <div
           style={{
             display: 'flex',
-            alignItems: 'flex-end',
+            alignItems: 'center',
             justifyContent: 'space-between',
             marginBottom: 24,
             paddingBottom: 16,
@@ -458,7 +458,7 @@ export default function ClientPortal() {
               style={{
                 ...headingStyle,
                 fontSize: 22,
-                color: '#F0E8D0',
+                color: '#1F2937',
                 marginTop: 6,
                 fontFamily: "'Oswald', 'Noto Sans Myanmar', sans-serif",
                 textTransform: 'none',
@@ -522,11 +522,11 @@ export default function ClientPortal() {
                 </div>
                 <h3
                   className="mm"
-                  style={{ fontSize: 13, fontWeight: 500, color: '#E8DFC8', marginBottom: 8 }}
+                  style={{ fontSize: 13, fontWeight: 500, color: '#111827', marginBottom: 8 }}
                 >
                   {s.title}
                 </h3>
-                <p className="mm" style={{ fontSize: 12, lineHeight: 1.85, color: '#6B6050' }}>
+                <p className="mm" style={{ fontSize: 12, lineHeight: 1.85, color: '#6B7280' }}>
                   {s.description}
                 </p>
                 <div style={{ marginTop: 14, display: 'flex', flexDirection: 'column', gap: 6 }}>
@@ -540,7 +540,7 @@ export default function ClientPortal() {
                           flexShrink: 0,
                         }}
                       />
-                      <span className="mm" style={{ fontSize: 11, color: '#8A7E6E' }}>
+                      <span className="mm" style={{ fontSize: 11, color: '#4B5563' }}>
                         {b}
                       </span>
                     </div>
@@ -557,7 +557,7 @@ export default function ClientPortal() {
         <div
           style={{
             display: 'flex',
-            alignItems: 'flex-end',
+            alignItems: 'center',
             justifyContent: 'space-between',
             marginBottom: 24,
             paddingBottom: 16,
@@ -570,7 +570,7 @@ export default function ClientPortal() {
               style={{
                 ...headingStyle,
                 fontSize: 22,
-                color: '#F0E8D0',
+                color: '#1F2937',
                 marginTop: 6,
                 fontFamily: "'Oswald', 'Noto Sans Myanmar', sans-serif",
                 textTransform: 'none',
@@ -614,14 +614,14 @@ export default function ClientPortal() {
                 style={{
                   fontSize: 13,
                   fontWeight: 500,
-                  color: '#E8DFC8',
+                  color: '#111827',
                   marginTop: 8,
                   marginBottom: 8,
                 }}
               >
                 {w.title}
               </h3>
-              <p className="mm" style={{ fontSize: 12, lineHeight: 1.85, color: '#6B6050' }}>
+              <p className="mm" style={{ fontSize: 12, lineHeight: 1.85, color: '#6B7280' }}>
                 {w.text}
               </p>
             </div>
@@ -634,7 +634,7 @@ export default function ClientPortal() {
         <div
           style={{
             display: 'flex',
-            alignItems: 'flex-end',
+            alignItems: 'center',
             marginBottom: 24,
             paddingBottom: 16,
             borderBottom: '1px solid rgba(201,168,76,0.1)',
@@ -646,7 +646,7 @@ export default function ClientPortal() {
               style={{
                 ...headingStyle,
                 fontSize: 22,
-                color: '#F0E8D0',
+                color: '#1F2937',
                 marginTop: 6,
                 fontFamily: "'Oswald', 'Noto Sans Myanmar', sans-serif",
                 textTransform: 'none',
@@ -686,12 +686,12 @@ export default function ClientPortal() {
                 <Icon size={13} style={{ color: '#C9A030' }} />
               </div>
               <div>
-                <p className="mm" style={{ fontSize: 13, fontWeight: 500, color: '#D8CEB8' }}>
+                <p className="mm" style={{ fontSize: 13, fontWeight: 500, color: '#374151' }}>
                   {title}
                 </p>
                 <p
                   className="mm"
-                  style={{ fontSize: 12, lineHeight: 1.85, color: '#6B6050', marginTop: 4 }}
+                  style={{ fontSize: 12, lineHeight: 1.85, color: '#6B7280', marginTop: 4 }}
                 >
                   {text}
                 </p>
@@ -706,7 +706,7 @@ export default function ClientPortal() {
         <div
           style={{
             display: 'flex',
-            alignItems: 'flex-end',
+            alignItems: 'center',
             marginBottom: 24,
             paddingBottom: 16,
             borderBottom: '1px solid rgba(201,168,76,0.1)',
@@ -718,7 +718,7 @@ export default function ClientPortal() {
               style={{
                 ...headingStyle,
                 fontSize: 22,
-                color: '#F0E8D0',
+                color: '#1F2937',
                 marginTop: 6,
                 fontFamily: "'Oswald', 'Noto Sans Myanmar', sans-serif",
                 textTransform: 'none',
@@ -744,11 +744,11 @@ export default function ClientPortal() {
                   gap: 16,
                   padding: '16px 18px',
                   cursor: 'pointer',
-                  background: '#0F0D0A',
+                  background: '#FAFAFA',
                   listStyle: 'none',
                 }}
               >
-                <p className="mm" style={{ fontSize: 13, color: '#C8BEA8', lineHeight: 1.7 }}>
+                <p className="mm" style={{ fontSize: 13, color: '#374151', lineHeight: 1.7 }}>
                   {q}
                 </p>
                 <svg
@@ -764,12 +764,12 @@ export default function ClientPortal() {
               </summary>
               <div
                 style={{
-                  background: '#0C0A07',
+                  background: '#FFFFFF',
                   padding: '12px 18px 16px',
                   borderTop: '1px solid rgba(201,168,76,0.06)',
                 }}
               >
-                <p className="mm" style={{ fontSize: 12, lineHeight: 1.9, color: '#6B6050' }}>
+                <p className="mm" style={{ fontSize: 12, lineHeight: 1.9, color: '#6B7280' }}>
                   {a}
                 </p>
               </div>
@@ -780,7 +780,7 @@ export default function ClientPortal() {
 
       {/* ── Contact ── */}
       <section id="contact" style={{ maxWidth: 1100, margin: '0 auto', padding: '0 24px 56px' }}>
-        <div style={{ border: '1px solid rgba(201,168,76,0.2)', background: '#0F0D0A' }}>
+        <div style={{ border: '1px solid rgba(201,168,76,0.2)', background: '#FAFAFA' }}>
           {/* Contact header */}
           <div
             style={{
@@ -801,7 +801,7 @@ export default function ClientPortal() {
                   marginTop: 4,
                   fontFamily: "'Oswald', 'Noto Sans Myanmar', sans-serif",
                   textTransform: 'none',
-                  color: '#F0E8D0',
+                  color: '#1F2937',
                 }}
                 className="mm"
               >
@@ -846,7 +846,7 @@ export default function ClientPortal() {
                 <p style={{ ...labelStyle, color: '#6B5E40' }}>Facebook</p>
                 <p
                   className="mm"
-                  style={{ fontSize: 13, color: '#C8BEA8', marginTop: 4, lineHeight: 1.6 }}
+                  style={{ fontSize: 13, color: '#374151', marginTop: 4, lineHeight: 1.6 }}
                 >
                   ပထမဦးဆုံး inquiry အတွက် အဓိက ဆက်သွယ်ရန်လမ်းကြောင်း
                 </p>
@@ -903,7 +903,7 @@ export default function ClientPortal() {
                     fontFamily: 'monospace',
                     fontSize: 15,
                     fontWeight: 500,
-                    color: '#D8CEB8',
+                    color: '#374151',
                     marginTop: 4,
                     letterSpacing: '0.08em',
                   }}
@@ -946,26 +946,26 @@ export default function ClientPortal() {
                 ...labelStyle,
                 textDecoration: 'none',
                 fontSize: 9,
-                color: '#3A3228',
+                color: '#6B7280',
                 transition: 'color 0.15s',
               }}
               onMouseEnter={(e) => (e.target.style.color = '#6B5E40')}
-              onMouseLeave={(e) => (e.target.style.color = '#3A3228')}
+              onMouseLeave={(e) => (e.target.style.color = '#6B7280')}
             >
               Staff Login
             </Link>
-            <span style={{ width: 1, height: 12, background: '#3A3228' }} />
+            <span style={{ width: 1, height: 12, background: '#6B7280' }} />
             <Link
               to="/PriceCalculator"
               style={{
                 ...labelStyle,
                 textDecoration: 'none',
                 fontSize: 9,
-                color: '#3A3228',
+                color: '#6B7280',
                 transition: 'color 0.15s',
               }}
               onMouseEnter={(e) => (e.target.style.color = '#6B5E40')}
-              onMouseLeave={(e) => (e.target.style.color = '#3A3228')}
+              onMouseLeave={(e) => (e.target.style.color = '#6B7280')}
             >
               Price Calculator
             </Link>

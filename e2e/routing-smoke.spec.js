@@ -1,12 +1,12 @@
 import { expect, test } from '@playwright/test';
 
 test.describe('KTM route and workflow smoke', () => {
-  test('landing page renders core public entry points', async ({ page }) => {
+  test('landing page renders as a public brochure', async ({ page }) => {
     await page.goto('/?__e2e=public');
 
     await expect(page.getByRole('heading', { name: /ထိုင်းမှ မြန်မာသို့/i })).toBeVisible();
-    await expect(page.getByRole('link', { name: /ကုမ္ပဏီအကြောင်း/i }).first()).toBeVisible();
-    await expect(page.getByText(/website မှ တိုက်ရိုက် order တင်မယ့် flow မဟုတ်ဘဲ/i)).toBeVisible();
+    await expect(page.getByRole('heading', { name: /KTM က ဘာတွေ လုပ်ပေးလဲ/i })).toBeVisible();
+    await expect(page.getByText(/Online checkout မပါ — inquiry only/i)).toBeVisible();
   });
 
   test('protected operations route redirects unauthenticated users to staff login', async ({
@@ -19,12 +19,10 @@ test.describe('KTM route and workflow smoke', () => {
     await expect(page.getByText(/Continue to \/Operations/i)).toBeVisible();
   });
 
-  test('client portal renders the brochure instead of client actions', async ({ page }) => {
+  test('legacy client portal route redirects to root', async ({ page }) => {
     await page.goto('/ClientPortal?__e2e=public');
 
     await expect(page.getByRole('heading', { name: /KTM က ဘာတွေ လုပ်ပေးလဲ/i })).toBeVisible();
-    await expect(page.getByText(/Online checkout မပါ — inquiry only/i)).toBeVisible();
-    await expect(page.getByText(/Facebook ဖြင့်မေးမြန်းရန်/i)).toBeVisible();
   });
 
   test('authenticated staff lands on operations workflow instead of legacy dashboard', async ({

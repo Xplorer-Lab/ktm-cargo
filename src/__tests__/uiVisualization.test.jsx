@@ -102,7 +102,7 @@ jest.mock('@/api/db', () => {
   };
 });
 
-import LandingPage from '@/pages/LandingPage';
+
 import ClientPortal from '@/pages/ClientPortal';
 import DocumentGenerator from '@/components/documents/DocumentGenerator';
 
@@ -112,24 +112,7 @@ describe('UI Visualization', () => {
     mockChain.then.mockImplementation((fn) => fn({ data: [], error: null }));
   });
 
-  describe('Landing page', () => {
-    test('renders brand, nav, and main CTAs', async () => {
-      render(
-        <MemoryRouter>
-          <LandingPage />
-        </MemoryRouter>
-      );
 
-      await waitFor(() => {
-        expect(screen.getByRole('heading', { name: /ထိုင်းမှ မြန်မာသို့/i })).toBeInTheDocument();
-      });
-      expect(screen.getAllByText(/Cargo Express/i).length).toBeGreaterThan(0);
-      expect(screen.getAllByRole('link', { name: /ကုမ္ပဏီအကြောင်း/i }).length).toBeGreaterThan(0);
-      expect(
-        screen.getByText(/website မှ တိုက်ရိုက် order တင်မယ့် flow မဟုတ်ဘဲ/i)
-      ).toBeInTheDocument();
-    });
-  });
 
   describe('Client brochure page', () => {
     test('renders company profile content without client-side ordering UI', async () => {
