@@ -22,7 +22,6 @@ import { Textarea } from '@/components/ui/textarea';
 import {
   User,
   Bell,
-  Shield,
   Mail,
   Save,
   Settings as SettingsIcon,
@@ -522,33 +521,6 @@ export default function Settings() {
                 </div>
               </CardContent>
             </Card>
-
-            {/* System Status */}
-            <Card className="border-0 shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-lg flex items-center gap-2">
-                  <Shield className="w-5 h-5 text-emerald-500" />
-                  System Status
-                </CardTitle>
-                <CardDescription>All systems operational</CardDescription>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <StatusItem label="API Connection" status="connected" detail="Response: 45ms" />
-                  <StatusItem
-                    label="Database Sync"
-                    status="connected"
-                    detail="Last sync: Just now"
-                  />
-                  <StatusItem
-                    label="Email Service"
-                    status="connected"
-                    detail="Emails sent today: 12"
-                  />
-                  <StatusItem label="File Storage" status="connected" detail="95% available" />
-                </div>
-              </CardContent>
-            </Card>
           </TabsContent>
 
           {/* Features Toggle Tab - Admin Only */}
@@ -584,31 +556,6 @@ export default function Settings() {
           )}
         </Tabs>
       </div>
-    </div>
-  );
-}
-
-function StatusItem({ label, status, detail }) {
-  return (
-    <div className="flex items-center justify-between p-3 bg-slate-50 rounded-lg">
-      <div className="flex items-center gap-3">
-        {status === 'connected' ? (
-          <CheckCircle className="w-5 h-5 text-emerald-500" />
-        ) : (
-          <AlertTriangle className="w-5 h-5 text-rose-500" />
-        )}
-        <div>
-          <p className="font-medium text-slate-900">{label}</p>
-          {detail && <p className="text-xs text-slate-500">{detail}</p>}
-        </div>
-      </div>
-      <Badge
-        className={
-          status === 'connected' ? 'bg-emerald-100 text-emerald-800' : 'bg-rose-100 text-rose-800'
-        }
-      >
-        {status === 'connected' ? 'Online' : 'Offline'}
-      </Badge>
     </div>
   );
 }
