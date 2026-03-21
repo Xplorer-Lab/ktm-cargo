@@ -36,7 +36,7 @@ jobs:
 
             const ciChecks = allChecks.filter(c => 
               c.name.startsWith('CI/') || 
-              ['Lint & Format', 'Unit Tests', 'Build', 'Code Quality', 'E2E Smoke'].includes(c.name)
+              ['Lint & Format', 'Unit Tests', 'Build', 'Lint & Format', 'E2E Smoke'].includes(c.name)
             );
 
             console.log('CI checks found:', JSON.stringify(ciChecks, null, 2));
