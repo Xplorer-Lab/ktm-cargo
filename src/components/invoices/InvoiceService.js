@@ -234,9 +234,14 @@ export async function createInvoiceFromShipment(shipment, customer) {
     });
     return { invoice, isNew: true };
   } catch (err) {
-    if (err?.code === '23505' || err?.message?.includes('unique') || err?.message?.includes('duplicate')) {
+    if (
+      err?.code === '23505' ||
+      err?.message?.includes('unique') ||
+      err?.message?.includes('duplicate')
+    ) {
       const existing = await db.customerInvoices.filter({ shipment_id: shipment.id });
-      if (existing.length > 0) return { invoice: existing[0], isNew: false, message: 'Invoice already exists' };
+      if (existing.length > 0)
+        return { invoice: existing[0], isNew: false, message: 'Invoice already exists' };
     }
     throw err;
   }
@@ -285,9 +290,14 @@ export async function createInvoiceFromShoppingOrder(order, customer) {
     });
     return { invoice, isNew: true };
   } catch (err) {
-    if (err?.code === '23505' || err?.message?.includes('unique') || err?.message?.includes('duplicate')) {
+    if (
+      err?.code === '23505' ||
+      err?.message?.includes('unique') ||
+      err?.message?.includes('duplicate')
+    ) {
       const existing = await db.customerInvoices.filter({ order_id: order.id });
-      if (existing.length > 0) return { invoice: existing[0], isNew: false, message: 'Invoice already exists' };
+      if (existing.length > 0)
+        return { invoice: existing[0], isNew: false, message: 'Invoice already exists' };
     }
     throw err;
   }

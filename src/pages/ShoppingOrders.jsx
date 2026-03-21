@@ -158,13 +158,13 @@ export default function ShoppingOrders() {
   const { handleError } = useErrorHandler();
 
   const ALLOWED_STATUS_TRANSITIONS = {
-    pending:    ['purchasing', 'cancelled'],
+    pending: ['purchasing', 'cancelled'],
     purchasing: ['purchased', 'cancelled'],
-    purchased:  ['received', 'cancelled'],
-    received:   ['shipping', 'cancelled'],
-    shipping:   ['delivered', 'cancelled'],
-    delivered:  [],
-    cancelled:  [],
+    purchased: ['received', 'cancelled'],
+    received: ['shipping', 'cancelled'],
+    shipping: ['delivered', 'cancelled'],
+    delivered: [],
+    cancelled: [],
   };
 
   const applyPurchaseOrderAllocationPlan = async (plan) => {
