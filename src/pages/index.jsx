@@ -120,7 +120,14 @@ function PagesContent() {
               </GuestOnlyRoute>
             }
           />
-          <Route path="/PriceCalculator" element={<PriceCalculator />} />
+          <Route
+            path="/PriceCalculator"
+            element={
+              <ProtectedRoute pageName="PriceCalculator">
+                <PriceCalculator />
+              </ProtectedRoute>
+            }
+          />
 
           {/* Protected Routes */}
           <Route

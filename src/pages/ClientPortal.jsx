@@ -953,21 +953,6 @@ export default function ClientPortal() {
             >
               Staff Login
             </Link>
-            <span style={{ width: 1, height: 12, background: '#6B7280' }} />
-            <Link
-              to="/PriceCalculator"
-              style={{
-                ...labelStyle,
-                textDecoration: 'none',
-                fontSize: 9,
-                color: '#6B7280',
-                transition: 'color 0.15s',
-              }}
-              onMouseEnter={(e) => (e.target.style.color = '#6B5E40')}
-              onMouseLeave={(e) => (e.target.style.color = '#6B7280')}
-            >
-              Price Calculator
-            </Link>
           </div>
         </div>
       </footer>
