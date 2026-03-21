@@ -101,10 +101,10 @@ export default function LandingPage() {
 
   return (
     <div
-      className="min-h-screen bg-[#F6F1E7] text-[#1F1914] selection:bg-[#D4A63A]/25 selection:text-[#1F1914]"
+      className="min-h-screen bg-white text-[#1F1914] selection:bg-[#D4A63A]/25 selection:text-[#1F1914]"
       style={{ fontFamily: "'Noto Sans Myanmar', 'Pyidaungsu', sans-serif" }}
     >
-      <div className="fixed inset-x-0 top-0 z-50 border-b border-[#d8ccb8] bg-[#F6F1E7]/92 backdrop-blur-xl">
+      <div className="fixed inset-x-0 top-0 z-50 border-b border-[#d8ccb8] bg-white/92 backdrop-blur-xl">
         <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
           <button
             className="text-left"
@@ -166,7 +166,7 @@ export default function LandingPage() {
         </div>
 
         {mobileMenuOpen && (
-          <div className="border-t border-[#d8ccb8] bg-[#F6F1E7] px-4 py-4 lg:hidden">
+          <div className="border-t border-[#d8ccb8] bg-white px-4 py-4 lg:hidden">
             <div className="flex flex-col gap-3">
               <a
                 className="rounded-2xl px-4 py-3 text-sm font-semibold text-[#4F463D] hover:bg-white/70"
@@ -566,7 +566,7 @@ export default function LandingPage() {
         </section>
       </main>
 
-      <footer className="border-t border-[#d8ccb8] bg-[#F6F1E7] px-4 py-8 sm:px-6 lg:px-8">
+      <footer className="border-t border-[#d8ccb8] bg-white px-4 py-8 sm:px-6 lg:px-8">
         <div className="mx-auto flex max-w-7xl flex-col gap-5 lg:flex-row lg:items-center lg:justify-between">
           <KtmWordmark compact />
           <div className="flex flex-col gap-3 text-sm text-[#5B5147] sm:flex-row sm:items-center sm:gap-6">
