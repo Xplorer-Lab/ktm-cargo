@@ -155,8 +155,8 @@ describe('computeInvoiceTotals', () => {
       discount_amount: 0,
     });
     expect(r.subtotal).toBe(565);
-    expect(r.taxAmount).toBe(40); // round(565*0.07)
-    expect(r.total).toBe(605);
+    expect(r.taxAmount).toBe(39.55); // roundMoney(565*0.07)
+    expect(r.total).toBe(604.55);
   });
 
   test('with discount', () => {

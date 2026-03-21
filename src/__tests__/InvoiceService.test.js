@@ -311,6 +311,7 @@ describe('recordPayment', () => {
     __mocks.updateMock.mockResolvedValueOnce({
       id: 'inv-issued',
       status: 'paid',
+      amount_paid: 100,
     });
 
     const result = await recordPayment('inv-issued', {
