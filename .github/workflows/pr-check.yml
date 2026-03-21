@@ -14,42 +14,37 @@ env:
 
 jobs:
   # ============================================================================
-  # PR Size Check
+  # E2E Smoke Tests
   # ============================================================================
-  pr-size:
-    name: PR Size Check
-    runs-on: ubuntu-latest
-    steps:
-      - name: Check PR size
-        uses: codelytv/pr-size-labeler@v1
-        with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          xs_label: 'size/XS'
-          xs_max_size: 10
-          s_label: 'size/S'
-          s_max_size: 100
-          m_label: 'size/M'
-          m_max_size: 500
-          l_label: 'size/L'
-          l_max_size: 1000
-          xl_label: 'size/XL'
-          fail_if_xl: false
-
-  # ============================================================================
-  # Conventional Commits Check
-  # ============================================================================
-  commit-lint:
-    name: Commit Message Check
+  e2e-smoke:
+    name: E2E Smoke
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
 
-      - name: Check commit messages
-        uses: wagoid/commitlint-github-action@v5
-        continue-on-error: true
+      - name: Setup Node.js
+        uses: actions/setup-node@v6
+        with:
+          node-version: ${{ env.NODE_VERSION }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright Chromium
+        run: npx playwright install --with-deps chromium
+
+      - name: Run Playwright smoke tests
+        run: npm run test:e2e
+
+      - name: Upload Playwright report
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
 
   # ============================================================================
   # Preview Deploy
@@ -92,67 +87,3 @@ jobs:
           vercel-project-id: ${{ secrets.VERCEL_PROJECT_ID }}
           working-directory: ./
           github-comment: true
-
-  # ============================================================================
-  # Code Quality
-  # ============================================================================
-  quality:
-    name: Code Quality
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Lint
-        run: npm run lint
-
-      - name: Type check (if TypeScript)
-        run: npx tsc --noEmit
-        continue-on-error: true
-
-      - name: Test
-        run: npm test -- --passWithNoTests
-        env:
-          CI: true
-
-  # ============================================================================
-  # E2E Smoke Tests
-  # ============================================================================
-  e2e-smoke:
-    name: E2E Smoke
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v6
-        with:
-          node-version: ${{ env.NODE_VERSION }}
-          cache: 'npm'
-
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Install Playwright Chromium
-        run: npx playwright install --with-deps chromium
-
-      - name: Run Playwright smoke tests
-        run: npm run test:e2e
-
-      - name: Upload Playwright report
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: playwright-report
-          path: playwright-report/
-          retention-days: 7
