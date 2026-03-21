@@ -140,12 +140,10 @@ describe('UI Visualization', () => {
       );
 
       await waitFor(() => {
-        expect(screen.getByRole('heading', { name: /ကုမ္ပဏီအကြောင်း/i })).toBeInTheDocument();
+        expect(screen.getByRole('heading', { name: /ထိုင်းမှ မြန်မာသို့/i })).toBeInTheDocument();
       });
-      expect(screen.getByText(/KTM က self-service portal မဟုတ်ပါ/i)).toBeInTheDocument();
-      expect(
-        screen.getByText(/Facebook သို့မဟုတ် ဖုန်းဖြင့် တိုက်ရိုက်ဆက်သွယ်ပါ/i)
-      ).toBeInTheDocument();
+      expect(screen.getByText(/KTM က ဘာတွေ လုပ်ပေးလဲ/i)).toBeInTheDocument();
+      expect(screen.getByRole('link', { name: /Facebook ဖြင့်မေးမြန်းရန်/i })).toBeInTheDocument();
     });
   });
 

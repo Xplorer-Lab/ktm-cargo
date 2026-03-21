@@ -22,9 +22,9 @@ test.describe('KTM route and workflow smoke', () => {
   test('client portal renders the brochure instead of client actions', async ({ page }) => {
     await page.goto('/ClientPortal?__e2e=public');
 
-    await expect(page.getByRole('heading', { name: /ကုမ္ပဏီအကြောင်း/i })).toBeVisible();
-    await expect(page.getByText(/KTM က self-service portal မဟုတ်ပါ/i)).toBeVisible();
-    await expect(page.getByText(/လက်ရှိ public release တွင် Facebook page/i)).toBeVisible();
+    await expect(page.getByRole('heading', { name: /KTM က ဘာတွေ လုပ်ပေးလဲ/i })).toBeVisible();
+    await expect(page.getByText(/Online checkout မပါ — inquiry only/i)).toBeVisible();
+    await expect(page.getByText(/Facebook ဖြင့်မေးမြန်းရန်/i)).toBeVisible();
   });
 
   test('authenticated staff lands on operations workflow instead of legacy dashboard', async ({

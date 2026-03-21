@@ -1,5 +1,5 @@
+import { useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import KtmWordmark from '@/components/public/KtmWordmark';
 import {
   ArrowRight,
   BadgeCheck,
@@ -12,19 +12,100 @@ import {
   Phone,
   Shield,
   ShoppingBag,
-  Sparkles,
   Truck,
   Users,
 } from 'lucide-react';
-import { Button } from '@/components/ui/button';
-import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from '@/components/ui/accordion';
+
+/* ── brand tokens matching the logo ────────────────────────────────────────
+   Logo: bold condensed italic KTM, three left-side speed bars, metallic gold
+   Palette derived directly from the logo photograph.
+─────────────────────────────────────────────────────────────────────────── */
+const GOLD_GRADIENT = 'linear-gradient(160deg, #F7E17A 0%, #D4A63A 48%, #9A6E10 100%)';
+const GOLD_TEXT_STYLE = {
+  background: GOLD_GRADIENT,
+  WebkitBackgroundClip: 'text',
+  WebkitTextFillColor: 'transparent',
+  backgroundClip: 'text',
+};
+
+/* Three speed bars — exact proportions from the logo */
+function SpeedMark({ size = 'md' }) {
+  const bars =
+    size === 'sm'
+      ? [
+          { w: 14, h: 3 },
+          { w: 11, h: 3 },
+          { w: 8, h: 3 },
+        ]
+      : [
+          { w: 22, h: 4.5 },
+          { w: 17, h: 4.5 },
+          { w: 12, h: 4.5 },
+        ];
+  return (
+    <div
+      style={{
+        display: 'flex',
+        flexDirection: 'column',
+        gap: size === 'sm' ? 3 : 5,
+        paddingBottom: 2,
+      }}
+    >
+      {bars.map((b, i) => (
+        <span
+          key={i}
+          style={{
+            display: 'block',
+            width: b.w,
+            height: b.h,
+            borderRadius: 2,
+            transform: 'skewX(-18deg)',
+            background: GOLD_GRADIENT,
+            boxShadow: '0 2px 8px rgba(212,166,58,0.35)',
+          }}
+        />
+      ))}
+    </div>
+  );
+}
+
+/* Bold condensed KTM wordmark matching the logo */
+function KtmMark({ size = 'md' }) {
+  const fontSize = size === 'sm' ? 22 : size === 'lg' ? 42 : 32;
+  return (
+    <div style={{ display: 'flex', alignItems: 'flex-end', gap: size === 'sm' ? 6 : 10 }}>
+      <SpeedMark size={size} />
+      <div>
+        <div
+          style={{
+            fontFamily: "'Oswald', 'Bebas Neue', Impact, sans-serif",
+            fontSize,
+            fontWeight: 700,
+            fontStyle: 'italic',
+            letterSpacing: '-0.02em',
+            lineHeight: 1,
+            ...GOLD_TEXT_STYLE,
+          }}
+        >
+          KTM
+        </div>
+        <div
+          style={{
+            fontFamily: "'Oswald', sans-serif",
+            fontSize: size === 'sm' ? 7 : 9,
+            fontWeight: 500,
+            letterSpacing: '0.32em',
+            textTransform: 'uppercase',
+            color: '#9A7A30',
+            marginTop: 3,
+          }}
+        >
+          CARGO EXPRESS
+        </div>
+      </div>
+    </div>
+  );
+}
 
 const SERVICES = [
   {
@@ -33,6 +114,7 @@ const SERVICES = [
     description:
       'ထိုင်းမှ မြန်မာသို့ door-to-door ပို့ဆောင်မှုကို KTM team က စီမံပေးပြီး အရောက်ပို့ချိန်အထိ လိုက်ပါဆောင်ရွက်ပေးပါသည်။',
     bullets: ['စုစည်းပို့ဆောင်မှု', 'အဝင်သတင်းပေးပို့မှု', 'အရောက်ပို့ဆောင်မှု'],
+    tag: 'CARGO',
   },
   {
     icon: ShoppingBag,
@@ -40,6 +122,7 @@ const SERVICES = [
     description:
       'ဖောက်သည်က link သို့မဟုတ် photo ပို့လျှင် KTM team က ဝယ်ယူခြင်း၊ စစ်ဆေးခြင်း၊ ထုပ်ပိုးခြင်းနှင့် warehouse လက်ခံခြင်းကို စီမံပေးပါသည်။',
     bullets: ['Staff-led purchasing', 'ပစ္စည်းစစ်ဆေးမှု', 'Warehouse intake'],
+    tag: 'SHOPPING',
   },
   {
     icon: Truck,
@@ -47,6 +130,7 @@ const SERVICES = [
     description:
       'ကုန်ပမာဏများသော လုပ်ငန်းဆိုင်ရာ shipment များကိုလည်း booking, consolidation, delivery coordination အထိ support ပေးပါသည်။',
     bullets: ['Shipment planning', 'Cargo partner booking', 'After-sales follow-up'],
+    tag: 'BULK',
   },
 ];
 
@@ -115,524 +199,779 @@ const FAQ_ITEMS = [
   },
 ];
 
-const CONTACTS = [
-  {
-    icon: MessageSquare,
-    title: 'Facebook',
-    text: 'ပထမဦးဆုံး inquiry အတွက် အဓိက ဆက်သွယ်ရန်လမ်းကြောင်း',
-    href: 'https://www.facebook.com/profile.php?id=61584321765274',
-    label: 'Facebook ဖြင့်မေးမြန်းရန်',
-  },
-  {
-    icon: Phone,
-    title: 'ဖုန်း',
-    text: '0633301746 / 0826705571',
-    href: 'tel:+959633301746',
-    label: 'ဖုန်းခေါ်ရန်',
-  },
-];
-
 export default function ClientPortal() {
+  useEffect(() => {
+    const link = document.createElement('link');
+    link.rel = 'stylesheet';
+    link.href =
+      'https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=DM+Sans:wght@300;400;500&display=swap';
+    document.head.appendChild(link);
+    return () => {
+      if (document.head.contains(link)) document.head.removeChild(link);
+    };
+  }, []);
+
+  const headingStyle = {
+    fontFamily: "'Oswald', 'Bebas Neue', Impact, sans-serif",
+    fontWeight: 600,
+    letterSpacing: '0.01em',
+    textTransform: 'uppercase',
+  };
+
+  const labelStyle = {
+    fontFamily: "'Oswald', sans-serif",
+    fontSize: 10,
+    fontWeight: 500,
+    letterSpacing: '0.38em',
+    textTransform: 'uppercase',
+    color: '#9A7A30',
+  };
+
+  const bodyStyle = {
+    fontFamily: "'DM Sans', 'Noto Sans Myanmar', sans-serif",
+  };
+
   return (
-    <div
-      className="min-h-screen bg-[#F6F1E7] text-[#1F1914]"
-      style={{ fontFamily: "'Noto Sans Myanmar', 'Pyidaungsu', sans-serif" }}
-    >
-      <div className="absolute inset-0 -z-10 overflow-hidden">
-        <div className="absolute left-0 top-0 h-[28rem] w-[28rem] rounded-full bg-[#D4A63A]/15 blur-3xl" />
-        <div className="absolute right-[-6rem] top-20 h-[22rem] w-[22rem] rounded-full bg-[#B6851F]/12 blur-3xl" />
-        <div className="absolute bottom-0 left-1/3 h-[18rem] w-[18rem] rounded-full bg-white/60 blur-3xl" />
-      </div>
+    <div style={{ minHeight: '100vh', background: '#0C0A07', color: '#E8DFC8', ...bodyStyle }}>
+      <style>{`
+        .mm { font-family: 'Noto Sans Myanmar', 'Pyidaungsu', sans-serif; }
+        .gold-btn {
+          display: inline-flex; align-items: center; gap: 8px;
+          padding: 10px 22px; font-size: 13px; font-weight: 500;
+          background: linear-gradient(135deg, #E8C968 0%, #C9A030 50%, #9A6E10 100%);
+          color: #0C0A07; letter-spacing: 0.05em; border: none; cursor: pointer;
+          clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+          transition: filter 0.15s;
+        }
+        .gold-btn:hover { filter: brightness(1.12); }
+        .outline-btn {
+          display: inline-flex; align-items: center; gap: 8px;
+          padding: 10px 22px; font-size: 13px; letter-spacing: 0.05em;
+          background: transparent; color: #9A8060;
+          border: 1px solid rgba(201,168,76,0.25); cursor: pointer;
+          clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+          transition: all 0.15s;
+        }
+        .outline-btn:hover { border-color: rgba(201,168,76,0.6); color: #E8DFC8; }
+        .service-card { background: #111009; border: 1px solid rgba(201,168,76,0.1); transition: border-color 0.2s; }
+        .service-card:hover { border-color: rgba(201,168,76,0.3); }
+        .faq-item summary::-webkit-details-marker { display: none; }
+        .faq-item[open] .faq-arrow { transform: rotate(90deg); }
+        .faq-arrow { transition: transform 0.2s; }
+        .gold-rule { height: 1px; background: linear-gradient(90deg, #D4A63A 0%, rgba(212,166,58,0.08) 100%); }
+        .step-num {
+          font-family: 'Oswald', sans-serif; font-weight: 700; font-style: italic;
+          font-size: 64px; line-height: 1; color: rgba(212,166,58,0.07);
+          position: absolute; right: 12px; top: 8px; pointer-events: none; user-select: none;
+        }
+        @keyframes slideUp { from { opacity:0; transform:translateY(20px); } to { opacity:1; transform:translateY(0); } }
+        .hero-in { animation: slideUp 0.55s ease forwards; }
+        .hero-in-2 { animation: slideUp 0.55s 0.1s ease both; }
+        .hero-in-3 { animation: slideUp 0.55s 0.2s ease both; }
+      `}</style>
 
-      <header className="sticky top-0 z-50 border-b border-[#D9C8A9]/70 bg-[#F6F1E7]/90 backdrop-blur-md">
-        <div className="mx-auto flex max-w-7xl items-center justify-between px-4 py-4 sm:px-6 lg:px-8">
-          <Link to="/" className="flex items-center gap-4">
-            <KtmWordmark compact showSubtitle={false} />
-            <div>
-              <p className="text-[0.7rem] font-semibold uppercase tracking-[0.35em] text-[#8C6A22]">
-                KTM Cargo Express
-              </p>
-              <h1 className="text-lg font-black tracking-tight text-[#1F1914]">ကုမ္ပဏီအကြောင်း</h1>
-            </div>
+      {/* ── Header ── */}
+      <header
+        style={{
+          position: 'sticky',
+          top: 0,
+          zIndex: 50,
+          borderBottom: '1px solid rgba(201,168,76,0.12)',
+          background: 'rgba(12,10,7,0.96)',
+          backdropFilter: 'blur(8px)',
+        }}
+      >
+        <div
+          style={{
+            maxWidth: 1100,
+            margin: '0 auto',
+            padding: '14px 24px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
+          <Link to="/" style={{ textDecoration: 'none' }}>
+            <KtmMark size="sm" />
           </Link>
-
-          <div className="flex items-center gap-3">
-            <Badge className="border-[#D4A63A]/30 bg-[#D4A63A]/10 text-[#8C6A22] hover:bg-[#D4A63A]/10">
-              ဝန်ဆောင်မှုလမ်းညွှန်
-            </Badge>
-            <Button
-              asChild
-              variant="outline"
-              className="hidden border-[#D9C8A9] bg-white/60 text-[#1F1914] hover:bg-white sm:inline-flex"
+          <nav style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+            <a
+              href="#services"
+              style={{ ...labelStyle, textDecoration: 'none', transition: 'color 0.15s' }}
+              onMouseEnter={(e) => (e.target.style.color = '#D4A63A')}
+              onMouseLeave={(e) => (e.target.style.color = '#9A7A30')}
             >
-              <Link to="/StaffLogin">Staff Login</Link>
-            </Button>
-            <Button
-              asChild
-              className="bg-[#1F1914] text-[#F6F1E7] shadow-[0_10px_24px_rgba(31,25,20,0.12)] hover:bg-[#2A221B]"
+              ဝန်ဆောင်မှု
+            </a>
+            <a
+              href="#workflow"
+              style={{ ...labelStyle, textDecoration: 'none', transition: 'color 0.15s' }}
+              onMouseEnter={(e) => (e.target.style.color = '#D4A63A')}
+              onMouseLeave={(e) => (e.target.style.color = '#9A7A30')}
             >
-              <a href="#contact">ဆက်သွယ်ရန်</a>
-            </Button>
-          </div>
+              လုပ်ငန်းစဉ်
+            </a>
+            <a
+              href="#contact"
+              className="gold-btn"
+              style={{
+                fontFamily: "'Oswald', sans-serif",
+                textDecoration: 'none',
+                padding: '8px 18px',
+                fontSize: 11,
+              }}
+            >
+              ဆက်သွယ်ရန်
+            </a>
+          </nav>
         </div>
       </header>
 
-      <main className="mx-auto max-w-7xl px-4 py-8 sm:px-6 lg:px-8 lg:py-12">
-        <section className="grid items-stretch gap-8 lg:grid-cols-[1.15fr_0.85fr]">
-          <div className="relative overflow-hidden rounded-[2rem] border border-[#D9C8A9]/80 bg-white/70 p-6 shadow-[0_22px_70px_rgba(31,25,20,0.08)] sm:p-8 lg:p-10">
-            <div className="absolute right-6 top-6 h-20 w-20 rounded-full border border-[#D4A63A]/30 bg-[#D4A63A]/10" />
-            <div className="absolute bottom-8 right-16 h-12 w-12 rounded-full border border-[#B6851F]/20 bg-white/70" />
+      {/* ── Hero ── */}
+      <section style={{ maxWidth: 1100, margin: '0 auto', padding: '56px 24px 48px' }}>
+        <div
+          className="hero-in"
+          style={{ marginBottom: 16, display: 'flex', alignItems: 'center', gap: 10 }}
+        >
+          <div className="gold-rule" style={{ width: 32 }} />
+          <span style={labelStyle}>Thailand → Myanmar Logistics</span>
+        </div>
 
-            <div className="relative space-y-6">
-              <Badge className="border-[#D4A63A]/30 bg-[#D4A63A]/10 text-[#8C6A22] hover:bg-[#D4A63A]/10">
-                KTM ကုမ္ပဏီမိတ်ဆက်
-              </Badge>
-
-              <div className="space-y-4">
-                <KtmWordmark className="max-w-max" showSubtitle={false} />
-                <p className="text-sm font-semibold uppercase tracking-[0.32em] text-[#8C6A22]">
-                  KTM Cargo Express
-                </p>
-                <h2 className="max-w-3xl text-4xl font-black tracking-tight text-[#1F1914] sm:text-5xl lg:text-6xl">
-                  ထိုင်းမှ မြန်မာသို့ စိတ်ချယုံကြည်ရသော cargo service
-                </h2>
-                <p className="max-w-2xl text-lg leading-8 text-[#4A4035]">
-                  KTM သည် inquiry မှ စ၍ quote, confirm, ဝယ်ယူခြင်း, စုစည်းပို့ဆောင်ခြင်း,
-                  အရောက်ပို့ခြင်း အထိ staff-led service အဖြစ် စီမံပေးသော logistics team ဖြစ်ပါသည်။
-                </p>
-              </div>
-
-              <div className="flex flex-wrap gap-3">
-                <Button
-                  asChild
-                  className="rounded-full bg-gradient-to-r from-[#B6851F] to-[#D4A63A] px-6 text-[#1F1914] shadow-[0_18px_30px_rgba(214,166,58,0.25)] hover:from-[#A97D1B] hover:to-[#E0BC58]"
-                >
-                  <a
-                    href="https://www.facebook.com/profile.php?id=61584321765274"
-                    target="_blank"
-                    rel="noreferrer"
-                  >
-                    Facebook ဖြင့်မေးမြန်းရန်
-                    <ArrowRight className="h-4 w-4" />
-                  </a>
-                </Button>
-                <Button
-                  asChild
-                  variant="outline"
-                  className="rounded-full border-[#CDBB9A] bg-white/60 px-6 text-[#1F1914] hover:bg-white"
-                >
-                  <a href="#workflow">လုပ်ငန်းစဉ်ကြည့်ရန်</a>
-                </Button>
-                <Button
-                  asChild
-                  variant="outline"
-                  className="rounded-full border-[#CDBB9A] bg-white/60 px-6 text-[#1F1914] hover:bg-white"
-                >
-                  <a href="#contact">ဖုန်းဖြင့်ဆက်သွယ်ရန်</a>
-                </Button>
-              </div>
-
-              <div className="grid gap-4 sm:grid-cols-3">
-                {[
-                  [
-                    'မေးမြန်းချက်ဖြင့် စတင်',
-                    'Facebook သို့မဟုတ် ဖုန်းဖြင့် စတင်မေးမြန်းနိုင်ပါသည်။',
-                  ],
-                  [
-                    'KTM က ဈေးနှုန်းတွက်',
-                    'ဈေးနှုန်းနှင့် အစီအစဉ်ကို team က စုစည်းတွက်ချက်ပေးပါသည်။',
-                  ],
-                  [
-                    'အရောက်ပို့ဝန်ဆောင်မှု',
-                    'လက်ခံခြင်းမှ အရောက်ပို့ခြင်းအထိ တစ်ဆက်တည်း စီမံပါသည်။',
-                  ],
-                ].map(([title, text]) => (
-                  <Card key={title} className="border-[#D9C8A9]/80 bg-white/75 shadow-none">
-                    <CardContent className="p-4">
-                      <p className="text-sm font-semibold text-[#1F1914]">{title}</p>
-                      <p className="mt-2 text-sm leading-6 text-[#5A4E42]">{text}</p>
-                    </CardContent>
-                  </Card>
-                ))}
-              </div>
-            </div>
-          </div>
-
-          <Card className="overflow-hidden border-[#D9C8A9]/80 bg-[#2A221B] text-[#F6F1E7] shadow-[0_22px_70px_rgba(31,25,20,0.12)]">
-            <CardHeader className="space-y-4 border-b border-white/10 bg-[linear-gradient(180deg,rgba(212,166,58,0.16),rgba(42,34,27,0.0))] p-6 sm:p-8">
-              <div className="flex items-center justify-between">
-                <Badge className="border-[#D4A63A]/25 bg-[#D4A63A]/10 text-[#F7E3A4] hover:bg-[#D4A63A]/10">
-                  ဝန်ဆောင်မှုအကျဉ်းချုပ်
-                </Badge>
-                <div className="flex items-center gap-2 text-[#D4A63A]">
-                  <Sparkles className="h-4 w-4" />
-                  <span className="text-xs font-semibold uppercase tracking-[0.28em]">
-                    ယုံကြည်စိတ်ချရမှု
-                  </span>
-                </div>
-              </div>
-              <CardTitle className="text-2xl font-black tracking-tight sm:text-3xl">
-                KTM က self-service portal မဟုတ်ပါ
-              </CardTitle>
-              <p className="text-sm leading-7 text-[#E8DDC9]">
-                ယခု public page သည် KTM Cargo ၏ ဝန်ဆောင်မှုများ၊ အလုပ်လုပ်ပုံ၊ inquiry
-                လမ်းကြောင်းနှင့် ဖုန်း / Facebook ဆက်သွယ်မှုကိုပဲ ရှင်းလင်းစွာပြသပေးရန်
-                ရည်ရွယ်ပါသည်။
-              </p>
-            </CardHeader>
-
-            <CardContent className="space-y-4 p-6 sm:p-8">
-              {[
-                {
-                  icon: BadgeCheck,
-                  title: 'Web order မရှိ',
-                  text: 'Website ထဲမှ တိုက်ရိုက် checkout, account creation သို့မဟုတ် client-side ordering မပါဝင်ပါ။',
-                },
-                {
-                  icon: Users,
-                  title: 'Staff-led process',
-                  text: 'Quotation, collection, booking, delivery, after-sales အားလုံးကို KTM team က စီမံပါသည်။',
-                },
-                {
-                  icon: Globe,
-                  title: 'လုပ်ငန်းအကြောင်းအရာ',
-                  text: 'မြန်မာစာဖြင့် ရှင်းလင်းသည့် brochure-style presentation တစ်ခုအဖြစ်သာ အသုံးပြုပါသည်။',
-                },
-              ].map((item) => {
-                const Icon = item.icon;
-                return (
-                  <div
-                    key={item.title}
-                    className="rounded-3xl border border-white/10 bg-white/5 p-4"
-                  >
-                    <div className="flex items-start gap-4">
-                      <div className="rounded-2xl bg-[#D4A63A]/15 p-3 text-[#F7E3A4] ring-1 ring-[#D4A63A]/20">
-                        <Icon className="h-5 w-5" />
-                      </div>
-                      <div>
-                        <p className="text-sm font-semibold text-white">{item.title}</p>
-                        <p className="mt-2 text-sm leading-6 text-[#E8DDC9]">{item.text}</p>
-                      </div>
-                    </div>
-                  </div>
-                );
-              })}
-
-              <div className="rounded-3xl border border-[#D4A63A]/20 bg-[#D4A63A]/10 p-4">
-                <p className="text-sm font-semibold text-[#F7E3A4]">
-                  ယနေ့ရက်အတွက် အခြေခံဆက်သွယ်မှု
-                </p>
-                <p className="mt-2 text-sm leading-7 text-[#F6F1E7]">
-                  Facebook မှ စတင်မေးမြန်းနိုင်ပြီး ဖုန်းဖြင့်လည်း ဆက်သွယ်နိုင်ပါသည်။
-                </p>
-              </div>
-            </CardContent>
-          </Card>
-        </section>
-
-        <section className="mt-10 grid gap-4 sm:grid-cols-3">
-          {[
-            ['ထိုင်းဘက်ဝယ်ယူပေးခြင်း', 'အမှာစာပစ္စည်းများကို ထိုင်းဘက်တွင် ဝယ်ယူလက်ခံပေးသည်။'],
-            [
-              'စုစည်းပို့ဆောင်မှု',
-              'ပစ္စည်းများကို တစ်နေရာတည်း စုစည်းပြီး cargo run အဖြစ် စီမံသည်။',
-            ],
-            ['အရောက်ပို့', 'မြန်မာဘက် door-to-door delivery အထိ လုပ်ဆောင်သည်။'],
-          ].map(([title, text]) => (
-            <Card key={title} className="border-[#D9C8A9]/80 bg-white/75 shadow-none">
-              <CardContent className="p-5">
-                <div className="flex items-center gap-3">
-                  <div className="rounded-2xl bg-[#D4A63A]/12 p-3 text-[#8C6A22] ring-1 ring-[#D4A63A]/20">
-                    <Truck className="h-5 w-5" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-[#1F1914]">{title}</p>
-                    <p className="mt-2 text-sm leading-6 text-[#5A4E42]">{text}</p>
-                  </div>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </section>
-
-        <section id="services" className="mt-16 space-y-6">
-          <div className="flex items-end justify-between gap-4">
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[#8C6A22]">
-                ဝန်ဆောင်မှု
-              </p>
-              <h3 className="mt-2 text-3xl font-black tracking-tight text-[#1F1914]">
-                KTM က ဘာတွေ လုပ်ပေးလဲ
-              </h3>
-            </div>
-          </div>
-
-          <div className="grid gap-4 lg:grid-cols-3">
-            {SERVICES.map((service) => {
-              const Icon = service.icon;
-              return (
-                <Card
-                  key={service.title}
-                  className="overflow-hidden border-[#D9C8A9]/80 bg-white/82 shadow-[0_18px_50px_rgba(31,25,20,0.06)] transition-transform duration-200 hover:-translate-y-1"
-                >
-                  <CardHeader className="space-y-4 border-b border-[#E8DDC9] bg-[linear-gradient(180deg,rgba(212,166,58,0.12),rgba(255,255,255,0.72))] p-6">
-                    <div className="flex items-center justify-between">
-                      <div className="rounded-2xl bg-[#D4A63A]/12 p-3 text-[#8C6A22] ring-1 ring-[#D4A63A]/20">
-                        <Icon className="h-6 w-6" />
-                      </div>
-                      <Badge className="border-[#D4A63A]/30 bg-white/70 text-[#8C6A22] hover:bg-white/70">
-                        Public guide
-                      </Badge>
-                    </div>
-                    <CardTitle className="text-xl font-black text-[#1F1914]">
-                      {service.title}
-                    </CardTitle>
-                    <p className="text-sm leading-7 text-[#5A4E42]">{service.description}</p>
-                  </CardHeader>
-                  <CardContent className="space-y-3 p-6">
-                    {service.bullets.map((bullet) => (
-                      <div key={bullet} className="flex items-center gap-2 text-sm text-[#2A221B]">
-                        <CheckCircle className="h-4 w-4 text-[#B6851F]" />
-                        <span>{bullet}</span>
-                      </div>
-                    ))}
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-        </section>
-
-        <section id="workflow" className="mt-16 space-y-6">
+        <div
+          style={{
+            display: 'grid',
+            gap: 40,
+            gridTemplateColumns: 'minmax(0,1fr) auto',
+            alignItems: 'start',
+          }}
+        >
           <div>
-            <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[#8C6A22]">
-              လုပ်ငန်းစဉ်
-            </p>
-            <h3 className="mt-2 text-3xl font-black tracking-tight text-[#1F1914]">
-              KTM ဘယ်လိုအလုပ်လုပ်သလဲ
-            </h3>
-          </div>
-
-          <div className="grid gap-4 lg:grid-cols-4">
-            {WORKFLOW.map((item) => (
-              <Card
-                key={item.step}
-                className="overflow-hidden border-[#D9C8A9]/80 bg-white/78 shadow-[0_16px_45px_rgba(31,25,20,0.05)]"
+            <div className="hero-in-2">
+              <KtmMark size="lg" />
+              <h1
+                className="mm"
+                style={{
+                  ...headingStyle,
+                  fontSize: 'clamp(26px, 4vw, 40px)',
+                  color: '#F0E8D0',
+                  marginTop: 20,
+                  lineHeight: 1.2,
+                  fontFamily: "'Oswald', 'Noto Sans Myanmar', sans-serif",
+                  textTransform: 'none',
+                  fontWeight: 600,
+                  letterSpacing: '0.01em',
+                }}
               >
-                <CardHeader className="space-y-4 bg-[linear-gradient(180deg,rgba(212,166,58,0.12),rgba(255,255,255,0.72))] p-5">
-                  <div className="flex items-center justify-between">
-                    <span className="text-xs font-black uppercase tracking-[0.35em] text-[#8C6A22]">
-                      အဆင့် {item.step}
-                    </span>
-                    <div className="h-2.5 w-2.5 rounded-full bg-[#D4A63A]" />
-                  </div>
-                  <CardTitle className="text-lg font-black text-[#1F1914]">{item.title}</CardTitle>
-                </CardHeader>
-                <CardContent className="p-5">
-                  <p className="text-sm leading-7 text-[#5A4E42]">{item.text}</p>
-                </CardContent>
-              </Card>
-            ))}
-          </div>
-        </section>
-
-        <section className="mt-16 grid gap-6 lg:grid-cols-[0.92fr_1.08fr]">
-          <Card className="overflow-hidden border-[#D9C8A9]/80 bg-[#2A221B] text-[#F6F1E7] shadow-[0_18px_50px_rgba(31,25,20,0.12)]">
-            <CardHeader className="space-y-4 border-b border-white/10 p-6">
-              <Badge className="border-[#D4A63A]/25 bg-[#D4A63A]/10 text-[#F7E3A4] hover:bg-[#D4A63A]/10">
-                ယုံကြည်စိတ်ချမှု
-              </Badge>
-              <CardTitle className="text-2xl font-black tracking-tight">
-                ဘာကြောင့် KTM ကို ရွေးသင့်လဲ
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="space-y-4 p-6">
-              {[
-                'Team-led workflow ဖြစ်ပြီး inquiry မှ delivery အထိ တာဝန်ယူစီမံသည်။',
-                'ထိုင်း-မြန်မာ route အပေါ် အထူးအာရုံစိုက်ပြီး cargo coordination ကို တိကျစွာလုပ်ဆောင်သည်။',
-                'Staff update, proof of delivery, and after-sales follow-up ကို သန့်ရှင်းစွာ ထိန်းသိမ်းပေးသည်။',
-              ].map((line) => (
-                <div
-                  key={line}
-                  className="flex items-start gap-3 rounded-3xl border border-white/10 bg-white/5 p-4"
-                >
-                  <div className="mt-1 rounded-full bg-[#D4A63A]/15 p-1.5 text-[#F7E3A4] ring-1 ring-[#D4A63A]/20">
-                    <CheckCircle className="h-4 w-4" />
-                  </div>
-                  <p className="text-sm leading-7 text-[#E8DDC9]">{line}</p>
-                </div>
-              ))}
-            </CardContent>
-          </Card>
-
-          <div className="space-y-6">
-            <div>
-              <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[#8C6A22]">
-                ဖောက်သည်ဘက်မှ ပြင်ဆင်ပေးရမည့်အချက်များ
-              </p>
-              <h3 className="mt-2 text-3xl font-black tracking-tight text-[#1F1914]">
-                မေးမြန်းရန် ပို့ပေးရမည့် အချက်အလက်များ
-              </h3>
-            </div>
-
-            <div className="grid gap-4 md:grid-cols-2">
-              {EXPECTATIONS.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <Card
-                    key={item.title}
-                    className="border-[#D9C8A9]/80 bg-white/80 shadow-[0_16px_45px_rgba(31,25,20,0.05)]"
-                  >
-                    <CardContent className="p-5">
-                      <div className="flex items-start gap-3">
-                        <div className="rounded-2xl bg-[#D4A63A]/12 p-3 text-[#8C6A22] ring-1 ring-[#D4A63A]/20">
-                          <Icon className="h-5 w-5" />
-                        </div>
-                        <div>
-                          <h4 className="font-bold text-[#1F1914]">{item.title}</h4>
-                          <p className="mt-2 text-sm leading-7 text-[#5A4E42]">{item.text}</p>
-                        </div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                );
-              })}
-            </div>
-          </div>
-        </section>
-
-        <section className="mt-16 grid gap-6 lg:grid-cols-[1.1fr_0.9fr]">
-          <Card className="border-[#D9C8A9]/80 bg-white/82 shadow-[0_18px_50px_rgba(31,25,20,0.05)]">
-            <CardHeader className="space-y-4 border-b border-[#E8DDC9] bg-[linear-gradient(180deg,rgba(212,166,58,0.12),rgba(255,255,255,0.72))] p-6">
-              <Badge className="border-[#D4A63A]/30 bg-[#D4A63A]/10 text-[#8C6A22] hover:bg-[#D4A63A]/10">
-                FAQ
-              </Badge>
-              <CardTitle className="text-2xl font-black text-[#1F1914]">
-                မကြာခဏ မေးလေ့ရှိသော မေးခွန်းများ
-              </CardTitle>
-            </CardHeader>
-            <CardContent className="p-6">
-              <Accordion type="single" collapsible className="space-y-3">
-                {FAQ_ITEMS.map((item, index) => (
-                  <AccordionItem
-                    key={item.q}
-                    value={`faq-${index}`}
-                    className="rounded-2xl border border-[#D9C8A9]/80 px-4"
-                  >
-                    <AccordionTrigger className="py-4 text-left text-sm font-semibold text-[#1F1914] hover:no-underline">
-                      {item.q}
-                    </AccordionTrigger>
-                    <AccordionContent className="pb-4 text-sm leading-7 text-[#5A4E42]">
-                      {item.a}
-                    </AccordionContent>
-                  </AccordionItem>
-                ))}
-              </Accordion>
-            </CardContent>
-          </Card>
-
-          <Card
-            id="contact"
-            className="overflow-hidden border-[#D9C8A9]/80 bg-[#1F1914] text-[#F6F1E7] shadow-[0_22px_70px_rgba(31,25,20,0.14)]"
-          >
-            <CardHeader className="space-y-4 border-b border-white/10 p-6">
-              <Badge className="border-[#D4A63A]/25 bg-[#D4A63A]/10 text-[#F7E3A4] hover:bg-[#D4A63A]/10">
-                ဆက်သွယ်ရန်
-              </Badge>
-              <CardTitle className="text-2xl font-black tracking-tight">
-                Facebook သို့မဟုတ် ဖုန်းဖြင့် တိုက်ရိုက်ဆက်သွယ်ပါ
-              </CardTitle>
-              <p className="text-sm leading-7 text-[#E8DDC9]">
-                လက်ရှိ public release တွင် Facebook page နှင့် ဖုန်းနံပါတ်များကိုသာ အသုံးပြုပါသည်။
-                Line, Telegram နှင့် အခြား channel များကို နောက်ပိုင်းတွင် တိုးချဲ့မည်ဖြစ်သည်။
-              </p>
-            </CardHeader>
-
-            <CardContent className="space-y-4 p-6">
-              {CONTACTS.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <a
-                    key={item.title}
-                    href={item.href}
-                    target={item.href.startsWith('http') ? '_blank' : undefined}
-                    rel={item.href.startsWith('http') ? 'noreferrer' : undefined}
-                    className="block rounded-3xl border border-white/10 bg-white/5 p-5 transition-transform hover:-translate-y-0.5 hover:bg-white/10"
-                  >
-                    <div className="flex items-start gap-4">
-                      <div className="rounded-2xl bg-[#D4A63A]/15 p-3 text-[#F7E3A4] ring-1 ring-[#D4A63A]/20">
-                        <Icon className="h-5 w-5" />
-                      </div>
-                      <div className="flex-1">
-                        <p className="text-sm font-bold text-white">{item.title}</p>
-                        <p className="mt-2 text-sm leading-7 text-[#E8DDC9]">{item.text}</p>
-                        <p className="mt-3 text-sm font-semibold text-[#F7E3A4]">{item.label}</p>
-                      </div>
-                    </div>
-                  </a>
-                );
-              })}
-
-              <div className="rounded-3xl border border-[#D4A63A]/20 bg-[#D4A63A]/10 p-5">
-                <p className="text-sm font-semibold text-[#F7E3A4]">မြန်ဆန်သော inquiry အတွက်</p>
-                <div className="mt-3 space-y-2 text-sm leading-7 text-[#F6F1E7]">
-                  <p>Facebook: https://www.facebook.com/profile.php?id=61584321765274</p>
-                  <p>Phone: 0633301746 / 0826705571</p>
-                </div>
-              </div>
-
-              <Button
-                asChild
-                className="w-full rounded-full bg-gradient-to-r from-[#B6851F] to-[#D4A63A] px-6 text-[#1F1914] shadow-[0_18px_30px_rgba(214,166,58,0.25)] hover:from-[#A97D1B] hover:to-[#E0BC58]"
+                ထိုင်းမှ မြန်မာသို့ <span style={GOLD_TEXT_STYLE}>စိတ်ချယုံကြည်ရသော</span> cargo
+                service
+              </h1>
+              <p
+                className="mm"
+                style={{
+                  fontSize: 13,
+                  lineHeight: 1.9,
+                  color: '#8A7E6E',
+                  marginTop: 14,
+                  maxWidth: 520,
+                }}
               >
+                KTM သည် inquiry မှ စ၍ quote, confirm, ဝယ်ယူခြင်း, စုစည်းပို့ဆောင်ခြင်း,
+                အရောက်ပို့ခြင်း အထိ staff-led service အဖြစ် စီမံပေးသော logistics team ဖြစ်ပါသည်။
+              </p>
+              <div style={{ marginTop: 24, display: 'flex', flexWrap: 'wrap', gap: 10 }}>
                 <a
                   href="https://www.facebook.com/profile.php?id=61584321765274"
                   target="_blank"
                   rel="noreferrer"
+                  className="gold-btn"
+                  style={{ fontFamily: "'Oswald', sans-serif", textDecoration: 'none' }}
                 >
-                  Facebook page သို့သွားရန်
-                  <ArrowRight className="h-4 w-4" />
+                  Facebook ဖြင့်မေးမြန်းရန် <ArrowRight size={14} />
                 </a>
-              </Button>
-            </CardContent>
-          </Card>
-        </section>
+                <a
+                  href="#workflow"
+                  className="outline-btn"
+                  style={{ fontFamily: "'Oswald', sans-serif", textDecoration: 'none' }}
+                >
+                  လုပ်ငန်းစဉ်ကြည့်ရန်
+                </a>
+              </div>
+            </div>
+          </div>
 
-        <section className="mt-16">
-          <Card className="border-[#D9C8A9]/80 bg-white/80 shadow-[0_18px_50px_rgba(31,25,20,0.06)]">
-            <CardContent className="flex flex-col gap-6 p-6 sm:p-8 lg:flex-row lg:items-center lg:justify-between">
-              <div className="max-w-2xl space-y-3">
-                <p className="text-sm font-semibold uppercase tracking-[0.28em] text-[#8C6A22]">
-                  အကျဉ်းချုပ်
-                </p>
-                <h3 className="text-2xl font-black tracking-tight text-[#1F1914]">
-                  KTM Cargo သည် public brochure တစ်ခုဖြစ်ပြီး inquiry ကို Facebook နှင့် ဖုန်းဖြင့်
-                  လက်ခံပါသည်။
+          {/* Notice card */}
+          <div
+            className="hero-in-3"
+            style={{
+              width: 240,
+              background: '#111009',
+              border: '1px solid rgba(201,168,76,0.18)',
+              padding: '20px 18px',
+              flexShrink: 0,
+            }}
+          >
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 14 }}>
+              <SpeedMark size="sm" />
+              <span style={{ ...headingStyle, fontSize: 13, ...GOLD_TEXT_STYLE }}>Notice</span>
+            </div>
+            {[
+              { icon: BadgeCheck, t: 'Web order မရှိ', d: 'Online checkout မပါ — inquiry only' },
+              { icon: Users, t: 'Staff-led', d: 'KTM team က အဆင့်ဆင့် စီမံ' },
+              { icon: Globe, t: 'TH → MM', d: 'Bangkok မှ Yangon door-to-door' },
+            ].map(({ icon: Icon, t, d }) => (
+              <div key={t} style={{ display: 'flex', gap: 10, marginBottom: 12 }}>
+                <Icon size={14} style={{ color: '#C9A030', flexShrink: 0, marginTop: 2 }} />
+                <div>
+                  <p style={{ fontSize: 12, fontWeight: 500, color: '#D8CEB8' }}>{t}</p>
+                  <p
+                    className="mm"
+                    style={{ fontSize: 11, color: '#6B6050', lineHeight: 1.6, marginTop: 1 }}
+                  >
+                    {d}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      <div style={{ maxWidth: 1100, margin: '0 auto', padding: '0 24px' }}>
+        <div className="gold-rule" />
+      </div>
+
+      {/* ── Services ── */}
+      <section id="services" style={{ maxWidth: 1100, margin: '0 auto', padding: '48px 24px' }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'flex-end',
+            justifyContent: 'space-between',
+            marginBottom: 24,
+            paddingBottom: 16,
+            borderBottom: '1px solid rgba(201,168,76,0.1)',
+          }}
+        >
+          <div>
+            <p style={labelStyle}>ဝန်ဆောင်မှု</p>
+            <h2
+              style={{
+                ...headingStyle,
+                fontSize: 22,
+                color: '#F0E8D0',
+                marginTop: 6,
+                fontFamily: "'Oswald', 'Noto Sans Myanmar', sans-serif",
+                textTransform: 'none',
+              }}
+              className="mm"
+            >
+              KTM က ဘာတွေ လုပ်ပေးလဲ
+            </h2>
+          </div>
+          <div style={{ display: 'flex', gap: 4 }}>
+            {[1, 2, 3].map((i) => (
+              <span
+                key={i}
+                style={{
+                  display: 'block',
+                  width: 20,
+                  height: 3,
+                  background: 'rgba(212,166,58,0.2)',
+                  transform: 'skewX(-18deg)',
+                }}
+              />
+            ))}
+          </div>
+        </div>
+
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(280px, 1fr))',
+            gap: 1,
+            background: 'rgba(201,168,76,0.08)',
+            border: '1px solid rgba(201,168,76,0.08)',
+          }}
+        >
+          {SERVICES.map((s) => {
+            const Icon = s.icon;
+            return (
+              <div key={s.title} className="service-card" style={{ padding: '24px 20px' }}>
+                <div
+                  style={{
+                    display: 'flex',
+                    alignItems: 'center',
+                    justifyContent: 'space-between',
+                    marginBottom: 16,
+                  }}
+                >
+                  <div
+                    style={{
+                      width: 36,
+                      height: 36,
+                      display: 'flex',
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                      border: '1px solid rgba(201,168,76,0.25)',
+                      background: 'rgba(201,168,76,0.06)',
+                    }}
+                  >
+                    <Icon size={16} style={{ color: '#C9A030' }} />
+                  </div>
+                  <span style={{ ...labelStyle, fontSize: 9 }}>{s.tag}</span>
+                </div>
+                <h3
+                  className="mm"
+                  style={{ fontSize: 13, fontWeight: 500, color: '#E8DFC8', marginBottom: 8 }}
+                >
+                  {s.title}
                 </h3>
-                <p className="text-sm leading-7 text-[#5A4E42]">
-                  လုပ်ငန်းစဉ်အားလုံးကို staff-led workflow အဖြစ် စီမံထားပြီး ဝယ်ယူခြင်းမှ
-                  အရောက်ပို့ခြင်းအထိ KTM team က တာဝန်ယူပါသည်။
+                <p className="mm" style={{ fontSize: 12, lineHeight: 1.85, color: '#6B6050' }}>
+                  {s.description}
+                </p>
+                <div style={{ marginTop: 14, display: 'flex', flexDirection: 'column', gap: 6 }}>
+                  {s.bullets.map((b) => (
+                    <div key={b} style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                      <span
+                        style={{
+                          width: 14,
+                          height: 2,
+                          background: 'linear-gradient(90deg, #C9A030, transparent)',
+                          flexShrink: 0,
+                        }}
+                      />
+                      <span className="mm" style={{ fontSize: 11, color: '#8A7E6E' }}>
+                        {b}
+                      </span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+      </section>
+
+      {/* ── Workflow ── */}
+      <section id="workflow" style={{ maxWidth: 1100, margin: '0 auto', padding: '0 24px 48px' }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'flex-end',
+            justifyContent: 'space-between',
+            marginBottom: 24,
+            paddingBottom: 16,
+            borderBottom: '1px solid rgba(201,168,76,0.1)',
+          }}
+        >
+          <div>
+            <p style={labelStyle}>လုပ်ငန်းစဉ်</p>
+            <h2
+              style={{
+                ...headingStyle,
+                fontSize: 22,
+                color: '#F0E8D0',
+                marginTop: 6,
+                fontFamily: "'Oswald', 'Noto Sans Myanmar', sans-serif",
+                textTransform: 'none',
+              }}
+              className="mm"
+            >
+              ဘယ်လို အလုပ်လုပ်ပါသလဲ
+            </h2>
+          </div>
+        </div>
+
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))',
+            gap: 1,
+            background: 'rgba(201,168,76,0.08)',
+            border: '1px solid rgba(201,168,76,0.08)',
+          }}
+        >
+          {WORKFLOW.map((w) => (
+            <div
+              key={w.step}
+              className="service-card"
+              style={{ padding: '22px 18px', position: 'relative', overflow: 'hidden' }}
+            >
+              <span className="step-num">{w.step}</span>
+              <p
+                style={{
+                  ...GOLD_TEXT_STYLE,
+                  fontFamily: "'Oswald', sans-serif",
+                  fontSize: 11,
+                  fontWeight: 700,
+                  letterSpacing: '0.3em',
+                }}
+              >
+                {w.step}
+              </p>
+              <h3
+                className="mm"
+                style={{
+                  fontSize: 13,
+                  fontWeight: 500,
+                  color: '#E8DFC8',
+                  marginTop: 8,
+                  marginBottom: 8,
+                }}
+              >
+                {w.title}
+              </h3>
+              <p className="mm" style={{ fontSize: 12, lineHeight: 1.85, color: '#6B6050' }}>
+                {w.text}
+              </p>
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── Expectations ── */}
+      <section style={{ maxWidth: 1100, margin: '0 auto', padding: '0 24px 48px' }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'flex-end',
+            marginBottom: 24,
+            paddingBottom: 16,
+            borderBottom: '1px solid rgba(201,168,76,0.1)',
+          }}
+        >
+          <div>
+            <p style={labelStyle}>သိထားသင့်သည်များ</p>
+            <h2
+              style={{
+                ...headingStyle,
+                fontSize: 22,
+                color: '#F0E8D0',
+                marginTop: 6,
+                fontFamily: "'Oswald', 'Noto Sans Myanmar', sans-serif",
+                textTransform: 'none',
+              }}
+              className="mm"
+            >
+              ကြိုတင်မျှော်မှန်းချက်
+            </h2>
+          </div>
+        </div>
+        <div
+          style={{
+            display: 'grid',
+            gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))',
+            gap: 1,
+            background: 'rgba(201,168,76,0.08)',
+            border: '1px solid rgba(201,168,76,0.08)',
+          }}
+        >
+          {EXPECTATIONS.map(({ icon: Icon, title, text }) => (
+            <div
+              key={title}
+              className="service-card"
+              style={{ display: 'flex', gap: 14, padding: '20px 18px' }}
+            >
+              <div
+                style={{
+                  width: 30,
+                  height: 30,
+                  flexShrink: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: '1px solid rgba(201,168,76,0.2)',
+                }}
+              >
+                <Icon size={13} style={{ color: '#C9A030' }} />
+              </div>
+              <div>
+                <p className="mm" style={{ fontSize: 13, fontWeight: 500, color: '#D8CEB8' }}>
+                  {title}
+                </p>
+                <p
+                  className="mm"
+                  style={{ fontSize: 12, lineHeight: 1.85, color: '#6B6050', marginTop: 4 }}
+                >
+                  {text}
                 </p>
               </div>
-              <div className="flex flex-col gap-3 sm:flex-row">
-                <Button
-                  asChild
-                  variant="outline"
-                  className="rounded-full border-[#CDBB9A] bg-white/70 px-6 text-[#1F1914] hover:bg-white"
+            </div>
+          ))}
+        </div>
+      </section>
+
+      {/* ── FAQ ── */}
+      <section style={{ maxWidth: 1100, margin: '0 auto', padding: '0 24px 48px' }}>
+        <div
+          style={{
+            display: 'flex',
+            alignItems: 'flex-end',
+            marginBottom: 24,
+            paddingBottom: 16,
+            borderBottom: '1px solid rgba(201,168,76,0.1)',
+          }}
+        >
+          <div>
+            <p style={labelStyle}>FAQ</p>
+            <h2
+              style={{
+                ...headingStyle,
+                fontSize: 22,
+                color: '#F0E8D0',
+                marginTop: 6,
+                fontFamily: "'Oswald', 'Noto Sans Myanmar', sans-serif",
+                textTransform: 'none',
+              }}
+              className="mm"
+            >
+              မေးလေ့ရှိသောမေးခွန်းများ
+            </h2>
+          </div>
+        </div>
+        <div style={{ border: '1px solid rgba(201,168,76,0.1)' }}>
+          {FAQ_ITEMS.map(({ q, a }, i) => (
+            <details
+              key={q}
+              className="faq-item"
+              style={{ borderTop: i > 0 ? '1px solid rgba(201,168,76,0.08)' : 'none' }}
+            >
+              <summary
+                style={{
+                  display: 'flex',
+                  alignItems: 'flex-start',
+                  justifyContent: 'space-between',
+                  gap: 16,
+                  padding: '16px 18px',
+                  cursor: 'pointer',
+                  background: '#0F0D0A',
+                  listStyle: 'none',
+                }}
+              >
+                <p className="mm" style={{ fontSize: 13, color: '#C8BEA8', lineHeight: 1.7 }}>
+                  {q}
+                </p>
+                <svg
+                  className="faq-arrow"
+                  style={{ width: 14, height: 14, flexShrink: 0, marginTop: 3, color: '#C9A030' }}
+                  fill="none"
+                  viewBox="0 0 24 24"
+                  stroke="currentColor"
+                  strokeWidth={2}
                 >
-                  <Link to="/StaffLogin">Staff Login</Link>
-                </Button>
-                <Button
-                  asChild
-                  className="rounded-full bg-[#1F1914] px-6 text-[#F6F1E7] hover:bg-[#2A221B]"
-                >
-                  <Link to="/">Back Home</Link>
-                </Button>
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M9 5l7 7-7 7" />
+                </svg>
+              </summary>
+              <div
+                style={{
+                  background: '#0C0A07',
+                  padding: '12px 18px 16px',
+                  borderTop: '1px solid rgba(201,168,76,0.06)',
+                }}
+              >
+                <p className="mm" style={{ fontSize: 12, lineHeight: 1.9, color: '#6B6050' }}>
+                  {a}
+                </p>
               </div>
-            </CardContent>
-          </Card>
-        </section>
-      </main>
+            </details>
+          ))}
+        </div>
+      </section>
+
+      {/* ── Contact ── */}
+      <section id="contact" style={{ maxWidth: 1100, margin: '0 auto', padding: '0 24px 56px' }}>
+        <div style={{ border: '1px solid rgba(201,168,76,0.2)', background: '#0F0D0A' }}>
+          {/* Contact header */}
+          <div
+            style={{
+              padding: '24px 24px 20px',
+              borderBottom: '1px solid rgba(201,168,76,0.1)',
+              display: 'flex',
+              alignItems: 'center',
+              gap: 16,
+            }}
+          >
+            <SpeedMark />
+            <div>
+              <p style={labelStyle}>ဆက်သွယ်ရန်</p>
+              <h2
+                style={{
+                  ...headingStyle,
+                  fontSize: 20,
+                  marginTop: 4,
+                  fontFamily: "'Oswald', 'Noto Sans Myanmar', sans-serif",
+                  textTransform: 'none',
+                  color: '#F0E8D0',
+                }}
+                className="mm"
+              >
+                ယနေ့ပင် မေးမြန်းနိုင်ပါသည်
+              </h2>
+            </div>
+          </div>
+
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr' }}>
+            {/* Facebook */}
+            <a
+              href="https://www.facebook.com/profile.php?id=61584321765274"
+              target="_blank"
+              rel="noreferrer"
+              style={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: 14,
+                padding: '22px 24px',
+                borderRight: '1px solid rgba(201,168,76,0.1)',
+                textDecoration: 'none',
+                transition: 'background 0.15s',
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(201,168,76,0.04)')}
+              onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+            >
+              <div
+                style={{
+                  width: 38,
+                  height: 38,
+                  flexShrink: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: '1px solid rgba(201,168,76,0.25)',
+                  background: 'rgba(201,168,76,0.08)',
+                }}
+              >
+                <MessageSquare size={16} style={{ color: '#C9A030' }} />
+              </div>
+              <div>
+                <p style={{ ...labelStyle, color: '#6B5E40' }}>Facebook</p>
+                <p
+                  className="mm"
+                  style={{ fontSize: 13, color: '#C8BEA8', marginTop: 4, lineHeight: 1.6 }}
+                >
+                  ပထမဦးဆုံး inquiry အတွက် အဓိက ဆက်သွယ်ရန်လမ်းကြောင်း
+                </p>
+                <p
+                  style={{
+                    ...GOLD_TEXT_STYLE,
+                    fontFamily: "'Oswald', sans-serif",
+                    fontSize: 11,
+                    fontWeight: 500,
+                    letterSpacing: '0.15em',
+                    marginTop: 8,
+                    display: 'flex',
+                    alignItems: 'center',
+                    gap: 4,
+                  }}
+                >
+                  MESSAGE ပေးပို့ရန် <ArrowRight size={11} />
+                </p>
+              </div>
+            </a>
+
+            {/* Phone */}
+            <a
+              href="tel:+959633301746"
+              style={{
+                display: 'flex',
+                alignItems: 'flex-start',
+                gap: 14,
+                padding: '22px 24px',
+                textDecoration: 'none',
+                transition: 'background 0.15s',
+              }}
+              onMouseEnter={(e) => (e.currentTarget.style.background = 'rgba(201,168,76,0.04)')}
+              onMouseLeave={(e) => (e.currentTarget.style.background = 'transparent')}
+            >
+              <div
+                style={{
+                  width: 38,
+                  height: 38,
+                  flexShrink: 0,
+                  display: 'flex',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  border: '1px solid rgba(201,168,76,0.25)',
+                  background: 'rgba(201,168,76,0.08)',
+                }}
+              >
+                <Phone size={16} style={{ color: '#C9A030' }} />
+              </div>
+              <div>
+                <p style={{ ...labelStyle, color: '#6B5E40' }}>ဖုန်း</p>
+                <p
+                  style={{
+                    fontFamily: 'monospace',
+                    fontSize: 15,
+                    fontWeight: 500,
+                    color: '#D8CEB8',
+                    marginTop: 4,
+                    letterSpacing: '0.08em',
+                  }}
+                >
+                  0633 301 746
+                </p>
+                <p
+                  style={{
+                    fontFamily: 'monospace',
+                    fontSize: 14,
+                    color: '#8A7A60',
+                    letterSpacing: '0.08em',
+                  }}
+                >
+                  0826 705 571
+                </p>
+              </div>
+            </a>
+          </div>
+        </div>
+      </section>
+
+      {/* ── Footer ── */}
+      <footer style={{ borderTop: '1px solid rgba(201,168,76,0.1)' }}>
+        <div
+          style={{
+            maxWidth: 1100,
+            margin: '0 auto',
+            padding: '16px 24px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+          }}
+        >
+          <KtmMark size="sm" />
+          <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+            <Link
+              to="/StaffLogin"
+              style={{
+                ...labelStyle,
+                textDecoration: 'none',
+                fontSize: 9,
+                color: '#3A3228',
+                transition: 'color 0.15s',
+              }}
+              onMouseEnter={(e) => (e.target.style.color = '#6B5E40')}
+              onMouseLeave={(e) => (e.target.style.color = '#3A3228')}
+            >
+              Staff Login
+            </Link>
+            <span style={{ width: 1, height: 12, background: '#3A3228' }} />
+            <Link
+              to="/PriceCalculator"
+              style={{
+                ...labelStyle,
+                textDecoration: 'none',
+                fontSize: 9,
+                color: '#3A3228',
+                transition: 'color 0.15s',
+              }}
+              onMouseEnter={(e) => (e.target.style.color = '#6B5E40')}
+              onMouseLeave={(e) => (e.target.style.color = '#3A3228')}
+            >
+              Price Calculator
+            </Link>
+          </div>
+        </div>
+      </footer>
     </div>
   );
 }

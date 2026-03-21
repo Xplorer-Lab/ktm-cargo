@@ -72,9 +72,8 @@ test.describe('KTM workflow slice', () => {
   test('public client portal reads as a brochure only', async ({ page }) => {
     await page.goto('/ClientPortal?__e2e=public');
 
-    await expect(page.getByRole('heading', { name: /ကုမ္ပဏီအကြောင်း/i })).toBeVisible();
-    await expect(page.getByText(/KTM က self-service portal မဟုတ်ပါ/i)).toBeVisible();
-    await expect(page.getByText(/ယခု public page သည် KTM Cargo/i)).toBeVisible();
-    await expect(page.getByRole('link', { name: /Back Home/i })).toBeVisible();
+    await expect(page.getByRole('heading', { name: /KTM က ဘာတွေ လုပ်ပေးလဲ/i })).toBeVisible();
+    await expect(page.getByText(/Online checkout မပါ — inquiry only/i)).toBeVisible();
+    await expect(page.getByText(/Facebook ဖြင့်မေးမြန်းရန်/i)).toBeVisible();
   });
 });
