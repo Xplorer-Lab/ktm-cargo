@@ -6,7 +6,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "lint": "eslint .",
+    "lint": "eslint . --max-warnings=-1",
     "lint:fix": "eslint . --fix",
     "preview": "vite preview",
     "playwright:client-portal": "bash scripts/playwright/client_portal_workflow.sh",
