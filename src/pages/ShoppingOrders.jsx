@@ -382,7 +382,7 @@ export default function ShoppingOrders() {
         >
           <div>
             <div className="flex items-center gap-3">
-              <h1 className="text-2xl md:text-3xl font-bold text-slate-900">Shopping Orders</h1>
+              <h1 className="text-2xl md:text-3xl font-bold text-slate-900">Orders</h1>
               <Button
                 variant="ghost"
                 size="icon"
@@ -393,7 +393,7 @@ export default function ShoppingOrders() {
                 <HelpCircle className="w-5 h-5" />
               </Button>
             </div>
-            <p className="text-slate-500 mt-1">Personal shopping service with cargo delivery</p>
+            <p className="text-slate-500 mt-1">Manage client orders</p>
           </div>
           <Button
             id="new-order-btn"
@@ -404,7 +404,7 @@ export default function ShoppingOrders() {
             className="bg-purple-600 hover:bg-purple-700"
           >
             <Plus className="w-4 h-4 mr-2" />
-            New Shopping Order
+            New Order
           </Button>
         </div>
 

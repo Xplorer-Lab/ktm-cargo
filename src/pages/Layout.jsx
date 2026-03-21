@@ -8,21 +8,16 @@ import { Button } from '@/components/ui/button';
 import { useUser } from '@/components/auth/UserContext';
 import {
   LayoutDashboard,
-  Package,
   ShoppingBag,
   Users,
-  ClipboardList,
-  BarChart3,
-  Calculator,
+  Truck,
+  FileText,
+  Settings,
   Menu,
   X,
   LogOut,
   ChevronRight,
   Plane,
-  Target,
-  FileText,
-  Star,
-  Settings,
   Sparkles,
 } from 'lucide-react';
 import { Badge } from '@/components/ui/badge';
@@ -33,45 +28,25 @@ import { startTour, hasTour } from '@/components/common/TourGuide';
 
 const navSections = [
   {
-    title: 'Primary Areas',
+    title: 'Main',
     items: [
       {
-        name: 'Operations Console',
+        name: 'Dashboard',
         icon: LayoutDashboard,
         page: 'Operations',
         href: createPageUrl('Operations'),
         activePages: ['Operations'],
       },
+      { name: 'Orders', icon: ShoppingBag, page: 'ShoppingOrders' },
+      { name: 'Clients', icon: Users, page: 'Customers' },
+      { name: 'Logistics', icon: Truck, page: 'Vendors' },
+      { name: 'Invoices', icon: FileText, page: 'Invoices' },
+    ],
+  },
+  {
+    title: 'System',
+    items: [
       { name: 'Settings', icon: Settings, page: 'Settings' },
-    ],
-  },
-  {
-    title: 'Workflow Stages',
-    items: [
-      { name: 'Inquiry & Quotes', icon: Calculator, page: 'PriceCalculator' },
-      { name: 'Shopping Intake', icon: ShoppingBag, page: 'ShoppingOrders' },
-      {
-        name: 'Consolidation & Booking',
-        icon: Package,
-        page: 'Procurement',
-        feature: 'enableProcurement',
-      },
-      { name: 'Transit & Delivery', icon: Plane, page: 'Shipments' },
-      { name: 'Invoice & Reconcile', icon: FileText, page: 'Invoices' },
-      { name: 'Feedback Analytics', icon: Star, page: 'FeedbackAnalytics' },
-    ],
-  },
-  {
-    title: 'Supporting Modules',
-    items: [
-      { name: 'Feedback Queue', icon: Star, page: 'FeedbackQueue' },
-      { name: 'Shipment Documents', icon: FileText, page: 'ShipmentDocuments' },
-      { name: 'Customers', icon: Users, page: 'Customers' },
-      { name: 'Vendors', icon: Users, page: 'Vendors' },
-      { name: 'Inventory', icon: ClipboardList, page: 'Inventory', feature: 'enableInventory' },
-      { name: 'Segments & Campaigns', icon: Target, page: 'CustomerSegments' },
-      { name: 'Reports', icon: BarChart3, page: 'Reports' },
-      { name: 'Tasks', icon: ClipboardList, page: 'Tasks', feature: 'enableTasks' },
     ],
   },
 ];

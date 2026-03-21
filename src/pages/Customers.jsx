@@ -261,8 +261,8 @@ export default function Customers() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h1 className="text-2xl md:text-3xl font-bold text-slate-900">Customers</h1>
-            <p className="text-slate-500 mt-1">{customers.length} total customers</p>
+            <h1 className="text-2xl md:text-3xl font-bold text-slate-900">Clients</h1>
+            <p className="text-slate-500 mt-1">Manage your client list</p>
           </div>
           <Button
             onClick={() => {
