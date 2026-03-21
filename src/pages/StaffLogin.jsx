@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import { AlertTriangle, Loader2, LockKeyhole, ShieldCheck } from 'lucide-react';
+import { useQuery } from '@tanstack/react-query';
 import { auth } from '@/api/auth';
+import { db } from '@/api/db';
 import { useUser } from '@/components/auth/UserContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -89,6 +91,20 @@ function KtmMark({ size = 'md' }) {
   );
 }
 
+function BrandLogo({ logoUrl, companyName, size = 'md' }) {
+  if (logoUrl) {
+    const px = size === 'sm' ? 32 : 48;
+    return (
+      <img
+        src={logoUrl}
+        alt={companyName || 'Logo'}
+        style={{ width: px, height: px, objectFit: 'contain' }}
+      />
+    );
+  }
+  return <KtmMark size={size} />;
+}
+
 function isStaffAccount(user) {
   return user?.role === 'staff' || user?.role === 'admin';
 }
@@ -102,6 +118,21 @@ export default function StaffLogin() {
   const [password, setPassword] = useState('');
   const [submitting, setSubmitting] = useState(false);
   const [errorMessage, setErrorMessage] = useState('');
+
+  const { data: companySettings } = useQuery({
+    queryKey: ['company-settings'],
+    queryFn: async () => {
+      try {
+        const list = await db.companySettings.list();
+        return list[0] || null;
+      } catch {
+        return null;
+      }
+    },
+    retry: false,
+  });
+  const uploadedLogo = companySettings?.logo_url;
+  const companyName = companySettings?.company_name || 'KTM Cargo Express';
 
   const nextPath = useMemo(
     () => appendE2EFixture(getStaffDestinationFromSearch(location.search), location.search),
@@ -174,7 +205,7 @@ export default function StaffLogin() {
       >
         <div style={{ width: '100%', maxWidth: 480 }}>
           <div style={{ marginBottom: 32 }}>
-            <KtmMark size="md" />
+            <BrandLogo logoUrl={uploadedLogo} companyName={companyName} size="md" />
           </div>
           <div
             style={{
@@ -290,7 +321,7 @@ export default function StaffLogin() {
           }}
         >
           <Link to={appendE2EFixture('/', location.search)} style={{ textDecoration: 'none' }}>
-            <KtmMark size="sm" />
+            <BrandLogo logoUrl={uploadedLogo} companyName={companyName} size="sm" />
           </Link>
           <span
             style={{
