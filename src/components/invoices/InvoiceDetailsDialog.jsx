@@ -17,9 +17,30 @@ const TYPE_CONFIG = {
   shopping_order: { label: 'Shopping Order', color: 'bg-purple-100 text-purple-800' },
 };
 
+function deriveLineItems(invoice) {
+  if (invoice.items?.length) return invoice.items;
+  const items = [];
+  if (invoice.shipping_amount > 0)
+    items.push({ description: 'Cargo Shipping', quantity: 1, unit_price: invoice.shipping_amount });
+  if (invoice.product_cost > 0)
+    items.push({ description: 'Product Cost', quantity: 1, unit_price: invoice.product_cost });
+  if (invoice.commission_amount > 0)
+    items.push({
+      description: 'Service Commission',
+      quantity: 1,
+      unit_price: invoice.commission_amount,
+    });
+  if (invoice.insurance_amount > 0)
+    items.push({ description: 'Insurance', quantity: 1, unit_price: invoice.insurance_amount });
+  if (invoice.packaging_fee > 0)
+    items.push({ description: 'Packaging', quantity: 1, unit_price: invoice.packaging_fee });
+  return items;
+}
+
 export default function InvoiceDetailsDialog({ invoice, companySettings, onPrint, onAction }) {
   const typeConfig = TYPE_CONFIG[invoice.invoice_type] || TYPE_CONFIG.shipment;
   const statusConfig = STATUS_CONFIG[invoice.status] || STATUS_CONFIG.draft;
+  const lineItems = deriveLineItems(invoice);
   const isOverdue =
     invoice.due_date &&
     new Date(invoice.due_date) < new Date() &&
@@ -58,7 +79,11 @@ export default function InvoiceDetailsDialog({ invoice, companySettings, onPrint
         <div>
           <p className="text-slate-500 mb-1">Date</p>
           <p className="font-medium">
-            {invoice.invoice_date ? format(parseISO(invoice.invoice_date), 'MMM d, yyyy') : '-'}
+            {invoice.invoice_date
+              ? format(parseISO(invoice.invoice_date), 'MMM d, yyyy')
+              : invoice.created_at
+                ? format(parseISO(invoice.created_at), 'MMM d, yyyy')
+                : '-'}
           </p>
         </div>
         {invoice.tracking_number && (
@@ -89,7 +114,7 @@ export default function InvoiceDetailsDialog({ invoice, companySettings, onPrint
               </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
-              {invoice.items?.map((item, index) => (
+              {lineItems.map((item, index) => (
                 <tr key={index}>
                   <td className="px-4 py-3 text-slate-900">{item.description}</td>
                   <td className="px-4 py-3 text-right text-slate-600">{item.quantity}</td>
