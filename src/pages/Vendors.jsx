@@ -468,8 +468,13 @@ export default function Vendors() {
                             </div>
                             <div>
                               <p className="font-semibold text-slate-900">{vendor.name}</p>
-                              <p className="text-xs text-slate-500">
+                              <p className="text-xs text-slate-500 flex items-center gap-1">
                                 {typeConfig[vendor.vendor_type]?.label}
+                                {vendor.vendor_type === 'cargo_carrier' && vendor.carrier_mode && (
+                                  <span className="ml-1 px-1.5 py-0.5 rounded text-xs font-medium bg-slate-100 text-slate-600">
+                                    {vendor.carrier_mode === 'land' ? '🚛 Land' : '✈️ Air'}
+                                  </span>
+                                )}
                               </p>
                             </div>
                           </div>

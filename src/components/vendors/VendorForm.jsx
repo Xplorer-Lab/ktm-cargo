@@ -35,6 +35,7 @@ import {
   Sparkles,
   TrendingUp,
   Package,
+  Wind,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
@@ -76,6 +77,7 @@ export default function VendorForm({ vendor, onSubmit, onCancel }) {
   const [form, setForm] = useState({
     name: '',
     vendor_type: 'supplier',
+    carrier_mode: null,
     contact_name: '',
     phone: '',
     email: '',
@@ -109,6 +111,7 @@ export default function VendorForm({ vendor, onSubmit, onCancel }) {
       setForm({
         name: vendor.name || '',
         vendor_type: vendor.vendor_type || 'supplier',
+        carrier_mode: vendor.carrier_mode || null,
         contact_name: vendor.contact_name || '',
         phone: vendor.phone || '',
         email: vendor.email || '',
@@ -274,6 +277,36 @@ export default function VendorForm({ vendor, onSubmit, onCancel }) {
                     </SelectContent>
                   </Select>
                 </div>
+
+                {form.vendor_type === 'cargo_carrier' && (
+                  <div className="space-y-2">
+                    <Label className="flex items-center gap-2">
+                      <Wind className="w-4 h-4 text-slate-400" />
+                      Carrier Mode <span className="text-rose-500">*</span>
+                    </Label>
+                    <div className="grid grid-cols-2 gap-3">
+                      {[
+                        { value: 'land', label: '🚛 Land', desc: 'Road transport' },
+                        { value: 'air', label: '✈️ Air', desc: 'Air freight' },
+                      ].map((mode) => (
+                        <button
+                          key={mode.value}
+                          type="button"
+                          onClick={() => updateForm('carrier_mode', mode.value)}
+                          className={cn(
+                            'p-3 rounded-xl border-2 text-left transition-all',
+                            form.carrier_mode === mode.value
+                              ? 'border-blue-500 bg-blue-50 dark:bg-blue-950/30'
+                              : 'border-slate-200 dark:border-slate-700 hover:border-slate-300'
+                          )}
+                        >
+                          <div className="font-semibold text-sm">{mode.label}</div>
+                          <div className="text-xs text-slate-500">{mode.desc}</div>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
 
                 <div className="space-y-2">
                   <Label className="flex items-center gap-2">

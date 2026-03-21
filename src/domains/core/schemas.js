@@ -17,6 +17,7 @@ const PURCHASE_ORDER_STATUS_ENUM = [
 ];
 
 const VENDOR_TYPE_ENUM = ['supplier', 'cargo_carrier', 'packaging', 'customs_broker', 'warehouse'];
+const CARRIER_MODE_ENUM = ['land', 'air'];
 
 const FEEDBACK_STATUS_ENUM = [
   'pending',
@@ -206,6 +207,7 @@ export const vendorSchema = z.object({
   contract_end: z.string().optional(),
   onboarding_source: z.string().optional(),
   cargo_capacity_per_month: z.preprocess(numberPreprocess, z.number().optional()),
+  carrier_mode: z.enum(CARRIER_MODE_ENUM).optional().nullable(),
 });
 
 export const campaignSchema = z.object({
