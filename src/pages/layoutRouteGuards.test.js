@@ -3,7 +3,6 @@ import { shouldBypassAppLayout } from './layoutRouteGuards';
 describe('shouldBypassAppLayout', () => {
   it('bypasses layout for exact public pages', () => {
     expect(shouldBypassAppLayout('/')).toBe(true);
-    expect(shouldBypassAppLayout('/PriceCalculator')).toBe(true);
     expect(shouldBypassAppLayout('/Feedback')).toBe(true);
     expect(shouldBypassAppLayout('/StaffLogin')).toBe(true);
   });
@@ -19,5 +18,6 @@ describe('shouldBypassAppLayout', () => {
     expect(shouldBypassAppLayout('/Dashboard')).toBe(false);
     expect(shouldBypassAppLayout('/Procurement')).toBe(false);
     expect(shouldBypassAppLayout('/Invoices')).toBe(false);
+    expect(shouldBypassAppLayout('/PriceCalculator')).toBe(false);
   });
 });

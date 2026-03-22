@@ -152,7 +152,7 @@ export default function PriceCalculator() {
 
     const totalCustomer =
       pCost + shippingCost + insuranceFee + packagingFee + commission + surchargeTotal;
-    const totalCost = pCost + baseCost + insuranceFee;
+    const totalCost = pCost + baseCost;
     const profit = totalCustomer - totalCost;
     const margin = totalCustomer > 0 ? (profit / totalCustomer) * 100 : 0;
     const totalMMK = totalCustomer * exchangeRate;

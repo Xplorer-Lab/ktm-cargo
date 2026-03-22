@@ -83,7 +83,6 @@ describe('Route snapshot protection', () => {
       '/Feedback',
       '/StaffLogin',
       '/VendorRegistration',
-      '/PriceCalculator',
     ];
 
     for (const route of publicRoutes) {
