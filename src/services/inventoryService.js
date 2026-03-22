@@ -63,7 +63,9 @@ export async function deductInventoryForShipment(shipment) {
 
     const reason = `Shipment ${shipment.shipment_number || shipment.id} confirmed`;
 
-    await Promise.all(packagingItems.map((item) => deductStock(item, 1, reason)));
+    for (const item of packagingItems) {
+      await deductStock(item, 1, reason);
+    }
   } catch (err) {
     // Non-blocking — log but don't fail the shipment flow
     console.error('[inventoryService] deductInventoryForShipment failed:', err);
@@ -85,7 +87,9 @@ export async function deductInventoryForOrder(order) {
 
     const reason = `Shopping order ${order.order_number || order.id} moved to shipping`;
 
-    await Promise.all(goodsItems.map((item) => deductStock(item, 1, reason)));
+    for (const item of goodsItems) {
+      await deductStock(item, 1, reason);
+    }
   } catch (err) {
     // Non-blocking — log but don't fail the order flow
     console.error('[inventoryService] deductInventoryForOrder failed:', err);

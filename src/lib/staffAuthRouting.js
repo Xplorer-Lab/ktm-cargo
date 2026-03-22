@@ -1,4 +1,5 @@
 import { appendE2EFixture } from '@/lib/e2e';
+import { normalize } from 'path';
 
 export const STAFF_HOME_PATH = '/Operations';
 export const STAFF_LOGIN_PATH = '/StaffLogin';
@@ -39,12 +40,15 @@ export function sanitizeStaffNext(rawNext = '') {
     return STAFF_HOME_PATH;
   }
 
-  const [pathname, rawQuery = ''] = decodedValue.split('?');
-  if (!ALLOWED_STAFF_PATHS.has(pathname)) {
+  const [rawPathname, rawQuery = ''] = decodedValue.split('?');
+
+  // FIXED: Normalize path to prevent traversal attacks (P0)
+  const normalizedPath = normalize(rawPathname);
+  if (!ALLOWED_STAFF_PATHS.has(normalizedPath)) {
     return STAFF_HOME_PATH;
   }
 
-  return rawQuery ? `${pathname}?${rawQuery}` : pathname;
+  return rawQuery ? `${normalizedPath}?${rawQuery}` : normalizedPath;
 }
 
 export function buildStaffNext(pathname = STAFF_HOME_PATH, search = '') {
