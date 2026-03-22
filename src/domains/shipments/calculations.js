@@ -8,6 +8,9 @@
 
 const VOLUMETRIC_DIVISOR = 5000;
 
+/** Industry-standard minimum billable weight (kg). */
+export const MINIMUM_BILLING_WEIGHT_KG = 1;
+
 /**
  * Round a number to specified decimal places (avoids float noise).
  * @param {number} value
@@ -77,16 +80,37 @@ export function packagingFeeByWeight(weightKg, overrideFee) {
 }
 
 /**
+ * Resolve effective selling rate from an optional tiered rate table.
+ * Falls back to defaultRate if no table is provided or no tier matches.
+ *
+ * Rate table format (sorted ascending by minKg):
+ *   [{ minKg: 0, pricePerKg: 120 }, { minKg: 50, pricePerKg: 100 }, ...]
+ *
+ * @param {number} weightKg
+ * @param {Array<{ minKg: number, pricePerKg: number }>|undefined} rateTable
+ * @param {number} defaultRate
+ * @returns {number}
+ */
+export function effectiveRate(weightKg, rateTable, defaultRate) {
+  if (!rateTable || rateTable.length === 0) return defaultRate;
+  const w = safeNum(weightKg);
+  // Pick the highest minKg tier that the weight qualifies for
+  const tier = [...rateTable].sort((a, b) => b.minKg - a.minKg).find((t) => w >= safeNum(t.minKg));
+  return tier ? Math.max(0, safeNum(tier.pricePerKg)) : defaultRate;
+}
+
+/**
  * Compute shipping, insurance, packaging, commission, surcharges, totals and profit.
  * Updated for "Dropshipping / Personal Shopper Model" as default.
  *
  * @param {{
  *   actualWeightKg: number,
- *   pricePerKg: number, // Selling Price Per Kg
- *   costPerKg: number, // Cargo Cost Per Kg
- *   useVolumetric?: boolean, // Toggle for future expansion
+ *   pricePerKg: number,         // Selling price per kg (overridden by rateTable if provided)
+ *   costPerKg: number,          // Cargo cost per kg
+ *   rateTable?: Array<{ minKg: number, pricePerKg: number }>, // Tiered selling rates
+ *   useVolumetric?: boolean,
  *   dimensionsCm?: { length, width, height },
- *   includePackingFee?: boolean, // Toggle for self-packing MVP
+ *   includePackingFee?: boolean,
  *   packagingFee?: number,
  *   productCost?: number,
  *   commissionRatePercent?: number,
@@ -96,7 +120,8 @@ export function packagingFeeByWeight(weightKg, overrideFee) {
  *   serviceType?: string,
  * }} params
  * @returns {{
- *   chargeableWeight: number,
+ *   chargeableWeight: number,   // Physical/volumetric weight (display)
+ *   billingWeight: number,      // Billed weight — min 1 kg (industry standard)
  *   cargoCost: number,
  *   customerShippingFee: number,
  *   insuranceFee: number,
@@ -107,19 +132,28 @@ export function packagingFeeByWeight(weightKg, overrideFee) {
  *   totalCost: number,
  *   profit: number,
  *   marginPercent: number,
+ *   warnings: string[],         // 'negative_margin' when profit < 0
  * }}
  */
 export function computeOrderTotals(params) {
   const actualWeight = Math.max(0, safeNum(params.actualWeightKg || params.chargeableWeightKg));
   const useVolumetric = Boolean(params.useVolumetric);
 
-  // 1. Calculate the final working weight
+  // 1. Physical/volumetric weight (for display)
   const w =
     useVolumetric && params.dimensionsCm
       ? chargeableWeight(actualWeight, params.dimensionsCm, true)
       : actualWeight;
 
-  const sellingPricePerKg = Math.max(0, safeNum(params.pricePerKg));
+  // 2. Billing weight — industry standard minimum 1 kg
+  const billingWeight = w > 0 ? Math.max(MINIMUM_BILLING_WEIGHT_KG, w) : 0;
+
+  // 3. Effective selling rate (tiered table overrides flat pricePerKg)
+  const sellingPricePerKg = effectiveRate(
+    billingWeight,
+    params.rateTable,
+    Math.max(0, safeNum(params.pricePerKg))
+  );
   const cargoCostPerKg = Math.max(0, safeNum(params.costPerKg));
   const productCost = Math.max(0, safeNum(params.productCost));
 
@@ -129,22 +163,22 @@ export function computeOrderTotals(params) {
   const includePackingFee = Boolean(params.includePackingFee);
   const serviceType = params.serviceType || '';
 
-  // 2. Core Dropshipping Calculations
-  const customerShippingFee = roundMoney(sellingPricePerKg * w);
-  const cargoCost = roundMoney(cargoCostPerKg * w);
+  // 4. Core fees — based on billingWeight
+  const customerShippingFee = roundMoney(sellingPricePerKg * billingWeight);
+  const cargoCost = roundMoney(cargoCostPerKg * billingWeight);
 
-  // 3. Optional MVP Features (Packing & Insurance)
+  // 5. Optional fees
   const insuranceFee = includeInsurance
     ? roundMoney(customerShippingFee * (insuranceRate / 100))
     : 0;
   const packagingFee = includePackingFee
-    ? roundMoney(packagingFeeByWeight(w, params.packagingFee))
+    ? roundMoney(packagingFeeByWeight(billingWeight, params.packagingFee))
     : 0;
 
   const isShopping = String(serviceType).startsWith('shopping');
   const commission = isShopping ? roundMoney(productCost * (commissionRate / 100)) : 0;
 
-  // 4. Surcharges
+  // 6. Surcharges
   let surchargeTotal = 0;
   const surcharges = params.surcharges || [];
   for (const s of surcharges) {
@@ -162,12 +196,12 @@ export function computeOrderTotals(params) {
   }
   surchargeTotal = roundMoney(surchargeTotal);
 
-  // 5. Final Totals
+  // 7. Final totals
   const totalCustomer = roundMoney(
     productCost + customerShippingFee + insuranceFee + packagingFee + commission + surchargeTotal
   );
 
-  // Total internally incurred cost (insuranceFee is collected from customer, not KTM's expense)
+  // Internal cost (insuranceFee is collected from customer, not KTM's expense)
   const totalCost = roundMoney(productCost + cargoCost + packagingFee);
 
   // Profit = commission + (customerShippingFee - cargoCost) + insuranceFee + surchargeTotal
@@ -176,8 +210,13 @@ export function computeOrderTotals(params) {
   );
   const marginPercent = totalCustomer > 0 ? roundMoney((profit / totalCustomer) * 100, 1) : 0;
 
+  // 8. Warnings
+  const warnings = [];
+  if (profit < 0) warnings.push('negative_margin');
+
   return {
     chargeableWeight: w,
+    billingWeight,
     cargoCost,
     customerShippingFee,
     insuranceFee,
@@ -188,6 +227,7 @@ export function computeOrderTotals(params) {
     totalCost,
     profit,
     marginPercent,
+    warnings,
   };
 }
 
@@ -233,7 +273,17 @@ export function computeInvoiceTotals(params) {
  *   vendorCostPerKg?: number,
  *   commissionRatePercent?: number,
  * }} params
- * @returns {{ productCost: number, commission: number, shippingCost: number, total: number, vendorCost: number, profit: number, marginPercent: number }}
+ * @returns {{
+ *   productCost: number,
+ *   commission: number,
+ *   shippingCost: number,
+ *   billingWeight: number,
+ *   total: number,
+ *   vendorCost: number,
+ *   profit: number,
+ *   marginPercent: number,
+ *   warnings: string[],
+ * }}
  */
 export function computeShoppingOrderTotals(params) {
   const productCost = Math.max(0, safeNum(params.productCost));
@@ -242,20 +292,28 @@ export function computeShoppingOrderTotals(params) {
   const vendorCostPerKg = Math.max(0, safeNum(params.vendorCostPerKg));
   const commissionRate = safeNum(params.commissionRatePercent, 0);
 
+  // Minimum 1 kg billing weight (industry standard)
+  const billingWeight = weight > 0 ? Math.max(MINIMUM_BILLING_WEIGHT_KG, weight) : 0;
+
   const commission = roundMoney(productCost * (commissionRate / 100));
-  const shippingCost = roundMoney(weight * pricePerKg);
+  const shippingCost = roundMoney(billingWeight * pricePerKg);
   const total = roundMoney(productCost + commission + shippingCost);
-  const vendorCost = roundMoney(weight * vendorCostPerKg);
+  const vendorCost = roundMoney(billingWeight * vendorCostPerKg);
   const profit = roundMoney(commission + (shippingCost - vendorCost));
   const marginPercent = total > 0 ? roundMoney((profit / total) * 100, 1) : 0;
+
+  const warnings = [];
+  if (profit < 0) warnings.push('negative_margin');
 
   return {
     productCost,
     commission,
     shippingCost,
+    billingWeight,
     total,
     vendorCost,
     profit,
     marginPercent,
+    warnings,
   };
 }

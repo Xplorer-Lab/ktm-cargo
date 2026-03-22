@@ -8,9 +8,11 @@ import {
   safeNum,
   volumetricWeight,
   chargeableWeight,
+  effectiveRate,
   computeOrderTotals,
   computeInvoiceTotals,
   computeShoppingOrderTotals,
+  MINIMUM_BILLING_WEIGHT_KG,
 } from './calculations';
 
 describe('roundMoney', () => {
@@ -237,5 +239,109 @@ describe('computeShoppingOrderTotals', () => {
     });
     expect(r.commission).toBe(0);
     expect(r.total).toBe(110);
+  });
+
+  test('minimum billing weight: 0.5 kg billed as 1 kg', () => {
+    const r = computeShoppingOrderTotals({
+      productCost: 0,
+      weightKg: 0.5,
+      pricePerKg: 100,
+      vendorCostPerKg: 60,
+    });
+    expect(r.billingWeight).toBe(MINIMUM_BILLING_WEIGHT_KG);
+    expect(r.shippingCost).toBe(100); // billed at 1 kg
+    expect(r.vendorCost).toBe(60);
+  });
+
+  test('negative margin warning when vendor cost exceeds shipping rate', () => {
+    const r = computeShoppingOrderTotals({
+      productCost: 0,
+      weightKg: 2,
+      pricePerKg: 50,
+      vendorCostPerKg: 80, // KTM pays more than it charges
+    });
+    expect(r.profit).toBeLessThan(0);
+    expect(r.warnings).toContain('negative_margin');
+  });
+});
+
+describe('effectiveRate', () => {
+  const rateTable = [
+    { minKg: 0, pricePerKg: 120 },
+    { minKg: 50, pricePerKg: 100 },
+    { minKg: 100, pricePerKg: 80 },
+  ];
+
+  test('picks correct tier by weight', () => {
+    expect(effectiveRate(1, rateTable, 999)).toBe(120);
+    expect(effectiveRate(50, rateTable, 999)).toBe(100);
+    expect(effectiveRate(75, rateTable, 999)).toBe(100);
+    expect(effectiveRate(100, rateTable, 999)).toBe(80);
+    expect(effectiveRate(200, rateTable, 999)).toBe(80);
+  });
+
+  test('falls back to defaultRate when no table provided', () => {
+    expect(effectiveRate(10, undefined, 95)).toBe(95);
+    expect(effectiveRate(10, [], 95)).toBe(95);
+  });
+});
+
+describe('computeOrderTotals — new behaviours', () => {
+  test('minimum billing weight: 0.3 kg billed as 1 kg', () => {
+    const r = computeOrderTotals({
+      actualWeightKg: 0.3,
+      pricePerKg: 100,
+      costPerKg: 60,
+      includeInsurance: false,
+      includePackingFee: false,
+      serviceType: 'cargo_medium',
+    });
+    expect(r.chargeableWeight).toBe(0.3); // actual
+    expect(r.billingWeight).toBe(MINIMUM_BILLING_WEIGHT_KG); // billed as 1 kg
+    expect(r.customerShippingFee).toBe(100); // 1 kg × 100
+    expect(r.cargoCost).toBe(60); // 1 kg × 60
+  });
+
+  test('negative margin triggers warning', () => {
+    const r = computeOrderTotals({
+      actualWeightKg: 1,
+      pricePerKg: 50,
+      costPerKg: 100, // costs more than we charge
+      includeInsurance: false,
+      includePackingFee: false,
+      serviceType: 'cargo_medium',
+    });
+    expect(r.profit).toBeLessThan(0);
+    expect(r.warnings).toContain('negative_margin');
+  });
+
+  test('no warning when profit >= 0', () => {
+    const r = computeOrderTotals({
+      actualWeightKg: 1,
+      pricePerKg: 100,
+      costPerKg: 60,
+      includeInsurance: false,
+      includePackingFee: false,
+      serviceType: 'cargo_medium',
+    });
+    expect(r.profit).toBeGreaterThanOrEqual(0);
+    expect(r.warnings).not.toContain('negative_margin');
+  });
+
+  test('rate table overrides pricePerKg for heavy shipments', () => {
+    const rateTable = [
+      { minKg: 0, pricePerKg: 120 },
+      { minKg: 50, pricePerKg: 90 },
+    ];
+    const r = computeOrderTotals({
+      actualWeightKg: 60,
+      pricePerKg: 120, // flat rate — should be overridden
+      costPerKg: 60,
+      rateTable,
+      includeInsurance: false,
+      includePackingFee: false,
+      serviceType: 'cargo_medium',
+    });
+    expect(r.customerShippingFee).toBe(60 * 90); // tier rate applies
   });
 });
