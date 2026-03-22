@@ -53,12 +53,19 @@ Order matters — later migrations depend on objects created by earlier ones.
 | --- | -------------------------------------------------------- | --------------------------------------------------------------------------- |
 | 21  | `add_order_journey_spine_and_contract_normalization.sql` | Canonical journey spine, nullable journey links, and contract normalization |
 | 22  | `add_shipment_po_allocation_rpcs.sql`                    | Atomic shipment create/update/delete RPCs for PO allocation rebalance       |
+| 23  | `add_unique_invoice_constraints.sql`                     | UNIQUE(shipment_id) and UNIQUE(order_id) on customer_invoices               |
 
-### Phase 5 — Monetization (optional, if using Stripe)
+### Phase 5 — Data integrity hardening
+
+| #   | File                                  | Purpose                                                                          |
+| --- | ------------------------------------- | -------------------------------------------------------------------------------- |
+| 24  | `add_record_payment_atomic_rpc.sql`   | Atomic payment RPC with FOR UPDATE lock — prevents concurrent balance corruption |
+
+### Phase 6 — Monetization (optional, if using Stripe)
 
 | #   | File                          | Purpose                                                                          |
 | --- | ----------------------------- | -------------------------------------------------------------------------------- |
-| 23  | `add_subscription_fields.sql` | Add `stripe_customer_id`, `subscription_status`, `subscription_tier` to profiles |
+| 25  | `add_subscription_fields.sql` | Add `stripe_customer_id`, `subscription_status`, `subscription_tier` to profiles |
 
 ### Verification
 

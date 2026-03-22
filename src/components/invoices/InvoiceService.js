@@ -22,92 +22,36 @@ const IS_PROD =
     : typeof process !== 'undefined' && process.env?.NODE_ENV === 'production';
 
 /**
- * In-memory fallback counter for invoice numbers.
- *
- * ⚠ RISK (documented per P0 audit):
- *   - Resets to 0 on every page reload / app restart → duplicates possible.
- *   - Not shared across browser tabs → concurrent users may collide.
- *   - Acceptable ONLY during initial setup before `add_invoice_number_sequence.sql`
- *     has been applied.  In production the DB-backed RPC must always succeed.
- *
- * To eliminate this risk, ensure `add_invoice_number_sequence.sql` is applied
- * (see migrations/README.md or scripts/verify_p0_migrations.mjs).
- */
-let invoiceSequenceFallback = 0;
-
-/**
  * Get next invoice number from the DB sequence via RPC.
  * Format: INV-YYYYMM-XXXX.
  *
- * In production the RPC **must** succeed; if it fails a loud warning is
- * emitted to the console and Sentry so operators know the migration is missing.
+ * Requires migration add_invoice_number_sequence.sql to be applied.
+ * If the RPC fails, invoice creation is blocked to prevent duplicate numbers.
  *
- * @param {{ allowFallback?: boolean }} options
  * @returns {Promise<string>}
  */
-export async function getNextInvoiceNumber(options = {}) {
-  const { allowFallback = false } = options;
+export async function getNextInvoiceNumber() {
   const { data, error } = await supabase.rpc('next_invoice_number');
 
   if (!error && data) return data;
 
-  if (!allowFallback) {
-    const hardFailMessage =
-      '[InvoiceService] next_invoice_number RPC failed during invoice creation. ' +
-      'Creation is blocked to prevent duplicate invoice numbers. ' +
-      'Apply add_invoice_number_sequence.sql and retry.';
-
-    if (IS_PROD) {
-      console.error(hardFailMessage, error);
-      import('@sentry/react').then((Sentry) => {
-        Sentry.captureMessage(hardFailMessage, { level: 'error', extra: { rpcError: error } });
-      });
-    } else {
-      console.error(hardFailMessage, error);
-    }
-
-    throw new Error(
-      'Unable to generate a unique invoice number. Please verify invoice sequence migration and try again.'
-    );
-  }
-
-  // ── Fallback path — non-critical usage only ──────────────────────────
-  const warnMsg =
-    '[InvoiceService] next_invoice_number RPC failed – using in-memory fallback. ' +
-    'This means the add_invoice_number_sequence.sql migration has NOT been applied. ' +
-    'Invoice uniqueness is NOT guaranteed until the migration is run.';
+  const hardFailMessage =
+    '[InvoiceService] next_invoice_number RPC failed during invoice creation. ' +
+    'Creation is blocked to prevent duplicate invoice numbers. ' +
+    'Apply add_invoice_number_sequence.sql and retry.';
 
   if (IS_PROD) {
-    console.error(warnMsg, error);
-    // Report to Sentry so ops is alerted immediately
+    console.error(hardFailMessage, error);
     import('@sentry/react').then((Sentry) => {
-      Sentry.captureMessage(warnMsg, { level: 'error', extra: { rpcError: error } });
+      Sentry.captureMessage(hardFailMessage, { level: 'error', extra: { rpcError: error } });
     });
   } else {
-    console.warn(warnMsg, error);
+    console.error(hardFailMessage, error);
   }
 
-  return generateInvoiceNumberFallback();
-}
-
-/**
- * In-memory fallback when DB sequence is not available (e.g. before migration).
- * Format: INV-YYYYMM-XXXX
- *
- * @see Documentation above for why this fallback is risky in production.
- */
-export function generateInvoiceNumberFallback() {
-  const date = new Date();
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  invoiceSequenceFallback += 1;
-  const seq = String(invoiceSequenceFallback).padStart(4, '0');
-  return `INV-${year}${month}-${seq}`;
-}
-
-/** @deprecated Use getNextInvoiceNumber() for new code. Kept for backward compatibility. */
-export function generateInvoiceNumber() {
-  return generateInvoiceNumberFallback();
+  throw new Error(
+    'Invoice number could not be generated. Please try again.'
+  );
 }
 
 /**
@@ -134,7 +78,7 @@ export async function createCustomerInvoice(invoiceData) {
   const invoiceDate = invoiceData.invoice_date || format(new Date(), 'yyyy-MM-dd');
   const paymentTerms = invoiceData.payment_terms || 'net_7';
   // Always use DB-backed sequence for new invoices.
-  const invoiceNumber = await getNextInvoiceNumber({ allowFallback: false });
+  const invoiceNumber = await getNextInvoiceNumber();
 
   const invoice = await db.customerInvoices.create({
     invoice_number: invoiceNumber,
@@ -241,6 +185,7 @@ export async function createInvoiceFromShipment(shipment, customer) {
       const existing = await db.customerInvoices.filter({ shipment_id: shipment.id });
       if (existing.length > 0)
         return { invoice: existing[0], isNew: false, message: 'Invoice already exists' };
+      throw new Error('An invoice already exists for this shipment.');
     }
     throw err;
   }
@@ -297,6 +242,7 @@ export async function createInvoiceFromShoppingOrder(order, customer) {
       const existing = await db.customerInvoices.filter({ order_id: order.id });
       if (existing.length > 0)
         return { invoice: existing[0], isNew: false, message: 'Invoice already exists' };
+      throw new Error('An invoice already exists for this order.');
     }
     throw err;
   }
@@ -325,74 +271,23 @@ export async function markInvoiceSent(invoiceId) {
 }
 
 /**
- * Record payment and mark invoice as paid
+ * Record payment and mark invoice as paid.
+ * Uses an atomic DB RPC with FOR UPDATE locking to prevent race conditions.
  */
 export async function recordPayment(invoiceId, paymentDetails = {}) {
-  const currentInvoice = await db.customerInvoices.get(invoiceId);
-  if (!currentInvoice) {
-    throw new Error('Invoice not found');
-  }
-
-  if (currentInvoice.status === 'paid') {
-    throw new Error('Invoice is already paid');
-  }
-
-  if (currentInvoice.status === 'void') {
-    throw new Error('Cannot record payment for a void invoice');
-  }
-
-  if (!['issued', 'sent', 'partially_paid'].includes(currentInvoice.status)) {
-    throw new Error('Payment can only be recorded for issued, sent, or partially paid invoices');
-  }
-
-  const invoiceTotal = Number(currentInvoice.total_amount) || 0;
-  const currentAmountPaid = Number(currentInvoice.amount_paid) || 0;
-  const currentBalance = currentInvoice.balance_due ?? invoiceTotal;
-
-  const paymentAmountInput = paymentDetails.amount;
-  const paymentAmount =
-    paymentAmountInput === undefined || paymentAmountInput === null || paymentAmountInput === ''
-      ? currentBalance
-      : Number(paymentAmountInput);
-
-  if (!Number.isFinite(paymentAmount)) {
-    throw new Error('Payment amount must be a valid number');
-  }
-
-  if (paymentAmount < 0) {
-    throw new Error('Payment amount cannot be negative');
-  }
-
-  if (invoiceTotal > 0) {
-    // Allow ±0.01 tolerance for floating-point rounding on both sides
-    const TOLERANCE = 0.01;
-    if (paymentAmount > currentBalance + TOLERANCE) {
-      throw new Error(
-        `Payment amount cannot exceed balance due (฿${currentBalance.toLocaleString()})`
-      );
-    }
-  }
-
-  const newAmountPaid = currentAmountPaid + paymentAmount;
-  const newBalanceDue = Math.max(0, invoiceTotal - newAmountPaid);
-
-  const isFullyPaid = newBalanceDue <= 0.01; // tolerance
-  const newStatus = isFullyPaid ? 'paid' : 'partially_paid';
-
-  const invoice = await db.customerInvoices.update(invoiceId, {
-    status: newStatus,
-    amount_paid: newAmountPaid,
-    balance_due: isFullyPaid ? 0 : newBalanceDue,
-    payment_date: paymentDetails.payment_date || format(new Date(), 'yyyy-MM-dd'),
-    payment_method: paymentDetails.payment_method || 'bank_transfer',
-    payment_reference: paymentDetails.reference || '',
+  const { data, error } = await supabase.rpc('record_payment_atomic', {
+    p_invoice_id:        invoiceId,
+    p_amount:            Number(paymentDetails.amount),
+    p_payment_date:      paymentDetails.payment_date ?? format(new Date(), 'yyyy-MM-dd'),
+    p_payment_method:    paymentDetails.payment_method ?? 'bank_transfer',
+    p_payment_reference: paymentDetails.reference ?? null,  // field is `reference` not `payment_reference`
   });
 
-  if (invoice.amount_paid !== newAmountPaid) {
-    throw new Error('Payment was modified concurrently. Please refresh and try again.');
+  if (error || !data?.success) {
+    throw new Error(data?.error ?? error?.message ?? 'Payment failed');
   }
 
-  return invoice;
+  return data; // { status, amount_paid, balance_due }
 }
 
 /**

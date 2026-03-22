@@ -48,7 +48,6 @@ jest.mock('@sentry/react', () => ({
 
 import {
   getNextInvoiceNumber,
-  generateInvoiceNumberFallback,
   calculateDueDate,
   createCustomerInvoice,
   createInvoiceFromShipment,
@@ -71,25 +70,12 @@ describe('getNextInvoiceNumber', () => {
     expect(mockRpc).toHaveBeenCalledWith('next_invoice_number');
   });
 
-  test('falls back to in-memory number when RPC fails', async () => {
+  test('throws when RPC fails', async () => {
     mockRpc.mockResolvedValueOnce({ data: null, error: { message: 'function not found' } });
 
-    const result = await getNextInvoiceNumber({ allowFallback: true });
-    expect(result).toMatch(/^INV-\d{6}-\d{4}$/);
-  });
-
-  test('fallback increments on each call', () => {
-    const a = generateInvoiceNumberFallback();
-    const b = generateInvoiceNumberFallback();
-
-    // Both should match the format
-    expect(a).toMatch(/^INV-\d{6}-\d{4}$/);
-    expect(b).toMatch(/^INV-\d{6}-\d{4}$/);
-
-    // Sequence should increment
-    const seqA = parseInt(a.split('-')[2], 10);
-    const seqB = parseInt(b.split('-')[2], 10);
-    expect(seqB).toBe(seqA + 1);
+    await expect(getNextInvoiceNumber()).rejects.toThrow(
+      'Invoice number could not be generated. Please try again.'
+    );
   });
 });
 
@@ -264,69 +250,48 @@ describe('generateInvoiceFromReceipt', () => {
 describe('recordPayment', () => {
   afterEach(() => jest.clearAllMocks());
 
-  test('rejects payment for draft invoices', async () => {
-    __mocks.getMock.mockResolvedValueOnce({
-      id: 'inv-draft',
-      status: 'draft',
-      total_amount: 100,
-    });
-
-    await expect(recordPayment('inv-draft')).rejects.toThrow(
-      'Payment can only be recorded for issued, sent, or partially paid invoices'
-    );
-  });
-
-  test('records partial payment and keeps invoice partially paid', async () => {
-    __mocks.getMock.mockResolvedValueOnce({
-      id: 'inv-partial',
-      status: 'sent',
-      total_amount: 100,
-    });
-    __mocks.updateMock.mockResolvedValueOnce({
-      id: 'inv-partial',
-      status: 'partially_paid',
-      amount_paid: 50,
-      balance_due: 50,
+  test('records partial payment via RPC and returns updated fields', async () => {
+    mockRpc.mockResolvedValueOnce({
+      data: { success: true, status: 'partially_paid', amount_paid: 50, balance_due: 50 },
+      error: null,
     });
 
     const result = await recordPayment('inv-partial', { amount: 50 });
 
-    expect(__mocks.updateMock).toHaveBeenCalledWith(
-      'inv-partial',
-      expect.objectContaining({
-        status: 'partially_paid',
-        amount_paid: 50,
-        balance_due: 50,
-      })
-    );
+    expect(mockRpc).toHaveBeenCalledWith('record_payment_atomic', expect.objectContaining({
+      p_invoice_id: 'inv-partial',
+      p_amount: 50,
+    }));
     expect(result.status).toBe('partially_paid');
+    expect(result.balance_due).toBe(50);
   });
 
-  test('records full payment and marks invoice paid', async () => {
-    __mocks.getMock.mockResolvedValueOnce({
-      id: 'inv-issued',
-      status: 'issued',
-      total_amount: 100,
-    });
-    __mocks.updateMock.mockResolvedValueOnce({
-      id: 'inv-issued',
-      status: 'paid',
-      amount_paid: 100,
+  test('records full payment via RPC and marks invoice paid', async () => {
+    mockRpc.mockResolvedValueOnce({
+      data: { success: true, status: 'paid', amount_paid: 100, balance_due: 0 },
+      error: null,
     });
 
     const result = await recordPayment('inv-issued', {
+      amount: 100,
       payment_method: 'cash',
       reference: 'PAY-123',
     });
 
-    expect(__mocks.updateMock).toHaveBeenCalledWith(
-      'inv-issued',
-      expect.objectContaining({
-        status: 'paid',
-        payment_method: 'cash',
-        payment_reference: 'PAY-123',
-      })
-    );
+    expect(mockRpc).toHaveBeenCalledWith('record_payment_atomic', expect.objectContaining({
+      p_invoice_id: 'inv-issued',
+      p_payment_method: 'cash',
+      p_payment_reference: 'PAY-123',
+    }));
     expect(result.status).toBe('paid');
+  });
+
+  test('throws when RPC returns failure', async () => {
+    mockRpc.mockResolvedValueOnce({
+      data: { success: false, error: 'Invoice already paid' },
+      error: null,
+    });
+
+    await expect(recordPayment('inv-paid', { amount: 50 })).rejects.toThrow('Invoice already paid');
   });
 });
