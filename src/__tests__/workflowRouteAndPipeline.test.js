@@ -71,7 +71,6 @@ describe('Workflow route and pipeline contracts', () => {
 
     expect(routes).toEqual(
       expect.arrayContaining([
-        '/PriceCalculator',
         '/ShoppingOrders',
         '/Procurement',
         '/Shipments',

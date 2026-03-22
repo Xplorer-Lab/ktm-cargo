@@ -89,7 +89,6 @@ export const NAV_PERMISSIONS = {
   Vendors: 'view_vendors',
   Tasks: 'view_tasks',
   Reports: 'view_reports',
-  PriceCalculator: 'view_operations',
   ClientPortal: null, // Public page - no permission required
   Settings: 'view_settings',
 };

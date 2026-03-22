@@ -44,7 +44,6 @@ const EXPECTED_ROUTES = [
   '/Invoices',
   '/operation',
   '/Operations',
-  '/PriceCalculator',
   '/Procurement',
   '/Reports',
   '/Settings',
@@ -70,7 +69,7 @@ describe('Route snapshot protection', () => {
     const source = fs.readFileSync(indexPath, 'utf-8');
     const actual = extractRoutePaths(source);
 
-    expect(actual).toHaveLength(26);
+    expect(actual).toHaveLength(25);
   });
 
   it('public routes are not wrapped in ProtectedRoute', () => {

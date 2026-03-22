@@ -103,15 +103,4 @@ test.describe('KTM route and workflow smoke', () => {
     await expect(page.getByRole('heading', { name: /Access Not Configured/i })).toBeVisible();
     await expect(page).toHaveURL(/\/Operations\?__e2e=staff-misconfigured$/);
   });
-
-  test('price calculator bypasses app layout with or without trailing slash', async ({ page }) => {
-    await page.goto('/PriceCalculator?__e2e=public');
-    await expect(page.getByRole('heading', { name: /Price Calculator/i })).toBeVisible();
-    await expect(page.getByText(/Bangkok → Yangon Shipping Rates/i)).toBeVisible();
-    await expect(page.getByText(/Operations Console/i)).toHaveCount(0);
-
-    await page.goto('/PriceCalculator/?__e2e=public');
-    await expect(page.getByRole('heading', { name: /Price Calculator/i })).toBeVisible();
-    await expect(page.getByText(/Operations Console/i)).toHaveCount(0);
-  });
 });

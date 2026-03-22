@@ -18,6 +18,5 @@ describe('shouldBypassAppLayout', () => {
     expect(shouldBypassAppLayout('/Dashboard')).toBe(false);
     expect(shouldBypassAppLayout('/Procurement')).toBe(false);
     expect(shouldBypassAppLayout('/Invoices')).toBe(false);
-    expect(shouldBypassAppLayout('/PriceCalculator')).toBe(false);
   });
 });

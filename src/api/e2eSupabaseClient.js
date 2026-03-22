@@ -231,7 +231,7 @@ const WORKFLOW_TABLES = (() => {
         total_amount: 168,
         profit: 42,
         insurance_amount: 0,
-        status: 'in_transit',
+        status: 'customs',
         payment_status: 'unpaid',
         estimated_delivery: '2026-03-23',
         pickup_address: 'Bangkok Warehouse',

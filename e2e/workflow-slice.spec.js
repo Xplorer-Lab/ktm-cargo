@@ -44,10 +44,14 @@ test.describe('KTM workflow slice', () => {
   }) => {
     await page.goto('/ShoppingOrders?__e2e=workflow-staff');
 
-    await page.getByRole('button', { name: /View/i }).first().click();
+    // View button is opacity-0 on desktop until hover — use force:true to click
+    await page.getByRole('button', { name: /View/i }).first().click({ force: true });
     await expect(page.getByRole('heading', { name: /Order Details/i })).toBeVisible();
 
-    await page.getByRole('button', { name: /Convert to Shipment/i }).click();
+    // Button may be below fold in dialog — scroll into view then force click
+    const convertBtn = page.getByRole('button', { name: /Convert to Shipment/i });
+    await convertBtn.scrollIntoViewIfNeeded();
+    await convertBtn.click({ force: true });
     await expect(page).toHaveURL(/\/Shipments\?__e2e=workflow-staff$/);
     await expect(page.getByRole('heading', { name: /^Edit Shipment$/i })).toBeVisible();
     await expect(page.getByRole('combobox').first()).toContainText(/Mya Mya/i);

@@ -640,7 +640,7 @@ export default function ShoppingOrders() {
 
         {/* Order Details Dialog */}
         <Dialog open={showDetails} onOpenChange={setShowDetails}>
-          <DialogContent className="max-w-lg">
+          <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
             <DialogHeader>
               <DialogTitle>Order Details</DialogTitle>
             </DialogHeader>

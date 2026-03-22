@@ -462,9 +462,7 @@ export default function Shipments() {
         {/* New/Edit Form Dialog */}
         <Dialog open={showForm} onOpenChange={setShowForm}>
           <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto p-0 bg-transparent border-0 shadow-none">
-            <DialogTitle className="sr-only">
-              {editingShipment ? 'Edit Shipment' : 'New Shipment'}
-            </DialogTitle>
+            <DialogTitle className="sr-only">Shipment Form</DialogTitle>
             <DialogDescription className="sr-only">
               Form to create or edit a shipment details
             </DialogDescription>
