@@ -7,6 +7,8 @@ import {
   updateShipmentWithPoRebalance,
 } from '@/api/shipmentAllocationRpc';
 import { shipmentSchema } from '@/domains/core/schemas';
+import { canTransitionShipment } from '@/domains/core/statusMachine';
+import { deductInventoryForShipment } from '@/services/inventoryService';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import ShipmentCard from '@/components/shipments/ShipmentCard';
 import ShipmentForm from '@/components/shipments/ShipmentForm';
@@ -235,12 +237,25 @@ export default function Shipments() {
   const handleStatusChange = async (shipment, newStatus) => {
     const oldStatus = shipment.status;
 
+    // Validate status transition
+    const { valid, reason } = canTransitionShipment(oldStatus, newStatus);
+    if (!valid) {
+      toast.error(`Invalid status change: ${reason}`);
+      return;
+    }
+
     // Update shipment first
     await db.shipments.update(shipment.id, { status: newStatus });
     setSelectedShipment((current) =>
       current?.id === shipment.id ? { ...current, status: newStatus } : current
     );
     queryClient.invalidateQueries({ queryKey: ['shipments'] });
+
+    // Auto-deduct packaging inventory when shipment is confirmed
+    if (newStatus === 'confirmed') {
+      deductInventoryForShipment(shipment);
+      queryClient.invalidateQueries({ queryKey: ['inventory'] });
+    }
 
     // Trigger status change notification
     if (oldStatus !== newStatus) {

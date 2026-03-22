@@ -62,6 +62,8 @@ import { toast } from 'sonner';
 import { sendShoppingOrderNotification } from '@/components/notifications/ShippingNotificationService';
 
 import { filterShoppingOrders, isUnpaidShoppingOrder } from '@/pages/shoppingOrderFilters';
+import { canTransitionShoppingOrder } from '@/domains/core/statusMachine';
+import { deductInventoryForOrder } from '@/services/inventoryService';
 import { appendE2EFixture } from '@/lib/e2e';
 import { buildShoppingOrderAllocationPlan } from '@/lib/shoppingOrderAllocation';
 import { createInvoiceFromShoppingOrder } from '@/components/invoices/InvoiceService';
@@ -253,6 +255,15 @@ export default function ShoppingOrders() {
         }
         throw error;
       }
+      // Auto-deduct goods inventory when order moves to shipping
+      if (data.status === 'shipping') {
+        const order = orders.find((o) => o.id === id);
+        if (order) {
+          deductInventoryForOrder(order);
+          queryClient.invalidateQueries({ queryKey: ['inventory'] });
+        }
+      }
+
       // Send notification if status changed to shipping or delivered
       if (
         sendNotification &&
@@ -321,8 +332,16 @@ export default function ShoppingOrders() {
 
   const handleSubmit = (data) => {
     if (editingOrder) {
-      // Check if status changed to shipping or delivered
+      // Validate status transition
       const statusChanged = editingOrder.status !== data.status;
+      if (statusChanged && data.status) {
+        const { valid, reason } = canTransitionShoppingOrder(editingOrder.status, data.status);
+        if (!valid) {
+          toast.error(`Invalid status change: ${reason}`);
+          return;
+        }
+      }
+      // Check if status changed to shipping or delivered
       const shouldNotify =
         statusChanged && (data.status === 'shipping' || data.status === 'delivered');
       const customer = customers.find((c) => c.id === data.customer_id);
