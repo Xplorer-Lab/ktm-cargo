@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { roundMoney } from '@/domains/shipments/calculations';
 import { db } from '@/api/db';
 import { useQuery } from '@tanstack/react-query';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
@@ -158,16 +159,16 @@ export default function PriceCalculator() {
     const totalMMK = totalCustomer * exchangeRate;
 
     setCalculation({
-      shippingCost,
-      insuranceFee,
-      packagingFee,
-      commission,
-      surchargeTotal,
-      totalCustomer,
-      totalMMK,
-      profit,
-      margin,
-      chargeableWeight: w,
+      shippingCost: roundMoney(shippingCost),
+      insuranceFee: roundMoney(insuranceFee),
+      packagingFee: roundMoney(packagingFee),
+      commission: roundMoney(commission),
+      surchargeTotal: roundMoney(surchargeTotal),
+      totalCustomer: roundMoney(totalCustomer),
+      totalMMK: roundMoney(totalMMK),
+      profit: roundMoney(profit),
+      margin: roundMoney(margin, 1),
+      chargeableWeight: roundMoney(w, 3),
       deliveryTime: service.value === 'express' ? '1-2 days' : '3-5 days',
     });
   }, [
