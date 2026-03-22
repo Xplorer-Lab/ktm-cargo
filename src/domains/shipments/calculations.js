@@ -170,8 +170,10 @@ export function computeOrderTotals(params) {
   // Total internally incurred cost (insuranceFee is collected from customer, not KTM's expense)
   const totalCost = roundMoney(productCost + cargoCost + packagingFee);
 
-  // Profit = Commission + (Customer Shipping Fee - Cargo Cost) + Insurance Fee + Surcharges
-  const profit = roundMoney(totalCustomer - totalCost);
+  // Profit = commission + (customerShippingFee - cargoCost) + insuranceFee + surchargeTotal
+  const profit = roundMoney(
+    commission + (customerShippingFee - cargoCost) + insuranceFee + surchargeTotal
+  );
   const marginPercent = totalCustomer > 0 ? roundMoney((profit / totalCustomer) * 100, 1) : 0;
 
   return {

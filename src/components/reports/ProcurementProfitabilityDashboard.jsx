@@ -172,14 +172,15 @@ export default function ProcurementProfitabilityDashboard({
       (sum, o) => sum + (o.vendor_cost || 0),
       0
     );
-    const shoppingCommission = filteredShoppingOrders.reduce(
-      (sum, o) => sum + (o.commission_amount || 0),
+    const shoppingProfit = filteredShoppingOrders.reduce(
+      (sum, o) =>
+        sum + (o.commission_amount || 0) + ((o.shipping_cost || 0) - (o.vendor_cost || 0)),
       0
     );
 
     const totalRevenue = shipmentRevenue + shoppingRevenue;
     const totalVendorCost = shipmentVendorCost + shoppingVendorCost;
-    const totalProfit = shipmentProfit + shoppingCommission;
+    const totalProfit = shipmentProfit + shoppingProfit;
     const profitMargin = totalRevenue > 0 ? (totalProfit / totalRevenue) * 100 : 0;
 
     // Per order averages
@@ -194,7 +195,7 @@ export default function ProcurementProfitabilityDashboard({
       shipmentProfit,
       shoppingRevenue,
       shoppingVendorCost,
-      shoppingCommission,
+      shoppingProfit,
       totalRevenue,
       totalVendorCost,
       totalProfit,
@@ -259,7 +260,7 @@ export default function ProcurementProfitabilityDashboard({
         vendor: o.vendor_name || '-',
         revenue: o.total_amount || 0,
         vendorCost: o.vendor_cost || 0,
-        profit: o.commission_amount || 0,
+        profit: (o.commission_amount || 0) + ((o.shipping_cost || 0) - (o.vendor_cost || 0)),
         weight: o.actual_weight || o.estimated_weight || 0,
         status: o.status,
         date: o.created_date,
@@ -301,7 +302,11 @@ export default function ProcurementProfitabilityDashboard({
         monthShopping.reduce((sum, o) => sum + (o.total_amount || 0), 0);
       const profit =
         monthShipments.reduce((sum, s) => sum + (s.profit || 0), 0) +
-        monthShopping.reduce((sum, o) => sum + (o.commission_amount || 0), 0);
+        monthShopping.reduce(
+          (sum, o) =>
+            sum + (o.commission_amount || 0) + ((o.shipping_cost || 0) - (o.vendor_cost || 0)),
+          0
+        );
 
       return {
         month: format(month, 'MMM'),
