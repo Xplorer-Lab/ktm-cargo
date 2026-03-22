@@ -383,7 +383,7 @@ export async function recordPayment(invoiceId, paymentDetails = {}) {
   const invoice = await db.customerInvoices.update(invoiceId, {
     status: newStatus,
     amount_paid: newAmountPaid,
-    balance_due: newBalanceDue,
+    balance_due: isFullyPaid ? 0 : newBalanceDue,
     payment_date: paymentDetails.payment_date || format(new Date(), 'yyyy-MM-dd'),
     payment_method: paymentDetails.payment_method || 'bank_transfer',
     payment_reference: paymentDetails.reference || '',
