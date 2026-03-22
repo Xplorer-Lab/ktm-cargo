@@ -75,7 +75,6 @@ export default function Customers() {
   const { data: customers = [], isLoading } = useQuery({
     queryKey: ['customers'],
     queryFn: () => db.customers.list('-created_date'),
-    refetchInterval: 5000, // Auto-refresh every 5 seconds
     onError: (err) => handleError(err, 'Failed to fetch customers'),
   });
 

@@ -204,6 +204,7 @@ export default function Shipments() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['shipments'] });
       queryClient.invalidateQueries({ queryKey: ['purchase-orders'] });
+      queryClient.invalidateQueries({ queryKey: ['customer-invoices'] });
       setSelectedShipment(null);
       setShipmentToDelete(null);
       toast.success('Shipment deleted successfully');

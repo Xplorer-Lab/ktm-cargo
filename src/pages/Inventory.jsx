@@ -103,13 +103,6 @@ export default function Inventory() {
     },
   });
 
-  const updateItemMutation = useMutation({
-    mutationFn: ({ id, data }) => db.inventoryItems.update(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['inventory'] });
-    },
-  });
-
   const deleteItemMutation = useMutation({
     mutationFn: (id) => db.inventoryItems.delete(id),
     onSuccess: () => {
@@ -210,8 +203,7 @@ export default function Inventory() {
       }
       queryClient.invalidateQueries({ queryKey: ['inventory'] });
       toast.success(`Successfully processed ${importedItems.length} items`);
-    } catch (error) {
-      console.error('Import error:', error);
+    } catch {
       toast.error('Failed to import items');
     }
   };

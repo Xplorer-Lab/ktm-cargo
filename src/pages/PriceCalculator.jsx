@@ -66,8 +66,6 @@ const DEFAULT_SERVICE_TYPES = SERVICE_TYPE_DEFAULTS.map((st) => ({
   icon: ICON_MAP[st.value] || Package,
   description: DESCRIPTION_MAP[st.value] || '',
 }));
-const EMPTY_QUERY_RESULTS = [];
-
 export default function PriceCalculator() {
   const [weight, setWeight] = useState('');
   const [serviceType, setServiceType] = useState('cargo_medium');
@@ -84,12 +82,12 @@ export default function PriceCalculator() {
   const [calculation, setCalculation] = useState(null);
 
   // Fetch pricing from database if available
-  const { data: servicePricing = EMPTY_QUERY_RESULTS } = useQuery({
+  const { data: servicePricing = [] } = useQuery({
     queryKey: ['service-pricing'],
     queryFn: () => db.servicePricing.filter({ is_active: true }),
   });
 
-  const { data: surcharges = EMPTY_QUERY_RESULTS } = useQuery({
+  const { data: surcharges = [] } = useQuery({
     queryKey: ['surcharges'],
     queryFn: () => db.surcharges.filter({ is_active: true }),
   });
