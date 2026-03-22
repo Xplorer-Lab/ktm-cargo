@@ -184,7 +184,6 @@ export default function PriceCalculator() {
     setWeight('');
     setProductCost('');
     setIncludeInsurance(false);
-    setIncludePacking(false);
     setDimensions({ length: '', width: '', height: '' });
     setUseVolumetric(false);
     setServiceType('cargo_medium');
