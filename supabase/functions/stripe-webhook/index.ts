@@ -56,6 +56,23 @@ serve(async (req: Request) => {
 
     console.log(`Processing Stripe event: ${event.type} (${event.id})`);
 
+    // ── Idempotency check: skip already-processed events ─────────────────
+    const { data: existingEvent } = await supabase
+      .from('stripe_events')
+      .select('id')
+      .eq('id', event.id)
+      .single();
+
+    if (existingEvent) {
+      console.log(`Event ${event.id} already processed, skipping`);
+      return new Response(JSON.stringify({ received: true, skipped: true }), {
+        headers: { 'Content-Type': 'application/json' },
+      });
+    }
+
+    // Record this event as processed
+    await supabase.from('stripe_events').insert({ id: event.id });
+
     // ── Event handlers ──────────────────────────────────────────────────
     switch (event.type) {
       case 'checkout.session.completed': {

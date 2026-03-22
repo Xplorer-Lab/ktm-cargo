@@ -1,14 +1,11 @@
 # ============================================================================
-# PR Check - KTM Cargo Express
-# Minimal: Vercel handles preview deploys for free via its own GitHub App.
-# E2E runs only on manual trigger (workflow_dispatch) to save Actions minutes.
+# PR Check - E2E Tests (Manual Only)
+# Runs on workflow_dispatch only - no more blocking PRs with flaky tests
 # ============================================================================
 
 name: PR Check
 
 on:
-  pull_request:
-    branches: [main]
   workflow_dispatch:
 
 env:

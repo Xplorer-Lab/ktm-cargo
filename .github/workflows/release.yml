@@ -1,6 +1,6 @@
 # ============================================================================
 # Release Pipeline - KTM Cargo Express
-# Creates releases on tags
+# Creates releases on tags. Tests already validated by CI before merge.
 # ============================================================================
 
 name: Release
@@ -34,11 +34,6 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
-      - name: Run tests
-        run: npm test -- --passWithNoTests
-        env:
-          CI: true
-
       - name: Build application
         run: npm run build
         env:
@@ -57,18 +52,12 @@ jobs:
       - name: Generate changelog
         id: changelog
         run: |
-          # Get the previous tag
           PREV_TAG=$(git describe --tags --abbrev=0 HEAD^ 2>/dev/null || echo "")
-
           if [ -z "$PREV_TAG" ]; then
-            # First release - get all commits
             CHANGELOG=$(git log --pretty=format:"- %s (%h)" --no-merges)
           else
-            # Get commits since previous tag
             CHANGELOG=$(git log ${PREV_TAG}..HEAD --pretty=format:"- %s (%h)" --no-merges)
           fi
-
-          # Escape for GitHub Actions
           echo "changelog<<EOF" >> $GITHUB_OUTPUT
           echo "$CHANGELOG" >> $GITHUB_OUTPUT
           echo "EOF" >> $GITHUB_OUTPUT

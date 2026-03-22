@@ -25,6 +25,22 @@ const ALLOWED_STAFF_PATHS = new Set([
   '/invoice',
 ]);
 
+/**
+ * Normalize a path to prevent traversal attacks (browser-compatible).
+ */
+function normalizeBrowserPath(p) {
+  const parts = p.split('/');
+  const normalized = [];
+  for (const part of parts) {
+    if (part === '..' && normalized.length > 0 && normalized[normalized.length - 1] !== '..') {
+      normalized.pop();
+    } else if (part !== '.' && part !== '') {
+      normalized.push(part);
+    }
+  }
+  return '/' + normalized.join('/');
+}
+
 export function sanitizeStaffNext(rawNext = '') {
   if (!rawNext) return STAFF_HOME_PATH;
 
@@ -39,12 +55,15 @@ export function sanitizeStaffNext(rawNext = '') {
     return STAFF_HOME_PATH;
   }
 
-  const [pathname, rawQuery = ''] = decodedValue.split('?');
-  if (!ALLOWED_STAFF_PATHS.has(pathname)) {
+  const [rawPathname, rawQuery = ''] = decodedValue.split('?');
+
+  // FIXED: Normalize path to prevent traversal attacks (P0)
+  const normalizedPath = normalizeBrowserPath(rawPathname);
+  if (!ALLOWED_STAFF_PATHS.has(normalizedPath)) {
     return STAFF_HOME_PATH;
   }
 
-  return rawQuery ? `${pathname}?${rawQuery}` : pathname;
+  return rawQuery ? `${normalizedPath}?${rawQuery}` : normalizedPath;
 }
 
 export function buildStaffNext(pathname = STAFF_HOME_PATH, search = '') {
