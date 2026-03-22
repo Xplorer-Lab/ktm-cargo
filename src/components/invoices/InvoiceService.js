@@ -368,6 +368,55 @@ export async function getInvoiceStats(invoices) {
 }
 
 /**
+ * Process a refund on an invoice.
+ *
+ * Supports partial and full refunds.
+ *  - Partial refund: reduces amount_paid and increases balance_due; status → 'partially_paid'
+ *  - Full refund: zeroes amount_paid and balance_due; status → 'refunded'
+ *
+ * @param {string} invoiceId   - UUID of the invoice to refund
+ * @param {number} refundAmount - amount to refund (must be > 0 and ≤ amount_paid)
+ * @param {string} [reason=''] - optional reason for audit trail
+ * @returns {Object} updated invoice row
+ * @throws {Error} if refund amount is invalid
+ */
+export async function processRefund(invoiceId, refundAmount, reason = '') {
+  if (!refundAmount || refundAmount <= 0) {
+    throw new Error('Refund amount must be greater than zero');
+  }
+
+  const invoice = await db.customerInvoices.get(invoiceId);
+  if (!invoice) {
+    throw new Error(`Invoice ${invoiceId} not found`);
+  }
+
+  const currentPaid = invoice.amount_paid || 0;
+  if (refundAmount > currentPaid) {
+    throw new Error(`Refund amount (${refundAmount}) exceeds amount already paid (${currentPaid})`);
+  }
+
+  const newAmountPaid = Math.max(0, currentPaid - refundAmount);
+  const isFullRefund = newAmountPaid === 0;
+  const newBalanceDue = isFullRefund ? 0 : (invoice.total_amount || 0) - newAmountPaid;
+  const newStatus = isFullRefund ? 'refunded' : 'partially_paid';
+
+  const refundNote = reason
+    ? `REFUND (${refundAmount}): ${reason}`
+    : `REFUND (${refundAmount}) on ${new Date().toISOString().slice(0, 10)}`;
+
+  const existingNotes = invoice.notes ? `${invoice.notes}\n` : '';
+
+  const updated = await db.customerInvoices.update(invoiceId, {
+    amount_paid: newAmountPaid,
+    balance_due: newBalanceDue,
+    status: newStatus,
+    notes: `${existingNotes}${refundNote}`,
+  });
+
+  return updated;
+}
+
+/**
  * Check for overdue invoices and return them
  */
 export async function getOverdueInvoices() {

@@ -63,6 +63,7 @@ import {
   markInvoiceSent,
   recordPayment,
   voidInvoice,
+  processRefund,
 } from '@/components/invoices/InvoiceService';
 
 import { useErrorHandler } from '@/hooks/useErrorHandler';
@@ -107,6 +108,12 @@ export default function Invoices() {
   const [editingInvoice, setEditingInvoice] = useState(null);
   const [actionDialog, setActionDialog] = useState({ open: false, action: null, invoice: null });
   const [paymentDialog, setPaymentDialog] = useState({ open: false, invoice: null, amount: '' });
+  const [refundDialog, setRefundDialog] = useState({
+    open: false,
+    invoice: null,
+    amount: '',
+    reason: '',
+  });
 
   // Data fetching
   const { data: invoices = [], isLoading } = useQuery({
@@ -194,6 +201,16 @@ export default function Invoices() {
       toast.success('Invoice voided');
     },
     onError: (err) => handleError(err, 'Failed to void invoice'),
+  });
+
+  const refundMutation = useMutation({
+    mutationFn: ({ id, amount, reason }) => processRefund(id, Number(amount), reason),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['customer-invoices'] });
+      setRefundDialog({ open: false, invoice: null, amount: '', reason: '' });
+      toast.success('Refund processed successfully');
+    },
+    onError: (err) => handleError(err, 'Failed to process refund'),
   });
 
   // Stats
@@ -318,6 +335,10 @@ export default function Invoices() {
     if (action === 'pay') {
       const balance = invoice.balance_due ?? invoice.total_amount;
       setPaymentDialog({ open: true, invoice, amount: balance });
+      return;
+    }
+    if (action === 'refund') {
+      setRefundDialog({ open: true, invoice, amount: '', reason: '' });
       return;
     }
     setActionDialog({ open: true, action, invoice });
@@ -853,6 +874,74 @@ export default function Invoices() {
                 }
               >
                 Confirm Payment
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Refund Dialog */}
+        <Dialog
+          open={refundDialog.open}
+          onOpenChange={(open) => setRefundDialog({ ...refundDialog, open })}
+        >
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Process Refund</DialogTitle>
+            </DialogHeader>
+            <div className="space-y-4 py-2">
+              <p className="text-sm text-slate-600">
+                Invoice <strong>{refundDialog.invoice?.invoice_number}</strong> — Amount paid: ฿
+                {refundDialog.invoice?.amount_paid?.toLocaleString() ?? 0}
+              </p>
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-slate-700">Refund Amount (฿)</label>
+                <input
+                  type="number"
+                  className="w-full border rounded-md px-3 py-2 text-sm"
+                  placeholder="Enter refund amount"
+                  min={0.01}
+                  max={refundDialog.invoice?.amount_paid ?? 0}
+                  value={refundDialog.amount}
+                  onChange={(e) => setRefundDialog((prev) => ({ ...prev, amount: e.target.value }))}
+                />
+              </div>
+              <div className="space-y-1">
+                <label className="text-sm font-medium text-slate-700">Reason (optional)</label>
+                <input
+                  type="text"
+                  className="w-full border rounded-md px-3 py-2 text-sm"
+                  placeholder="e.g. Shipment cancelled, overcharge"
+                  value={refundDialog.reason}
+                  onChange={(e) => setRefundDialog((prev) => ({ ...prev, reason: e.target.value }))}
+                />
+              </div>
+            </div>
+            <div className="flex justify-end gap-2">
+              <Button
+                variant="outline"
+                onClick={() =>
+                  setRefundDialog({ open: false, invoice: null, amount: '', reason: '' })
+                }
+              >
+                Cancel
+              </Button>
+              <Button
+                onClick={() =>
+                  refundMutation.mutate({
+                    id: refundDialog.invoice.id,
+                    amount: refundDialog.amount,
+                    reason: refundDialog.reason,
+                  })
+                }
+                className="bg-rose-600 hover:bg-rose-700 text-white"
+                disabled={
+                  !refundDialog.amount ||
+                  Number(refundDialog.amount) <= 0 ||
+                  Number(refundDialog.amount) > (refundDialog.invoice?.amount_paid ?? 0) ||
+                  refundMutation.isPending
+                }
+              >
+                {refundMutation.isPending ? 'Processing...' : 'Confirm Refund'}
               </Button>
             </div>
           </DialogContent>
