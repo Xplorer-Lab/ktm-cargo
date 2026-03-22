@@ -103,5 +103,4 @@ test.describe('KTM route and workflow smoke', () => {
     await expect(page.getByRole('heading', { name: /Access Not Configured/i })).toBeVisible();
     await expect(page).toHaveURL(/\/Operations\?__e2e=staff-misconfigured$/);
   });
-
 });
