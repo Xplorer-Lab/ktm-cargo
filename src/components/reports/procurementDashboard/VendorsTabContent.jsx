@@ -34,9 +34,7 @@ export function VendorsTabContent({ filteredPOs }) {
                     <td className="p-3 text-right font-semibold text-blue-600">
                       ฿{vendor.totalSpend.toLocaleString()}
                     </td>
-                    <td className="p-3 text-right">
-                      {vendor.totalWeight.toLocaleString()} kg
-                    </td>
+                    <td className="p-3 text-right">{vendor.totalWeight.toLocaleString()} kg</td>
                     <td className="p-3 text-right">฿{vendor.avgCostPerKg.toFixed(2)}</td>
                     <td className="p-3 text-right">{vendor.poCount}</td>
                   </tr>

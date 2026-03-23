@@ -60,7 +60,12 @@ export default function CustomerNewOrder({ customer, user, onOrderCreated }) {
     const totalAmount = shippingCost + insuranceFee + packagingFee;
     const estimatedDelivery = addDays(new Date(), selectedService?.value === 'express' ? 2 : 5);
     return { weight, shippingCost, insuranceFee, packagingFee, totalAmount, estimatedDelivery };
-  }, [cargoForm.weight_kg, cargoForm.insurance_opted, cargoForm.packaging_fee, cargoForm.service_type]);
+  }, [
+    cargoForm.weight_kg,
+    cargoForm.insurance_opted,
+    cargoForm.packaging_fee,
+    cargoForm.service_type,
+  ]);
 
   // ---- Shopping calculations ----
   const shopCalc = useMemo(() => {
@@ -270,7 +275,9 @@ export default function CustomerNewOrder({ customer, user, onOrderCreated }) {
                   className={cn(
                     'relative w-10 h-10 rounded-full flex items-center justify-center font-medium transition-all duration-300',
                     isComplete && 'bg-emerald-500 text-white shadow-lg shadow-emerald-500/30',
-                    isActive && !isComplete && 'bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/30',
+                    isActive &&
+                      !isComplete &&
+                      'bg-gradient-to-br from-blue-500 to-blue-600 text-white shadow-lg shadow-blue-500/30',
                     !isActive && 'bg-slate-100 dark:bg-slate-800 text-slate-400'
                   )}
                 >

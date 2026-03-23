@@ -1,15 +1,17 @@
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft, CheckCircle, Loader2, ShoppingBag, Calculator, Truck, Percent } from 'lucide-react';
+import {
+  ArrowLeft,
+  CheckCircle,
+  Loader2,
+  ShoppingBag,
+  Calculator,
+  Truck,
+  Percent,
+} from 'lucide-react';
 import { DEFAULT_SHOPPING_PRICE_PER_KG } from '@/lib/defaults';
 
-export default function StepShoppingConfirmation({
-  form,
-  calc,
-  isPending,
-  onSubmit,
-  onBack,
-}) {
+export default function StepShoppingConfirmation({ form, calc, isPending, onSubmit, onBack }) {
   return (
     <Card className="border-0 shadow-xl bg-white dark:bg-slate-900 overflow-hidden animate-in slide-in-from-right duration-300">
       <CardHeader className="bg-gradient-to-br from-emerald-50 to-teal-50 dark:from-emerald-950/50 dark:to-teal-950/50 border-b border-slate-100 dark:border-slate-800">

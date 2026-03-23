@@ -91,7 +91,16 @@ export const createReadOnlyEntityClient = (tableName, selectFields = '*') => ({
 
     // Allowlist: only safe read-only filter operators
     const SAFE_OPERATORS = new Set([
-      'eq', 'gt', 'gte', 'lt', 'lte', 'ilike', 'like', 'is', 'in', 'neq',
+      'eq',
+      'gt',
+      'gte',
+      'lt',
+      'lte',
+      'ilike',
+      'like',
+      'is',
+      'in',
+      'neq',
     ]);
 
     // Apply filters

@@ -5,13 +5,7 @@ import { useProcurementMetrics } from '@/hooks/reports/useProcurementMetrics';
 import { OverviewMetricCard } from './MetricCard';
 import { MonthlyPerformanceChart } from './MonthlyPerformanceChart';
 import { WeightAllocationChart } from './WeightAllocationChart';
-import {
-  Package,
-  DollarSign,
-  TrendingUp,
-  BarChart3,
-  Truck,
-} from 'lucide-react';
+import { Package, DollarSign, TrendingUp, BarChart3, Truck } from 'lucide-react';
 
 export function OverviewTabContent({
   filteredPOs,

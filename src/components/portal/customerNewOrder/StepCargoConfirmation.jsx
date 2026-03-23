@@ -6,13 +6,7 @@ import { cn } from '@/lib/utils';
 import { format } from 'date-fns';
 import { SERVICE_TYPES } from '../pricingMaps';
 
-export default function StepCargoConfirmation({
-  form,
-  calc,
-  isPending,
-  onSubmit,
-  onBack,
-}) {
+export default function StepCargoConfirmation({ form, calc, isPending, onSubmit, onBack }) {
   const selectedService = SERVICE_TYPES.find((s) => s.value === form.service_type);
 
   return (
@@ -34,10 +28,7 @@ export default function StepCargoConfirmation({
           <div className="flex items-center gap-4">
             {selectedService && (
               <div
-                className={cn(
-                  'p-3 rounded-xl bg-gradient-to-br text-white',
-                  selectedService.color
-                )}
+                className={cn('p-3 rounded-xl bg-gradient-to-br text-white', selectedService.color)}
               >
                 <selectedService.icon className="w-6 h-6" />
               </div>
@@ -48,9 +39,7 @@ export default function StepCargoConfirmation({
               </p>
               <div className="flex items-center gap-2 text-sm text-slate-500">
                 <Clock className="w-4 h-4" />
-                <span>
-                  Est. delivery: {format(calc.estimatedDelivery, 'MMM dd, yyyy')}
-                </span>
+                <span>Est. delivery: {format(calc.estimatedDelivery, 'MMM dd, yyyy')}</span>
               </div>
             </div>
             <Badge className="bg-emerald-100 text-emerald-800">{selectedService?.delivery}</Badge>

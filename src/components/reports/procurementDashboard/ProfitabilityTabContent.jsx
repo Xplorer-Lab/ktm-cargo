@@ -38,9 +38,7 @@ export function ProfitabilityTabContent({ filteredShipments, filteredShoppingOrd
         <Card className="border-0 shadow-sm bg-blue-50">
           <CardContent className="p-4">
             <p className="text-sm text-blue-600">Profit Margin</p>
-            <p className="text-2xl font-bold text-blue-900">
-              {metrics.profitMargin.toFixed(1)}%
-            </p>
+            <p className="text-2xl font-bold text-blue-900">{metrics.profitMargin.toFixed(1)}%</p>
           </CardContent>
         </Card>
       </div>
@@ -104,8 +102,7 @@ export function ProfitabilityTabContent({ filteredShipments, filteredShoppingOrd
               </thead>
               <tbody>
                 {orderProfitability.slice(0, 15).map((order) => {
-                  const margin =
-                    order.revenue > 0 ? (order.profit / order.revenue) * 100 : 0;
+                  const margin = order.revenue > 0 ? (order.profit / order.revenue) * 100 : 0;
                   return (
                     <tr key={order.id} className="border-t hover:bg-slate-50">
                       <td className="p-3 font-medium">{order.orderNumber}</td>

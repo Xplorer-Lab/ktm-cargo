@@ -185,24 +185,122 @@ export default function Tasks() {
   useEffect(() => {
     if (!isLoading && tasks.length === 0) {
       const initialTasks = [
-        { title: 'Consult with business lawyer', phase: 'pre_launch', month: 1, estimated_cost: 7500, priority: 'high' },
-        { title: 'Research air cargo partners (JK Logistics, Pattaya Airways)', phase: 'pre_launch', month: 1, estimated_cost: 0, priority: 'high' },
-        { title: 'Survey target customers in Myanmar community groups', phase: 'pre_launch', month: 1, estimated_cost: 0, priority: 'medium' },
-        { title: 'Analyze competitor pricing and services', phase: 'pre_launch', month: 1, estimated_cost: 0, priority: 'medium' },
-        { title: 'Submit company registration to DBD', phase: 'registration', month: 2, estimated_cost: 30000, priority: 'critical' },
-        { title: 'Apply for Import/Export license', phase: 'registration', month: 2, estimated_cost: 12500, priority: 'critical' },
-        { title: 'Open business bank account', phase: 'registration', month: 2, estimated_cost: 0, priority: 'high' },
-        { title: 'Create Facebook Business Page', phase: 'infrastructure', month: 3, estimated_cost: 0, priority: 'high' },
-        { title: 'Set up LINE Official Account', phase: 'infrastructure', month: 3, estimated_cost: 0, priority: 'medium' },
-        { title: 'Create Google Business Profile', phase: 'infrastructure', month: 3, estimated_cost: 0, priority: 'medium' },
-        { title: 'Create booking form (Google Forms)', phase: 'infrastructure', month: 3, estimated_cost: 0, priority: 'high' },
-        { title: 'Finalize air cargo partnership agreements', phase: 'partnership', month: 3, estimated_cost: 7500, priority: 'critical' },
-        { title: 'Conduct test shipments (5-10)', phase: 'partnership', month: 3, estimated_cost: 5000, priority: 'high' },
-        { title: 'Launch Facebook Ads campaign', phase: 'marketing', month: 4, estimated_cost: 15000, priority: 'high' },
-        { title: 'Start posting in community groups', phase: 'marketing', month: 4, estimated_cost: 0, priority: 'medium' },
-        { title: 'Launch referral program', phase: 'marketing', month: 4, estimated_cost: 7500, priority: 'medium' },
+        {
+          title: 'Consult with business lawyer',
+          phase: 'pre_launch',
+          month: 1,
+          estimated_cost: 7500,
+          priority: 'high',
+        },
+        {
+          title: 'Research air cargo partners (JK Logistics, Pattaya Airways)',
+          phase: 'pre_launch',
+          month: 1,
+          estimated_cost: 0,
+          priority: 'high',
+        },
+        {
+          title: 'Survey target customers in Myanmar community groups',
+          phase: 'pre_launch',
+          month: 1,
+          estimated_cost: 0,
+          priority: 'medium',
+        },
+        {
+          title: 'Analyze competitor pricing and services',
+          phase: 'pre_launch',
+          month: 1,
+          estimated_cost: 0,
+          priority: 'medium',
+        },
+        {
+          title: 'Submit company registration to DBD',
+          phase: 'registration',
+          month: 2,
+          estimated_cost: 30000,
+          priority: 'critical',
+        },
+        {
+          title: 'Apply for Import/Export license',
+          phase: 'registration',
+          month: 2,
+          estimated_cost: 12500,
+          priority: 'critical',
+        },
+        {
+          title: 'Open business bank account',
+          phase: 'registration',
+          month: 2,
+          estimated_cost: 0,
+          priority: 'high',
+        },
+        {
+          title: 'Create Facebook Business Page',
+          phase: 'infrastructure',
+          month: 3,
+          estimated_cost: 0,
+          priority: 'high',
+        },
+        {
+          title: 'Set up LINE Official Account',
+          phase: 'infrastructure',
+          month: 3,
+          estimated_cost: 0,
+          priority: 'medium',
+        },
+        {
+          title: 'Create Google Business Profile',
+          phase: 'infrastructure',
+          month: 3,
+          estimated_cost: 0,
+          priority: 'medium',
+        },
+        {
+          title: 'Create booking form (Google Forms)',
+          phase: 'infrastructure',
+          month: 3,
+          estimated_cost: 0,
+          priority: 'high',
+        },
+        {
+          title: 'Finalize air cargo partnership agreements',
+          phase: 'partnership',
+          month: 3,
+          estimated_cost: 7500,
+          priority: 'critical',
+        },
+        {
+          title: 'Conduct test shipments (5-10)',
+          phase: 'partnership',
+          month: 3,
+          estimated_cost: 5000,
+          priority: 'high',
+        },
+        {
+          title: 'Launch Facebook Ads campaign',
+          phase: 'marketing',
+          month: 4,
+          estimated_cost: 15000,
+          priority: 'high',
+        },
+        {
+          title: 'Start posting in community groups',
+          phase: 'marketing',
+          month: 4,
+          estimated_cost: 0,
+          priority: 'medium',
+        },
+        {
+          title: 'Launch referral program',
+          phase: 'marketing',
+          month: 4,
+          estimated_cost: 7500,
+          priority: 'medium',
+        },
       ];
-      initialTasks.forEach((task) => { db.tasks.create(task); });
+      initialTasks.forEach((task) => {
+        db.tasks.create(task);
+      });
       queryClient.invalidateQueries({ queryKey: ['tasks'] });
     }
   }, [isLoading, tasks.length, queryClient]);
@@ -213,11 +311,20 @@ export default function Tasks() {
         {/* Header */}
         <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
           <div>
-            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900">Business Tasks</h1>
+            <h1 className="text-xl sm:text-2xl md:text-3xl font-bold text-slate-900">
+              Business Tasks
+            </h1>
             <p className="text-sm text-slate-500 mt-1">Implementation roadmap & task management</p>
           </div>
-          <Button onClick={() => { resetForm(); setShowForm(true); }} className="bg-blue-600 hover:bg-blue-700">
-            <Plus className="w-4 h-4 mr-2" /><span className="hidden sm:inline">Add </span>Task
+          <Button
+            onClick={() => {
+              resetForm();
+              setShowForm(true);
+            }}
+            className="bg-blue-600 hover:bg-blue-700"
+          >
+            <Plus className="w-4 h-4 mr-2" />
+            <span className="hidden sm:inline">Add </span>Task
           </Button>
         </div>
 
@@ -227,9 +334,13 @@ export default function Tasks() {
             <CardContent className="p-3 sm:p-4">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-blue-100 text-[10px] sm:text-xs uppercase font-medium">Progress</p>
+                  <p className="text-blue-100 text-[10px] sm:text-xs uppercase font-medium">
+                    Progress
+                  </p>
                   <p className="text-xl sm:text-2xl font-bold">{Math.round(progress)}%</p>
-                  <p className="text-blue-100 text-[10px] sm:text-xs">{completedCount}/{tasks.length}</p>
+                  <p className="text-blue-100 text-[10px] sm:text-xs">
+                    {completedCount}/{tasks.length}
+                  </p>
                 </div>
                 <Target className="w-6 h-6 sm:w-8 sm:h-8 text-blue-200" />
               </div>
@@ -240,9 +351,13 @@ export default function Tasks() {
           <Card className="border-0 shadow-sm">
             <CardContent className="p-3 sm:p-4">
               <div className="flex items-center gap-2 sm:gap-3">
-                <div className="p-1.5 sm:p-2 bg-emerald-100 rounded-lg"><TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600" /></div>
+                <div className="p-1.5 sm:p-2 bg-emerald-100 rounded-lg">
+                  <TrendingUp className="w-4 h-4 sm:w-5 sm:h-5 text-emerald-600" />
+                </div>
                 <div>
-                  <p className="text-lg sm:text-2xl font-bold text-slate-900">฿{(totalEstCost / 1000).toFixed(0)}k</p>
+                  <p className="text-lg sm:text-2xl font-bold text-slate-900">
+                    ฿{(totalEstCost / 1000).toFixed(0)}k
+                  </p>
                   <p className="text-[10px] sm:text-xs text-slate-500">Est. Cost</p>
                 </div>
               </div>
@@ -252,7 +367,9 @@ export default function Tasks() {
           <Card className="border-0 shadow-sm">
             <CardContent className="p-3 sm:p-4">
               <div className="flex items-center gap-2 sm:gap-3">
-                <div className="p-1.5 sm:p-2 bg-rose-100 rounded-lg"><AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-rose-600" /></div>
+                <div className="p-1.5 sm:p-2 bg-rose-100 rounded-lg">
+                  <AlertCircle className="w-4 h-4 sm:w-5 sm:h-5 text-rose-600" />
+                </div>
                 <div>
                   <p className="text-xl sm:text-2xl font-bold text-slate-900">{criticalCount}</p>
                   <p className="text-[10px] sm:text-xs text-slate-500">Critical</p>
@@ -264,7 +381,9 @@ export default function Tasks() {
           <Card className="border-0 shadow-sm">
             <CardContent className="p-3 sm:p-4">
               <div className="flex items-center gap-2 sm:gap-3">
-                <div className="p-1.5 sm:p-2 bg-amber-100 rounded-lg"><Clock className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600" /></div>
+                <div className="p-1.5 sm:p-2 bg-amber-100 rounded-lg">
+                  <Clock className="w-4 h-4 sm:w-5 sm:h-5 text-amber-600" />
+                </div>
                 <div>
                   <p className="text-xl sm:text-2xl font-bold text-slate-900">{dueSoonCount}</p>
                   <p className="text-[10px] sm:text-xs text-slate-500">Due Soon</p>
@@ -273,14 +392,24 @@ export default function Tasks() {
             </CardContent>
           </Card>
 
-          <Card className={`border-0 shadow-sm ${overdueCount > 0 ? 'bg-rose-50 border-rose-200' : ''}`}>
+          <Card
+            className={`border-0 shadow-sm ${overdueCount > 0 ? 'bg-rose-50 border-rose-200' : ''}`}
+          >
             <CardContent className="p-3 sm:p-4">
               <div className="flex items-center gap-2 sm:gap-3">
-                <div className={`p-1.5 sm:p-2 rounded-lg ${overdueCount > 0 ? 'bg-rose-200' : 'bg-slate-100'}`}>
-                  <Flag className={`w-4 h-4 sm:w-5 sm:h-5 ${overdueCount > 0 ? 'text-rose-600' : 'text-slate-600'}`} />
+                <div
+                  className={`p-1.5 sm:p-2 rounded-lg ${overdueCount > 0 ? 'bg-rose-200' : 'bg-slate-100'}`}
+                >
+                  <Flag
+                    className={`w-4 h-4 sm:w-5 sm:h-5 ${overdueCount > 0 ? 'text-rose-600' : 'text-slate-600'}`}
+                  />
                 </div>
                 <div>
-                  <p className={`text-xl sm:text-2xl font-bold ${overdueCount > 0 ? 'text-rose-600' : 'text-slate-900'}`}>{overdueCount}</p>
+                  <p
+                    className={`text-xl sm:text-2xl font-bold ${overdueCount > 0 ? 'text-rose-600' : 'text-slate-900'}`}
+                  >
+                    {overdueCount}
+                  </p>
                   <p className="text-[10px] sm:text-xs text-slate-500">Overdue</p>
                 </div>
               </div>
@@ -294,21 +423,44 @@ export default function Tasks() {
             <div className="flex flex-col lg:flex-row gap-4">
               <div className="relative flex-1 max-w-md">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-slate-400" />
-                <Input placeholder="Search tasks..." value={searchQuery} onChange={(e) => setSearchQuery(e.target.value)} className="pl-10" />
+                <Input
+                  placeholder="Search tasks..."
+                  value={searchQuery}
+                  onChange={(e) => setSearchQuery(e.target.value)}
+                  className="pl-10"
+                />
               </div>
               <Tabs value={statusFilter} onValueChange={setStatusFilter}>
                 <TabsList className="h-auto flex-wrap p-1 gap-1">
-                  <TabsTrigger value="all" className="text-xs sm:text-sm">All</TabsTrigger>
-                  <TabsTrigger value="pending" className="text-xs sm:text-sm">Pending</TabsTrigger>
-                  <TabsTrigger value="completed" className="text-xs sm:text-sm">Done</TabsTrigger>
-                  <TabsTrigger value="overdue" className="text-rose-600 text-xs sm:text-sm">Overdue</TabsTrigger>
+                  <TabsTrigger value="all" className="text-xs sm:text-sm">
+                    All
+                  </TabsTrigger>
+                  <TabsTrigger value="pending" className="text-xs sm:text-sm">
+                    Pending
+                  </TabsTrigger>
+                  <TabsTrigger value="completed" className="text-xs sm:text-sm">
+                    Done
+                  </TabsTrigger>
+                  <TabsTrigger value="overdue" className="text-rose-600 text-xs sm:text-sm">
+                    Overdue
+                  </TabsTrigger>
                 </TabsList>
               </Tabs>
               <div className="flex gap-1 bg-slate-100 p-1 rounded-lg">
-                <Button variant={viewMode === 'phase' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('phase')} className="text-xs sm:text-sm">
+                <Button
+                  variant={viewMode === 'phase' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('phase')}
+                  className="text-xs sm:text-sm"
+                >
                   <span className="hidden sm:inline">By </span>Phase
                 </Button>
-                <Button variant={viewMode === 'priority' ? 'default' : 'ghost'} size="sm" onClick={() => setViewMode('priority')} className="text-xs sm:text-sm">
+                <Button
+                  variant={viewMode === 'priority' ? 'default' : 'ghost'}
+                  size="sm"
+                  onClick={() => setViewMode('priority')}
+                  className="text-xs sm:text-sm"
+                >
                   <span className="hidden sm:inline">By </span>Priority
                 </Button>
               </div>
@@ -316,11 +468,24 @@ export default function Tasks() {
 
             {/* Phase Filter Pills */}
             <div className="flex flex-wrap gap-1.5 sm:gap-2 mt-4 pt-4 border-t">
-              <Button variant={phaseFilter === 'all' ? 'default' : 'outline'} size="sm" onClick={() => setPhaseFilter('all')} className="rounded-full text-xs sm:text-sm px-2 sm:px-3">All</Button>
+              <Button
+                variant={phaseFilter === 'all' ? 'default' : 'outline'}
+                size="sm"
+                onClick={() => setPhaseFilter('all')}
+                className="rounded-full text-xs sm:text-sm px-2 sm:px-3"
+              >
+                All
+              </Button>
               {Array.from(phaseConfig.entries()).map(([key, config]) => {
                 const count = tasks.filter((t) => t.phase === key).length;
                 return (
-                  <Button key={key} variant={phaseFilter === key ? 'default' : 'outline'} size="sm" onClick={() => setPhaseFilter(key)} className="gap-1 sm:gap-2 rounded-full text-xs sm:text-sm px-2 sm:px-3">
+                  <Button
+                    key={key}
+                    variant={phaseFilter === key ? 'default' : 'outline'}
+                    size="sm"
+                    onClick={() => setPhaseFilter(key)}
+                    className="gap-1 sm:gap-2 rounded-full text-xs sm:text-sm px-2 sm:px-3"
+                  >
                     <config.icon className="w-3 h-3" />
                     <span className="hidden sm:inline">{config.label}</span>
                     <span className="sm:hidden">{config.label.substring(0, 3)}</span>
@@ -335,7 +500,9 @@ export default function Tasks() {
         {/* Tasks List */}
         {isLoading ? (
           <div className="space-y-4">
-            {[0, 1, 2].map((i) => <Skeleton key={`skeleton-task-${i}`} className="h-32" />)}
+            {[0, 1, 2].map((i) => (
+              <Skeleton key={`skeleton-task-${i}`} className="h-32" />
+            ))}
           </div>
         ) : filteredTasks.length === 0 ? (
           <Card className="border-0 shadow-sm">
@@ -343,9 +510,16 @@ export default function Tasks() {
               <CheckCircle2 className="w-16 h-16 text-slate-300 mx-auto mb-4" />
               <h3 className="text-lg font-medium text-slate-900 mb-2">No tasks found</h3>
               <p className="text-slate-500 mb-6">
-                {searchQuery || statusFilter !== 'all' || phaseFilter !== 'all' ? 'Try adjusting your filters' : 'Create your first task to get started'}
+                {searchQuery || statusFilter !== 'all' || phaseFilter !== 'all'
+                  ? 'Try adjusting your filters'
+                  : 'Create your first task to get started'}
               </p>
-              <Button onClick={() => { resetForm(); setShowForm(true); }}>
+              <Button
+                onClick={() => {
+                  resetForm();
+                  setShowForm(true);
+                }}
+              >
                 <Plus className="w-4 h-4 mr-2" /> Add Task
               </Button>
             </CardContent>
@@ -371,7 +545,13 @@ export default function Tasks() {
         )}
 
         {/* Task Form Dialog */}
-        <Dialog open={showForm} onOpenChange={(v) => { setShowForm(v); if (!v) resetForm(); }}>
+        <Dialog
+          open={showForm}
+          onOpenChange={(v) => {
+            setShowForm(v);
+            if (!v) resetForm();
+          }}
+        >
           <DialogContent className="max-w-lg">
             <DialogHeader>
               <DialogTitle>{editingTask ? 'Edit Task' : 'Add New Task'}</DialogTitle>
@@ -379,31 +559,52 @@ export default function Tasks() {
             <form onSubmit={handleSubmit} className="space-y-4 mt-4">
               <div className="space-y-2">
                 <Label>Task Title *</Label>
-                <Input value={form.title} onChange={(e) => setForm({ ...form, title: e.target.value })} placeholder="Enter task title" required />
+                <Input
+                  value={form.title}
+                  onChange={(e) => setForm({ ...form, title: e.target.value })}
+                  placeholder="Enter task title"
+                  required
+                />
               </div>
               <div className="space-y-2">
                 <Label>Description</Label>
-                <Textarea value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} placeholder="Task details..." rows={2} />
+                <Textarea
+                  value={form.description}
+                  onChange={(e) => setForm({ ...form, description: e.target.value })}
+                  placeholder="Task details..."
+                  rows={2}
+                />
               </div>
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Phase</Label>
                   <Select value={form.phase} onValueChange={(v) => setForm({ ...form, phase: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent>
                       {Array.from(phaseConfig.entries()).map(([key, config]) => (
-                        <SelectItem key={key} value={key}>{config.label}</SelectItem>
+                        <SelectItem key={key} value={key}>
+                          {config.label}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
                 </div>
                 <div className="space-y-2">
                   <Label>Target Month</Label>
-                  <Select value={form.month.toString()} onValueChange={(v) => setForm({ ...form, month: parseInt(v) })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                  <Select
+                    value={form.month.toString()}
+                    onValueChange={(v) => setForm({ ...form, month: parseInt(v) })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent>
                       {[1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12].map((m) => (
-                        <SelectItem key={m} value={m.toString()}>Month {m}</SelectItem>
+                        <SelectItem key={m} value={m.toString()}>
+                          Month {m}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -412,15 +613,28 @@ export default function Tasks() {
               <div className="grid grid-cols-2 gap-4">
                 <div className="space-y-2">
                   <Label>Estimated Cost (THB)</Label>
-                  <Input type="number" value={form.estimated_cost} onChange={(e) => setForm({ ...form, estimated_cost: parseFloat(e.target.value) || 0 })} />
+                  <Input
+                    type="number"
+                    value={form.estimated_cost}
+                    onChange={(e) =>
+                      setForm({ ...form, estimated_cost: parseFloat(e.target.value) || 0 })
+                    }
+                  />
                 </div>
                 <div className="space-y-2">
                   <Label>Priority</Label>
-                  <Select value={form.priority} onValueChange={(v) => setForm({ ...form, priority: v })}>
-                    <SelectTrigger><SelectValue /></SelectTrigger>
+                  <Select
+                    value={form.priority}
+                    onValueChange={(v) => setForm({ ...form, priority: v })}
+                  >
+                    <SelectTrigger>
+                      <SelectValue />
+                    </SelectTrigger>
                     <SelectContent>
                       {Array.from(priorityConfig.entries()).map(([key, config]) => (
-                        <SelectItem key={key} value={key}>{config.label}</SelectItem>
+                        <SelectItem key={key} value={key}>
+                          {config.label}
+                        </SelectItem>
                       ))}
                     </SelectContent>
                   </Select>
@@ -428,11 +642,27 @@ export default function Tasks() {
               </div>
               <div className="space-y-2">
                 <Label>Due Date</Label>
-                <Input type="date" value={form.due_date} onChange={(e) => setForm({ ...form, due_date: e.target.value })} />
+                <Input
+                  type="date"
+                  value={form.due_date}
+                  onChange={(e) => setForm({ ...form, due_date: e.target.value })}
+                />
               </div>
               <div className="flex gap-3 pt-4">
-                <Button type="button" variant="outline" onClick={() => { setShowForm(false); resetForm(); }} className="flex-1">Cancel</Button>
-                <Button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-700">{editingTask ? 'Update Task' : 'Add Task'}</Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  onClick={() => {
+                    setShowForm(false);
+                    resetForm();
+                  }}
+                  className="flex-1"
+                >
+                  Cancel
+                </Button>
+                <Button type="submit" className="flex-1 bg-blue-600 hover:bg-blue-700">
+                  {editingTask ? 'Update Task' : 'Add Task'}
+                </Button>
               </div>
             </form>
           </DialogContent>

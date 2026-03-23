@@ -57,8 +57,7 @@ export default function HeroSection() {
               }}
             >
               KTM သည် inquiry မှ စ၍ quote, confirm, ဝယ်ယူခြင်း, စုစည်းပို့ဆောင်ခြင်း,
-              အရောက်ပို့ခြင်း အထိ staff-led service အဖြစ် စီမံပေးသော logistics team
-              ဖြစ်ပါသည်။
+              အရောက်ပို့ခြင်း အထိ staff-led service အဖြစ် စီမံပေးသော logistics team ဖြစ်ပါသည်။
             </p>
             <div style={{ marginTop: 24, display: 'flex', flexWrap: 'wrap', gap: 10 }}>
               <a

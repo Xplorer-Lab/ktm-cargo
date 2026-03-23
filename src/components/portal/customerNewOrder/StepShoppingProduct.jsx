@@ -3,7 +3,16 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { ArrowLeft, ArrowRight, ShoppingBag, Link2, FileText, DollarSign, Scale, Info } from 'lucide-react';
+import {
+  ArrowLeft,
+  ArrowRight,
+  ShoppingBag,
+  Link2,
+  FileText,
+  DollarSign,
+  Scale,
+  Info,
+} from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 export default function StepShoppingProduct({ form, errors, onUpdate, onNext, onBack }) {
@@ -45,9 +54,7 @@ export default function StepShoppingProduct({ form, errors, onUpdate, onNext, on
             value={form.product_details}
             onChange={(e) => onUpdate('product_details', e.target.value)}
             rows={3}
-            className={cn(
-              errors.product_details && 'border-rose-500 focus-visible:ring-rose-500'
-            )}
+            className={cn(errors.product_details && 'border-rose-500 focus-visible:ring-rose-500')}
           />
           {errors.product_details && (
             <p className="text-xs text-rose-500 flex items-center gap-1">

@@ -61,9 +61,7 @@ export function ProcurementTabContent({ filteredPOs }) {
               <tbody>
                 {filteredPOs.slice(0, 20).map((po) => (
                   <tr key={po.id} className="border-t hover:bg-slate-50">
-                    <td className="p-3 font-medium">
-                      {po.po_number || po.id.substring(0, 8)}
-                    </td>
+                    <td className="p-3 font-medium">{po.po_number || po.id.substring(0, 8)}</td>
                     <td className="p-3">{po.vendor_name || '-'}</td>
                     <td className="p-3 text-right">฿{(po.total_amount || 0).toLocaleString()}</td>
                     <td className="p-3 text-right">{po.total_weight_kg || 0} kg</td>

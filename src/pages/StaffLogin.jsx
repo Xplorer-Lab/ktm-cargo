@@ -181,7 +181,8 @@ export default function StaffLogin() {
       const existing = all[emailAddr] || { attempts: 0, firstAttemptAt: Date.now() };
       const windowStart = Date.now() - LOCKOUT_WINDOW_MS;
       // Reset window if expired
-      const firstAttempt = existing.firstAttemptAt > windowStart ? existing.firstAttemptAt : Date.now();
+      const firstAttempt =
+        existing.firstAttemptAt > windowStart ? existing.firstAttemptAt : Date.now();
       const attempts = existing.firstAttemptAt > windowStart ? existing.attempts + 1 : 1;
       all[emailAddr] = { attempts, firstAttemptAt: firstAttempt };
       localStorage.setItem(RATE_LIMIT_KEY, JSON.stringify(all));
@@ -197,9 +198,7 @@ export default function StaffLogin() {
 
     // ── Rate limit check ─────────────────────────────────────────────────
     if (isRateLimited(email)) {
-      setErrorMessage(
-        'Too many failed attempts. Please wait 15 minutes before trying again.'
-      );
+      setErrorMessage('Too many failed attempts. Please wait 15 minutes before trying again.');
       setSubmitting(false);
       return;
     }
@@ -218,7 +217,9 @@ export default function StaffLogin() {
             delete all[email];
             localStorage.setItem(RATE_LIMIT_KEY, JSON.stringify(all));
           }
-        } catch { /* ignore */ }
+        } catch {
+          /* ignore */
+        }
         navigate(nextPath, { replace: true });
         return;
       }

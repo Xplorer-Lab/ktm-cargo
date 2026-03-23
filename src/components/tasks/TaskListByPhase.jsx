@@ -6,7 +6,16 @@ import { TaskCard } from './TaskCard';
 import { phaseConfig } from '@/config/taskPhaseConfig';
 import { priorityConfig } from '@/config/taskPriorityConfig';
 
-export function TaskListByPhase({ groupedByPhase, tasks, onToggle, onEdit, onDelete, resetForm, setForm, setShowForm }) {
+export function TaskListByPhase({
+  groupedByPhase,
+  tasks,
+  onToggle,
+  onEdit,
+  onDelete,
+  resetForm,
+  setForm,
+  setShowForm,
+}) {
   return (
     <div className="space-y-6">
       {Array.from(groupedByPhase.entries()).map(([phase, phaseTasks]) => {

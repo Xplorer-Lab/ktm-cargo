@@ -25,9 +25,7 @@ export default function ForecastTab({ shipments, shoppingOrders }) {
   }, [shipments]);
 
   const forecastChartData = [
-    ...forecast.historicalData
-      .slice(-6)
-      .map((d) => ({ ...d, type: 'historical' })),
+    ...forecast.historicalData.slice(-6).map((d) => ({ ...d, type: 'historical' })),
     ...forecast.forecasts.map((f) => ({
       month: f.shortMonth,
       revenue: f.predictedRevenue,
@@ -50,9 +48,7 @@ export default function ForecastTab({ shipments, shoppingOrders }) {
             <p className="text-3xl font-bold">
               ฿{forecast.summary.totalPredictedRevenue.toLocaleString()}
             </p>
-            <p className="text-blue-200 text-sm mt-1">
-              {forecast.summary.confidence}% confidence
-            </p>
+            <p className="text-blue-200 text-sm mt-1">{forecast.summary.confidence}% confidence</p>
           </CardContent>
         </Card>
         <Card className="border-0 shadow-sm">
@@ -89,9 +85,7 @@ export default function ForecastTab({ shipments, shoppingOrders }) {
               {forecast.summary.growthTrend === 'stable' && (
                 <BarChart3 className="w-6 h-6 text-blue-500" />
               )}
-              <span className="text-xl font-bold capitalize">
-                {forecast.summary.growthTrend}
-              </span>
+              <span className="text-xl font-bold capitalize">{forecast.summary.growthTrend}</span>
             </div>
           </CardContent>
         </Card>

@@ -230,18 +230,10 @@ export default function ProcurementProfitabilityDashboard({
               </SelectContent>
             </Select>
             <div className="ml-auto flex gap-2">
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleExport('procurement')}
-              >
+              <Button variant="outline" size="sm" onClick={() => handleExport('procurement')}>
                 <Download className="w-4 h-4 mr-1" /> Procurement
               </Button>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => handleExport('profitability')}
-              >
+              <Button variant="outline" size="sm" onClick={() => handleExport('profitability')}>
                 <Download className="w-4 h-4 mr-1" /> Profitability
               </Button>
             </div>

@@ -48,7 +48,8 @@ export default function OrderTypeSelection({ onSelect }) {
               Shopping Order
             </h3>
             <p className="text-sm text-slate-500 dark:text-slate-400">
-              We buy products for you in Thailand and ship them to Yangon. Just tell us what you want!
+              We buy products for you in Thailand and ship them to Yangon. Just tell us what you
+              want!
             </p>
             <div className="mt-3 inline-flex items-center gap-1 text-xs text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-1 rounded-full">
               <ShoppingBag className="w-3 h-3" /> Buy + Ship
