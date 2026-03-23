@@ -5,6 +5,9 @@ const toNumber = (value) => {
 
 const toNonNegative = (value) => Math.max(0, toNumber(value));
 
+const WEIGHT_PRECISION_DP = 3; // align with DB storage precision (1g)
+const normalizeWeight = (value) => Number(toNonNegative(value).toFixed(WEIGHT_PRECISION_DP));
+
 export function getShipmentAllocationWeight(shipment = {}) {
   return toNonNegative(shipment.weight_kg);
 }
@@ -49,11 +52,11 @@ function buildPOOperation(po, nextAllocatedWeight) {
   const previousPatch = getPOAllocationSnapshot(po);
   const nextPatch = buildPOAllocationPatch(po, nextAllocatedWeight);
 
-  const WEIGHT_TOLERANCE = 0.001;
   if (
-    Math.abs(previousPatch.allocated_weight_kg - nextPatch.allocated_weight_kg) <
-      WEIGHT_TOLERANCE &&
-    Math.abs(previousPatch.remaining_weight_kg - nextPatch.remaining_weight_kg) < WEIGHT_TOLERANCE
+    normalizeWeight(previousPatch.allocated_weight_kg) ===
+      normalizeWeight(nextPatch.allocated_weight_kg) &&
+    normalizeWeight(previousPatch.remaining_weight_kg) ===
+      normalizeWeight(nextPatch.remaining_weight_kg)
   ) {
     return null;
   }

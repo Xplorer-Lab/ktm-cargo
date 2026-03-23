@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo } from 'react';
+import { roundMoney } from '@/domains/shipments/calculations';
 import { useForm, Controller } from 'react-hook-form';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -186,7 +187,7 @@ export default function InvoiceForm({
       if (order) {
         const weight = parseFloat(order.actual_weight || order.estimated_weight) || 0;
         const shipping = parseFloat(order.shipping_cost) || 0;
-        const pricePerKg = weight > 0 ? Math.round((shipping / weight) * 100) / 100 : 0;
+        const pricePerKg = weight > 0 ? roundMoney(shipping / weight) : 0;
         setValue('order_id', order.id);
         setValue('order_number', order.order_number || '');
         setValue('customer_name', order.customer_name);

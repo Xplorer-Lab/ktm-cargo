@@ -161,6 +161,7 @@ export function computeOrderTotals(params) {
   let surchargeTotal = 0;
   const surcharges = params.surcharges || [];
   for (const s of surcharges) {
+    if (!s) continue;
     const applies =
       s.applies_to === 'all' ||
       (s.applies_to === 'cargo' && serviceType.startsWith('cargo')) ||
