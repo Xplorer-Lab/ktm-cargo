@@ -206,8 +206,7 @@ export async function createInvoiceFromShoppingOrder(order, customer) {
   const commissionAmount = parseFloat(order.commission_amount) || 0;
   const shippingCost = parseFloat(order.shipping_cost) || 0;
   const weight = parseFloat(order.actual_weight || order.estimated_weight) || 0;
-  const totalAmount =
-    parseFloat(order.total_amount) || productCost + commissionAmount + shippingCost;
+  const totalAmount = productCost + commissionAmount + shippingCost;
   // Avoid hardcoded fallback: use derived rate or 0; prefer company_settings.default_shopping_price_per_kg when available
   const pricePerKg = weight > 0 ? Math.round((shippingCost / weight) * 100) / 100 : 0;
 
