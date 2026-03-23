@@ -32,7 +32,7 @@ export async function updateShoppingOrderWithPoRebalance(orderId, updates, previ
   });
 
   if (error) throw error;
-  if (!data || typeof data !== 'object') {
+  if (!data || typeof data !== 'object' || Array.isArray(data) || typeof data.id === 'undefined') {
     throw new Error('update_shopping_order_with_po_rebalance returned an invalid response');
   }
   return data;
