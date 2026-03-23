@@ -1,0 +1,31 @@
+name: Chore
+description: Infra, deps, migration, refactor — no behaviour change
+labels: ["type:chore"]
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - deps
+        - ci
+        - migration
+        - refactor
+        - other
+    validations:
+      required: true
+
+  - type: textarea
+    id: what
+    attributes:
+      label: What needs to be done?
+    validations:
+      required: true
+
+  - type: textarea
+    id: why
+    attributes:
+      label: Why?
+      description: What breaks or degrades if this is not done?
+    validations:
+      required: true

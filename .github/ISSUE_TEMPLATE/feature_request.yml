@@ -1,0 +1,39 @@
+name: Feature Request
+description: New capability for customers or staff
+labels: ["type:feature"]
+body:
+  - type: dropdown
+    id: area
+    attributes:
+      label: Area
+      options:
+        - invoices
+        - shipments
+        - shopping-orders
+        - procurement
+        - auth
+        - reporting
+        - other
+    validations:
+      required: true
+
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem does this solve?
+      description: Describe from the customer or staff perspective
+    validations:
+      required: true
+
+  - type: textarea
+    id: solution
+    attributes:
+      label: Proposed solution
+    validations:
+      required: true
+
+  - type: textarea
+    id: impact
+    attributes:
+      label: Business impact
+      description: Who benefits and how much? (helps with prioritisation)

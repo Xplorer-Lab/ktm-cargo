@@ -1,0 +1,77 @@
+# ============================================================================
+# Board Automation — KTM Cargo Dev Board
+# Moves issues/PRs to the correct column when labels are applied or
+# when PRs are opened/merged.
+# Requires: GITHUB_TOKEN with project write access (classic token or
+# fine-grained with "Projects" read/write scope).
+# ============================================================================
+
+name: Board Automation
+
+on:
+  issues:
+    types: [labeled, opened]
+  pull_request:
+    types: [opened, closed]
+
+permissions:
+  issues: read
+  pull-requests: read
+
+jobs:
+  move-on-label:
+    name: Move issue by label
+    runs-on: ubuntu-latest
+    if: github.event_name == 'issues' && github.event.action == 'labeled'
+    steps:
+      - name: Move to correct column
+        uses: leonsteinhaeuser/project-beta-automations@v2
+        with:
+          gh_token: ${{ secrets.PROJECT_AUTOMATION_TOKEN }}
+          user: FreddieKT
+          project_id: 4
+          resource_node_id: ${{ github.event.issue.node_id }}
+          status_value: |
+            ${{
+              github.event.label.name == 'P0' && '🚨 P0 Now' ||
+              github.event.label.name == 'P1' && '🟡 P1 Next' ||
+              github.event.label.name == 'P2' && '⚪ P2 Later' ||
+              github.event.label.name == 'type:feature' && '💡 Ideas' ||
+              github.event.label.name == 'type:chore' && '📦 Backlog' ||
+              ''
+            }}
+
+  move-on-pr-open:
+    name: Move linked issue when PR opens
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.event.action == 'opened'
+    steps:
+      - name: Extract linked issue number
+        id: linked
+        run: |
+          ISSUE=$(echo "${{ github.event.pull_request.body }}" | grep -oP '(?<=#)\d+' | head -1)
+          echo "issue=$ISSUE" >> $GITHUB_OUTPUT
+
+      - name: Move issue to In Progress
+        if: steps.linked.outputs.issue != ''
+        uses: leonsteinhaeuser/project-beta-automations@v2
+        with:
+          gh_token: ${{ secrets.PROJECT_AUTOMATION_TOKEN }}
+          user: FreddieKT
+          project_id: 4
+          resource_node_id: ${{ github.event.pull_request.node_id }}
+          status_value: "🔨 In Progress"
+
+  move-on-pr-merge:
+    name: Move linked issue to Done when PR merges
+    runs-on: ubuntu-latest
+    if: github.event_name == 'pull_request' && github.event.action == 'closed' && github.event.pull_request.merged == true
+    steps:
+      - name: Move to Done
+        uses: leonsteinhaeuser/project-beta-automations@v2
+        with:
+          gh_token: ${{ secrets.PROJECT_AUTOMATION_TOKEN }}
+          user: FreddieKT
+          project_id: 4
+          resource_node_id: ${{ github.event.pull_request.node_id }}
+          status_value: "✅ Done"
