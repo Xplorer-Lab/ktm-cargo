@@ -1,14 +1,10 @@
 -- ============================================================================
--- Migration: Shopping Order PO Rebalance RPCs
--- Fixes P0: Non-atomic client-side PO weight updates for shopping orders.
--- All operations run in a single DB transaction — no partial corruption.
---
--- Auth: both functions verify the caller is a staff/admin user via profiles.
+-- Migration v2: Shopping Order PO Rebalance RPCs — auth guard + delete RPC
+-- Adds _assert_staff_caller() auth helper, updates update RPC with guard,
+-- adds delete_shopping_order_with_po_dealloc RPC.
 -- ============================================================================
 
--- ---------------------------------------------------------------------------
--- Helper: assert caller is staff or admin (used by both RPCs below)
--- ---------------------------------------------------------------------------
+-- Helper: assert caller is staff or admin
 CREATE OR REPLACE FUNCTION _assert_staff_caller()
 RETURNS VOID
 LANGUAGE plpgsql
@@ -26,9 +22,7 @@ BEGIN
 END;
 $$;
 
--- ---------------------------------------------------------------------------
--- RPC 1: update_shopping_order_with_po_rebalance
--- ---------------------------------------------------------------------------
+-- Update existing RPC with auth guard
 CREATE OR REPLACE FUNCTION update_shopping_order_with_po_rebalance(
   p_order_id        UUID,
   p_updates         JSONB,
@@ -47,10 +41,8 @@ DECLARE
   v_po_total        NUMERIC;
   v_order_row       shopping_orders%ROWTYPE;
 BEGIN
-  -- Auth guard
   PERFORM _assert_staff_caller();
 
-  -- 1. Dealloc weight from previous PO
   IF p_previous_po_id IS NOT NULL AND p_previous_weight > 0 THEN
     UPDATE purchase_orders
     SET
@@ -64,7 +56,6 @@ BEGIN
     WHERE id = p_previous_po_id;
   END IF;
 
-  -- 2. Alloc weight to next PO (capacity check with row lock)
   IF p_next_po_id IS NOT NULL AND p_next_weight > 0 THEN
     SELECT allocated_weight_kg, total_weight_kg
       INTO v_next_allocated, v_po_total
@@ -93,7 +84,6 @@ BEGIN
     WHERE id = p_next_po_id;
   END IF;
 
-  -- 3. Update shopping order (COALESCE — only supplied keys change)
   UPDATE shopping_orders SET
     status                 = COALESCE(p_updates->>'status',                           status::TEXT)::shopping_order_status,
     vendor_po_id           = CASE WHEN p_updates ? 'vendor_po_id'
@@ -121,12 +111,7 @@ BEGIN
 END;
 $$;
 
-COMMENT ON FUNCTION update_shopping_order_with_po_rebalance IS
-  'Atomically rebalances PO weight allocations and updates a shopping order in one transaction. Staff/admin only.';
-
--- ---------------------------------------------------------------------------
--- RPC 2: delete_shopping_order_with_po_dealloc
--- ---------------------------------------------------------------------------
+-- New delete RPC
 CREATE OR REPLACE FUNCTION delete_shopping_order_with_po_dealloc(
   p_order_id        UUID,
   p_previous_po_id  UUID    DEFAULT NULL,
@@ -138,10 +123,8 @@ SECURITY DEFINER
 SET search_path = public
 AS $$
 BEGIN
-  -- Auth guard
   PERFORM _assert_staff_caller();
 
-  -- 1. Dealloc weight from PO
   IF p_previous_po_id IS NOT NULL AND p_previous_weight > 0 THEN
     UPDATE purchase_orders
     SET
@@ -155,7 +138,6 @@ BEGIN
     WHERE id = p_previous_po_id;
   END IF;
 
-  -- 2. Delete the shopping order
   DELETE FROM shopping_orders WHERE id = p_order_id;
 
   IF NOT FOUND THEN
@@ -164,5 +146,9 @@ BEGIN
 END;
 $$;
 
+COMMENT ON FUNCTION update_shopping_order_with_po_rebalance IS
+  'Atomically rebalances PO weight and updates a shopping order. Staff/admin only.';
 COMMENT ON FUNCTION delete_shopping_order_with_po_dealloc IS
-  'Atomically deallocates PO weight and deletes a shopping order in one transaction. Staff/admin only.';
+  'Atomically deallocates PO weight and deletes a shopping order. Staff/admin only.';
+COMMENT ON FUNCTION _assert_staff_caller IS
+  'Internal auth guard: raises exception if caller is not staff/admin.';

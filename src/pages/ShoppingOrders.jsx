@@ -66,7 +66,10 @@ import { canTransitionShoppingOrder } from '@/domains/core/statusMachine';
 import { deductInventoryForOrder } from '@/services/inventoryService';
 import { appendE2EFixture } from '@/lib/e2e';
 import { buildShoppingOrderAllocationPlan } from '@/lib/shoppingOrderAllocation';
-import { updateShoppingOrderWithPoRebalance } from '@/api/shoppingOrderAllocationRpc';
+import {
+  updateShoppingOrderWithPoRebalance,
+  deleteShoppingOrderWithPoDealloc,
+} from '@/api/shoppingOrderAllocationRpc';
 import { createInvoiceFromShoppingOrder } from '@/components/invoices/InvoiceService';
 const STATUS_CONFIG = {
   pending: { label: 'Pending', color: 'bg-amber-100 text-amber-800', icon: Clock },
@@ -250,10 +253,10 @@ export default function ShoppingOrders() {
       const result = await updateShoppingOrderWithPoRebalance(id, data, previousOrder);
 
       // Side effects (non-transactional, best-effort)
+      // Use `result` (RPC response) — not stale orders cache — for current order state
       if (data.status === 'shipping') {
-        const order = orders.find((o) => o.id === id);
-        if (order) {
-          deductInventoryForOrder(order);
+        if (result) {
+          deductInventoryForOrder(result);
           queryClient.invalidateQueries({ queryKey: ['inventory'] });
         }
       }
@@ -263,9 +266,8 @@ export default function ShoppingOrders() {
         customerEmail &&
         (data.status === 'shipping' || data.status === 'delivered')
       ) {
-        const order = orders.find((o) => o.id === id);
-        if (order) {
-          await sendShoppingOrderNotification({ ...order, ...data }, data.status, customerEmail);
+        if (result) {
+          await sendShoppingOrderNotification(result, data.status, customerEmail);
         }
       }
 
@@ -285,17 +287,8 @@ export default function ShoppingOrders() {
   const deleteMutation = useMutation({
     mutationFn: async (id) => {
       const order = orders.find((item) => item.id === id);
-
-      // Dealloc PO weight atomically before deleting the order
-      if (order?.vendor_po_id) {
-        await updateShoppingOrderWithPoRebalance(
-          id,
-          { vendor_po_id: null },
-          order
-        );
-      }
-
-      return await db.shoppingOrders.delete(id);
+      // Atomic: dealloc PO weight + delete order in one DB transaction
+      return await deleteShoppingOrderWithPoDealloc(id, order);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['shopping-orders'] });
