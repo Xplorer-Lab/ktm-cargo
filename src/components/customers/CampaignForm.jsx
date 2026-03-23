@@ -132,7 +132,8 @@ export default function CampaignForm({ campaign, customers = [], onSubmit, onCan
   // Generate discount code if empty
   useEffect(() => {
     if (!watchedValues.discount_code && watchedValues.campaign_type !== 'announcement') {
-      const code = `${watchedValues.campaign_type?.toUpperCase().slice(0, 4) || 'SAVE'}${Math.random().toString(36).substring(2, 6).toUpperCase()}`;
+      const suffix = crypto.randomUUID().replace(/-/g, '').substring(0, 4).toUpperCase();
+      const code = `${watchedValues.campaign_type?.toUpperCase().slice(0, 4) || 'SAVE'}${suffix}`;
       setValue('discount_code', code);
     }
   }, [watchedValues.campaign_type, watchedValues.discount_code, setValue]);
