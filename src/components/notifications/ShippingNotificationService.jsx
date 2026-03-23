@@ -129,7 +129,7 @@ async function getTemplate(templateType) {
       };
     }
   } catch (_e) {
-    console.log('Using default template for:', templateType);
+    // fall through to DEFAULT_TEMPLATES below
   }
 
   return DEFAULT_TEMPLATES[templateType] || null;
@@ -140,7 +140,6 @@ async function getTemplate(templateType) {
  */
 export async function sendShoppingOrderNotification(order, newStatus, customerEmail) {
   if (!customerEmail) {
-    console.log('No customer email provided, skipping notification');
     return { sent: false, reason: 'no_email' };
   }
 
