@@ -91,9 +91,9 @@ Dependency updates, CI changes, migrations, refactoring with no behavior change.
 ### Priority Labels
 | Label | Usage |
 |-------|-------|
-| `P0` | Data corrupt, security, stop everything |
-| `P1` | User-facing crash, wrong calculation, fix this sprint |
-| `P2` | Minor UX issue, fix when possible |
+| `P0` | Data corrupt, security, financial data wrong, stop everything |
+| `P1` | Internal crash, wrong internal display, fix this sprint |
+| `P2` | Minor UX issue, cosmetic, fix when possible |
 
 ### Area Labels
 ```
@@ -122,6 +122,8 @@ chore/125-upgrade-vite-8
 fix/126-po-rebalance-rollback
 ```
 
+**P0 hotfix rule:** P0 bugs use the same `bug/<issue>-<desc>` convention — no special `hotfix/` prefix needed. Stash or shelve current work-in-progress branch, create the bug branch from `main`, fix and merge, then resume the previous branch.
+
 Every branch must include the GitHub Issue number so PRs auto-link and issues auto-close on merge.
 
 ---
@@ -149,7 +151,9 @@ chore(deps): upgrade vite to 8.x (#125)
 
 ---
 
-## GitHub Projects Automation Rules
+## Automation Rules
+
+> ⚠️ **Implementation note:** Label-to-column automations are not built-in GitHub Projects features. They require a custom GitHub Actions workflow (`.github/workflows/board-automation.yml`) using the GitHub GraphQL Projects API or a community action such as `leonsteinhaeuser/project-beta-automations`. Plan for this setup on board creation day.
 
 | Trigger | Action |
 |---------|--------|
@@ -169,49 +173,32 @@ chore(deps): upgrade vite to 8.x (#125)
 ```
 New issue arrives:
 
+Was this working before the last merge? (regression check)
+├── Yes → Escalate one priority level from the result below
+└── No  → Continue ↓
+
 Is it a bug?
-├── Yes → Does it corrupt data or expose a security hole?
+├── Yes → Does it corrupt data, expose a security hole,
+│         OR affect customer-visible financial data
+│         (invoices, totals, shipping fees)?
 │         ├── Yes → P0 (stop current work, fix today)
-│         └── No  → Does it crash the app or produce wrong numbers?
+│         └── No  → Does it crash the app or produce
+│                   wrong data in internal views?
 │                   ├── Yes → P1 (fix this sprint)
 │                   └── No  → P2 (add to backlog)
 └── No  → Feature or Chore?
-          ├── Feature → Add to Ideas → rank by business impact later
+          ├── Feature → Add to Ideas → rank by business impact
           └── Chore   → Add to Backlog → batch on Monday triage
 ```
 
----
-
-## Daily Workflow
-
-### Day Start (~5 min)
-1. Check **P0 Now** — if anything exists, that is today's work
-2. Check **P1 Next** — pick one issue to continue or start
-3. Set a target: close 1–2 issues today
-
-### During Work
-- One issue = one branch
-- Every commit references the issue number
-- PR → CI pass → merge → move to next
-
-### Day End (~3 min)
-- Leave a comment on any open issue with current status
-- Check if tomorrow's target needs a label change
-
----
-
-## Weekly Triage (Monday, ~10 min)
-
-1. **Dependabot PRs** — safe (patch/minor) → merge, major version → schedule and review
-2. **New bugs** — assign P0/P1/P2, add area label
-3. **Feature Ideas** — rank top 3 by business impact, move to Priority
-4. **P2 backlog** — close anything untouched for 30+ days
+**Regression escalation example:**
+A bug that would normally be P1 (wrong internal display) becomes P0 if it was introduced by the last merge and affects customer-facing data.
 
 ---
 
 ## Issue Templates
 
-Three templates to create in `.github/ISSUE_TEMPLATE/`:
+Three templates in `.github/ISSUE_TEMPLATE/`:
 
 ### bug_report.md
 ```yaml
@@ -220,9 +207,14 @@ about: Something is broken
 labels: bug
 body:
   - type: dropdown
+    id: severity
     label: Severity
-    options: [P0 — Data integrity, P1 — Wrong output, P2 — Minor UX]
+    options:
+      - P0 — Financial data wrong / data corrupt / security
+      - P1 — App crash / wrong internal data
+      - P2 — Minor UX / cosmetic
   - type: dropdown
+    id: area
     label: Area
     options: [invoices, shipments, shopping-orders, procurement, auth, ci]
   - type: textarea
@@ -230,6 +222,8 @@ body:
   - type: textarea
     label: Expected behaviour
 ```
+
+> **Label mapping:** After submitting, the developer reads the severity field during triage and manually applies the matching `P0`, `P1`, or `P2` label. The board automation then moves the card to the correct column automatically. This is a one-step manual action per bug — not automated, by design, to force a deliberate triage decision.
 
 ### feature_request.md
 ```yaml
@@ -255,6 +249,33 @@ body:
   - type: textarea
     label: What needs to be done and why
 ```
+
+---
+
+## Daily Workflow
+
+### Day Start (~5 min)
+1. Check **P0 Now** — if anything exists, that is today's work, no exceptions
+2. Check **P1 Next** — if multiple P1s exist, pick the one with the **oldest creation date** unless one has an explicit dependency on another (noted in issue comments)
+3. Set a target: close 1–2 issues today
+
+### During Work
+- One issue = one branch
+- Every commit references the issue number
+- PR → CI pass → merge → move to next
+
+### Day End (~3 min)
+- Leave a comment on any open issue with current status
+- Check if tomorrow's target needs a label change
+
+---
+
+## Weekly Triage (Monday, ~10 min)
+
+1. **Dependabot PRs** — safe (patch/minor) → merge; major version → create chore issue, schedule, close the Dependabot PR
+2. **New bugs** — assign P0/P1/P2 using the decision tree, add area label
+3. **Feature Ideas** — rank top 3 by business impact, move to Priority
+4. **P2 backlog** — close any issue with no new comments, commits, or label changes in the past 30 days. Close with label `stale` and comment: *"Closing as stale after 30 days of no activity. Reopen if still relevant."*
 
 ---
 
