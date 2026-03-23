@@ -128,9 +128,10 @@ export default function ShipmentForm({
     const weight = parseFloat(watchedValues.weight_kg) || 0;
 
     if (service && weight > 0) {
-      const vendorCostPerKg = parseFloat(watchedValues.vendor_cost_per_kg) || service.costBasis;
+      const vendorCostPerKg =
+        parseFloat(watchedValues.vendor_cost_per_kg) || service.costBasis || 0;
       const vendorCost = vendorCostPerKg * weight;
-      const price = service.price * weight;
+      const price = (service.price || 0) * weight;
       const insurance = watchedValues.insurance_opted ? price * 0.03 : 0;
       const total = price + insurance;
       // insurance is part of total revenue charged to customer — not a separate cost

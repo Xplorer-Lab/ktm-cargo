@@ -15,6 +15,7 @@
 import { db } from '@/api/db';
 import { supabase } from '@/api/supabaseClient';
 import { format, addDays } from 'date-fns';
+import { roundMoney } from '@/domains/shipments/calculations';
 
 const IS_PROD =
   typeof __APP_IS_PROD__ !== 'undefined'
@@ -208,7 +209,7 @@ export async function createInvoiceFromShoppingOrder(order, customer) {
   const weight = parseFloat(order.actual_weight || order.estimated_weight) || 0;
   const totalAmount = productCost + commissionAmount + shippingCost;
   // Avoid hardcoded fallback: use derived rate or 0; prefer company_settings.default_shopping_price_per_kg when available
-  const pricePerKg = weight > 0 ? Math.round((shippingCost / weight) * 100) / 100 : 0;
+  const pricePerKg = weight > 0 ? roundMoney(shippingCost / weight) : 0;
 
   try {
     const invoice = await createCustomerInvoice({
