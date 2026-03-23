@@ -1,13 +1,21 @@
 import { createClient } from '@supabase/supabase-js';
-import { createE2ESupabaseClient, getE2EFixtureFromLocation } from './e2eSupabaseClient';
-
-const e2eFixture = getE2EFixtureFromLocation();
 
 let supabase;
 
-if (e2eFixture) {
-  supabase = createE2ESupabaseClient(e2eFixture);
-} else {
+// E2E test mode: only available in non-production builds.
+// __APP_IS_PROD__ is replaced at build time by Vite (vite.config.js define).
+// In production builds this entire block is dead-code-eliminated by Rollup,
+// so e2eSupabaseClient.js is not bundled in production.
+if (!__APP_IS_PROD__) {
+  const { createE2ESupabaseClient, getE2EFixtureFromLocation } =
+    await import('./e2eSupabaseClient');
+  const e2eFixture = getE2EFixtureFromLocation();
+  if (e2eFixture) {
+    supabase = createE2ESupabaseClient(e2eFixture);
+  }
+}
+
+if (!supabase) {
   const supabaseUrl = (import.meta.env.VITE_SUPABASE_URL || '').trim();
   const supabaseAnonKey = (import.meta.env.VITE_SUPABASE_ANON_KEY || '').trim();
 

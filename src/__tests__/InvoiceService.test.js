@@ -207,6 +207,8 @@ describe('generateInvoiceFromReceipt', () => {
   afterEach(() => jest.clearAllMocks());
 
   test('creates a vendor bill from a goods receipt', async () => {
+    // Mock the next_bill_number RPC called by getNextBillNumber()
+    mockRpc.mockResolvedValueOnce({ data: 'BILL-202603-0001', error: null });
     __mocks.createMock.mockResolvedValueOnce({
       id: 'bill-1',
       invoice_number: 'BILL-202603-0001',
