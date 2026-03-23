@@ -41,11 +41,21 @@ export default [
       'no-unused-vars': ['warn', { argsIgnorePattern: '^_', varsIgnorePattern: '^_' }],
       'react/no-unknown-property': 'off',
       'react/no-unescaped-entities': 'off',
+      // Disallow debug console.log in production source; console.warn/error are allowed
+      // for legitimate catch-block error logging. Use src/api/logger.js for structured logging.
+      'no-console': ['warn', { allow: ['warn', 'error'] }],
     },
   },
   {
+    // logger.js intentionally uses console — it is the logging abstraction layer
+    files: ['src/api/logger.js'],
+    rules: { 'no-console': 'off' },
+  },
+  {
+    // Node.js scripts — allow console and node globals
     files: [
       '*.config.js',
+      'scripts/**/*.js',
       'test_connection.js',
       'seed_database.js',
       'cleanup_database.js',
@@ -59,5 +69,6 @@ export default [
         ...globals.node,
       },
     },
+    rules: { 'no-console': 'off' },
   },
 ];

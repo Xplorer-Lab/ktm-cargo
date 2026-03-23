@@ -16,6 +16,7 @@
  */
 
 import { db } from '@/api/db';
+import { supabase } from '@/api/supabaseClient';
 import { addDays, format } from 'date-fns';
 
 const PAYMENT_TERMS_DAYS = {
@@ -26,17 +27,20 @@ const PAYMENT_TERMS_DAYS = {
 };
 
 /**
- * Generate vendor bill reference number
+ * Generate vendor bill reference number using DB sequence.
+ * Uses next_bill_number() RPC to guarantee uniqueness across sessions.
+ * @throws {Error} if the RPC fails
  */
-function generateBillNumber() {
-  const date = new Date();
-  const prefix = 'BILL';
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, '0');
-  const random = Math.floor(Math.random() * 10000)
-    .toString()
-    .padStart(4, '0');
-  return `${prefix}-${year}${month}-${random}`;
+async function getNextBillNumber() {
+  const { data, error } = await supabase.rpc('next_bill_number');
+  if (error || !data) {
+    throw new Error(
+      '[InvoiceService] next_bill_number RPC failed. ' +
+        'Ensure migration 20260323000008_bill_number_sequence.sql is applied. ' +
+        (error?.message ?? '')
+    );
+  }
+  return data;
 }
 
 /**
@@ -55,8 +59,10 @@ export async function recordVendorBill(billData) {
   const billDate = billData.bill_date || format(new Date(), 'yyyy-MM-dd');
   const paymentTerms = billData.payment_terms || 'net_30';
 
+  const billNumber = billData.vendor_invoice_number || (await getNextBillNumber());
+
   const bill = await db.customerInvoices.create({
-    invoice_number: billData.vendor_invoice_number || generateBillNumber(),
+    invoice_number: billNumber,
     invoice_type: 'vendor_bill',
 
     // Link to PO and Receipt

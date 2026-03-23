@@ -42,7 +42,7 @@ export const uploadFile = async (fileOrObject, bucket = 'uploads', folder = '') 
 
   try {
     const fileExt = file.name.split('.').pop();
-    const fileName = `${Math.random().toString(36).substring(2)}_${Date.now()}.${fileExt}`;
+    const fileName = `${crypto.randomUUID()}.${fileExt}`;
     const filePath = folder ? `${folder}/${fileName}` : fileName;
 
     const { data, error } = await supabase.storage.from(bucket).upload(filePath, file, {
