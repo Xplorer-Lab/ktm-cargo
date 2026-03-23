@@ -147,10 +147,61 @@ export default function StaffLogin() {
     }
   }, [alreadySignedIn, loading, navigate, nextPath]);
 
+  // ── Rate limiting helpers (localStorage-backed, per-email) ───────────────
+  const RATE_LIMIT_KEY = 'staff_login_attempts';
+  const MAX_ATTEMPTS = 5;
+  const LOCKOUT_WINDOW_MS = 15 * 60 * 1000; // 15 minutes
+
+  function getRateLimitData(emailAddr) {
+    try {
+      const raw = localStorage.getItem(RATE_LIMIT_KEY);
+      if (!raw) return {};
+      const all = JSON.parse(raw);
+      return all[emailAddr] || null;
+    } catch {
+      return null;
+    }
+  }
+
+  function isRateLimited(emailAddr) {
+    const data = getRateLimitData(emailAddr);
+    if (!data) return false;
+    const { attempts, firstAttemptAt } = data;
+    const windowStart = Date.now() - LOCKOUT_WINDOW_MS;
+    if (attempts >= MAX_ATTEMPTS && firstAttemptAt > windowStart) {
+      return true;
+    }
+    return false;
+  }
+
+  function recordFailedAttempt(emailAddr) {
+    try {
+      const raw = localStorage.getItem(RATE_LIMIT_KEY);
+      const all = raw ? JSON.parse(raw) : {};
+      const existing = all[emailAddr] || { attempts: 0, firstAttemptAt: Date.now() };
+      const windowStart = Date.now() - LOCKOUT_WINDOW_MS;
+      // Reset window if expired
+      const firstAttempt =
+        existing.firstAttemptAt > windowStart ? existing.firstAttemptAt : Date.now();
+      const attempts = existing.firstAttemptAt > windowStart ? existing.attempts + 1 : 1;
+      all[emailAddr] = { attempts, firstAttemptAt: firstAttempt };
+      localStorage.setItem(RATE_LIMIT_KEY, JSON.stringify(all));
+    } catch {
+      // localStorage unavailable — skip rate limiting (fail open for usability)
+    }
+  }
+
   const handleSubmit = async (event) => {
     event.preventDefault();
     setSubmitting(true);
     setErrorMessage('');
+
+    // ── Rate limit check ─────────────────────────────────────────────────
+    if (isRateLimited(email)) {
+      setErrorMessage('Too many failed attempts. Please wait 15 minutes before trying again.');
+      setSubmitting(false);
+      return;
+    }
 
     try {
       await auth.login(email, password);
@@ -158,12 +209,24 @@ export default function StaffLogin() {
       await refreshUser();
 
       if (isStaffAccount(currentUser)) {
+        // Clear rate limit on successful login
+        try {
+          const raw = localStorage.getItem(RATE_LIMIT_KEY);
+          if (raw) {
+            const all = JSON.parse(raw);
+            delete all[email];
+            localStorage.setItem(RATE_LIMIT_KEY, JSON.stringify(all));
+          }
+        } catch {
+          /* ignore */
+        }
         navigate(nextPath, { replace: true });
         return;
       }
 
       setErrorMessage('This account is not configured for staff operations.');
     } catch (error) {
+      recordFailedAttempt(email);
       const message = String(error?.message || '');
       if (/invalid login credentials/i.test(message)) {
         setErrorMessage('Invalid email or password.');

@@ -89,13 +89,28 @@ export const createReadOnlyEntityClient = (tableName, selectFields = '*') => ({
   filter: async (filters, sortString, limit) => {
     let query = supabase.from(tableName).select(selectFields);
 
+    // Allowlist: only safe read-only filter operators
+    const SAFE_OPERATORS = new Set([
+      'eq',
+      'gt',
+      'gte',
+      'lt',
+      'lte',
+      'ilike',
+      'like',
+      'is',
+      'in',
+      'neq',
+    ]);
+
     // Apply filters
     Object.entries(filters).forEach(([key, value]) => {
       if (value && typeof value === 'object' && value.operator) {
-        if (typeof query[value.operator] === 'function') {
+        if (SAFE_OPERATORS.has(value.operator) && typeof query[value.operator] === 'function') {
           query = query[value.operator](key, value.value);
         } else {
-          console.warn(`Unknown filter operator: ${value.operator}`);
+          // Silently ignore blocked/Unknown operators — safe fallback to no-op for this key
+          console.warn(`Blocked filter operator: '${value.operator}' — not in allowlist`);
         }
       } else {
         query = query.eq(key, value);

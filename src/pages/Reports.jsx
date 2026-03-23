@@ -1,6 +1,6 @@
-import { useState, useMemo } from 'react';
+import { useMemo } from 'react';
 import { db } from '@/api/db';
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
+import { useQueryClient } from '@tanstack/react-query';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -18,7 +18,6 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Popover, PopoverContent, PopoverTrigger } from '@/components/ui/popover';
 import { Calendar } from '@/components/ui/calendar';
-import { Progress } from '@/components/ui/progress';
 import {
   Plus,
   TrendingUp,
@@ -58,23 +57,18 @@ import {
   Line,
   Legend,
 } from 'recharts';
-import {
-  format,
-  subDays,
-  startOfMonth,
-  endOfMonth,
-  eachDayOfInterval,
-  isWithinInterval,
-  parseISO,
-  subMonths,
-} from 'date-fns';
+import { format, subDays, startOfMonth, endOfMonth } from 'date-fns';
 import { toast } from 'sonner';
 import {
   segmentCustomers,
   getSegmentSummary,
   getMarketingRecommendations,
 } from '@/components/customers/CustomerSegmentationEngine';
-import { generateForecast, analyzeServiceTrends } from '@/components/reports/ShipmentForecasting';
+import { useReportData, useFilteredData, useReportMetrics } from '@/hooks/reports/useReportMetrics';
+import { useChartData } from '@/hooks/reports/useChartData';
+import { useReportsFilters, useReportMutations } from '@/hooks/reports/useReportsFilters';
+import { useExportCSV } from '@/hooks/reports/useExportCSV';
+import ForecastTab from '@/components/reports/ForecastTab';
 import ReportBuilder from '@/components/reports/ReportBuilder';
 import ReportsList from '@/components/reports/ReportsList';
 import { exportReport, sendReportEmail } from '@/components/reports/ReportExporter';
@@ -83,70 +77,81 @@ import ProcurementProfitabilityDashboard from '@/components/reports/ProcurementP
 const COLORS = ['#3b82f6', '#8b5cf6', '#ec4899', '#f59e0b', '#10b981', '#06b6d4'];
 
 export default function Reports() {
-  const [showExpenseForm, setShowExpenseForm] = useState(false);
-  const [showReportBuilder, setShowReportBuilder] = useState(false);
-  const [editingReport, setEditingReport] = useState(null);
-  const [runningReportId, setRunningReportId] = useState(null);
-  const [sendingReportId, setSendingReportId] = useState(null);
-  const [dateRange, setDateRange] = useState({
-    from: subDays(new Date(), 30),
-    to: new Date(),
-  });
-  const [activeTab, setActiveTab] = useState('overview');
-  const [expenseForm, setExpenseForm] = useState({
-    title: '',
-    category: 'other',
-    amount: '',
-    date: format(new Date(), 'yyyy-MM-dd'),
-    notes: '',
-  });
-
   const queryClient = useQueryClient();
 
-  const { data: shipments = [] } = useQuery({
-    queryKey: ['shipments'],
-    queryFn: () => db.shipments.list('-created_date', 500),
-  });
+  // Filters & state
+  const {
+    dateRange,
+    setDateRange,
+    activeTab,
+    setActiveTab,
+    expenseForm,
+    setExpenseForm,
+    showExpenseForm,
+    setShowExpenseForm,
+    showReportBuilder,
+    setShowReportBuilder,
+    editingReport,
+    setEditingReport,
+    runningReportId,
+    setRunningReportId,
+    sendingReportId,
+    setSendingReportId,
+  } = useReportsFilters();
 
-  const { data: shoppingOrders = [] } = useQuery({
-    queryKey: ['shopping-orders'],
-    queryFn: () => db.shoppingOrders.list('-created_date', 500),
-  });
+  // Mutations
+  const {
+    createExpenseMutation,
+    createReportMutation,
+    updateReportMutation,
+    deleteReportMutation,
+  } = useReportMutations();
 
-  const { data: customers = [] } = useQuery({
-    queryKey: ['customers'],
-    queryFn: () => db.customers.list(),
-  });
+  // Data fetching
+  const rawData = useReportData();
+  const {
+    shipments,
+    shoppingOrders,
+    customers,
+    expenses,
+    campaigns,
+    customReports,
+    servicePricing,
+    purchaseOrders,
+    vendors,
+  } = rawData;
 
-  const { data: expenses = [] } = useQuery({
-    queryKey: ['expenses'],
-    queryFn: () => db.expenses.list('-date'),
-  });
+  // Filtered data
+  const filteredData = useFilteredData(rawData, dateRange);
+  const { filteredShipments, filteredOrders, filteredExpenses } = filteredData;
 
-  const { data: campaigns = [] } = useQuery({
-    queryKey: ['campaigns'],
-    queryFn: () => db.campaigns.list('-created_date'),
-  });
+  // Metrics
+  const metrics = useReportMetrics(rawData, filteredData);
+  const {
+    shoppingOrdersTotalRevenue,
+    shoppingOrdersTotalVendorCost,
+    shoppingOrdersTotalCargoCost,
+    shoppingOrdersTrueProfit,
+    totalRevenue,
+    totalProfit,
+    totalExpensesAmount,
+    netProfit,
+    totalWeight,
+    avgOrderValue,
+  } = metrics;
 
-  const { data: customReports = [] } = useQuery({
-    queryKey: ['scheduled-reports'],
-    queryFn: () => db.scheduledReports.list('-created_date'),
-  });
+  // Chart data
+  const chartData = useChartData(rawData, filteredData, dateRange);
+  const {
+    serviceChartData,
+    dailyRevenue,
+    monthlyComparison,
+    campaignPerformance,
+    expenseChartData,
+  } = chartData;
 
-  const { data: servicePricing = [] } = useQuery({
-    queryKey: ['service-pricing'],
-    queryFn: () => db.servicePricing.list(),
-  });
-
-  const { data: purchaseOrders = [] } = useQuery({
-    queryKey: ['purchase-orders'],
-    queryFn: () => db.purchaseOrders.list('-created_date', 500),
-  });
-
-  const { data: vendors = [] } = useQuery({
-    queryKey: ['vendors'],
-    queryFn: () => db.vendors.list(),
-  });
+  // CSV export
+  const { exportToCSV, exportQuickCSV } = useExportCSV();
 
   // AI-powered customer segmentation
   const analyzedCustomers = useMemo(() => {
@@ -161,56 +166,26 @@ export default function Reports() {
     return getMarketingRecommendations(segmentSummary);
   }, [segmentSummary]);
 
-  // AI-powered shipment forecasting
-  const forecast = useMemo(() => {
-    return generateForecast(shipments, shoppingOrders, 6);
-  }, [shipments, shoppingOrders]);
+  // Reset expense form helper
+  const resetExpenseForm = () => {
+    setExpenseForm({
+      title: '',
+      category: 'other',
+      amount: '',
+      date: format(new Date(), 'yyyy-MM-dd'),
+      notes: '',
+    });
+  };
 
-  const serviceTrends = useMemo(() => {
-    return analyzeServiceTrends(shipments);
-  }, [shipments]);
-
-  const createExpenseMutation = useMutation({
-    mutationFn: (data) => db.expenses.create(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['expenses'] });
-      setShowExpenseForm(false);
-      setExpenseForm({
-        title: '',
-        category: 'other',
-        amount: '',
-        date: format(new Date(), 'yyyy-MM-dd'),
-        notes: '',
-      });
-    },
-  });
-
-  const createReportMutation = useMutation({
-    mutationFn: (data) => db.scheduledReports.create(data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['scheduled-reports'] });
-      setShowReportBuilder(false);
-      toast.success('Report created');
-    },
-  });
-
-  const updateReportMutation = useMutation({
-    mutationFn: ({ id, data }) => db.scheduledReports.update(id, data),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['scheduled-reports'] });
-      setShowReportBuilder(false);
-      setEditingReport(null);
-      toast.success('Report updated');
-    },
-  });
-
-  const deleteReportMutation = useMutation({
-    mutationFn: (id) => db.scheduledReports.delete(id),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['scheduled-reports'] });
-      toast.success('Report deleted');
-    },
-  });
+  // Expense mutation with form reset
+  const handleCreateExpense = (data) => {
+    createExpenseMutation.mutate(data, {
+      onSuccess: () => {
+        setShowExpenseForm(false);
+        resetExpenseForm();
+      },
+    });
+  };
 
   // Get data for a specific report type
   const getReportData = (reportType) => {
@@ -252,9 +227,7 @@ export default function Reports() {
     try {
       const data = getReportData(report.report_type);
       const count = await sendReportEmail(report, data, report.recipients);
-      await db.scheduledReports.update(report.id, {
-        last_sent: new Date().toISOString(),
-      });
+      await db.scheduledReports.update(report.id, { last_sent: new Date().toISOString() });
       queryClient.invalidateQueries({ queryKey: ['scheduled-reports'] });
       toast.success(`Report sent to ${count} recipient(s)`);
     } catch {
@@ -270,162 +243,9 @@ export default function Reports() {
     } else {
       createReportMutation.mutate(data);
     }
+    setShowReportBuilder(false);
+    setEditingReport(null);
   };
-
-  // Filter data by date range
-  const filteredShipments = useMemo(() => {
-    return shipments.filter((s) => {
-      if (!s.created_date) return false;
-      const date = parseISO(s.created_date);
-      return isWithinInterval(date, { start: dateRange.from, end: dateRange.to });
-    });
-  }, [shipments, dateRange]);
-
-  const filteredOrders = useMemo(() => {
-    return shoppingOrders.filter((o) => {
-      if (!o.created_date) return false;
-      const date = parseISO(o.created_date);
-      return isWithinInterval(date, { start: dateRange.from, end: dateRange.to });
-    });
-  }, [shoppingOrders, dateRange]);
-
-  const filteredExpenses = useMemo(() => {
-    return expenses.filter((e) => {
-      if (!e.date) return false;
-      const date = parseISO(e.date);
-      return isWithinInterval(date, { start: dateRange.from, end: dateRange.to });
-    });
-  }, [expenses, dateRange]);
-
-  // Calculate metrics
-  // Calculate Dropshipping Order Metrics
-  const shoppingOrdersTotalRevenue = filteredOrders.reduce(
-    (sum, o) => sum + (o.total_amount || 0),
-    0
-  );
-  const shoppingOrdersTotalVendorCost = filteredOrders.reduce(
-    (sum, o) => sum + (o.vendor_cost || 0),
-    0
-  );
-  const shoppingOrdersTotalCargoCost = filteredOrders.reduce(
-    (sum, o) => sum + (o.cargo_cost || 0),
-    0
-  );
-  const shoppingOrdersTrueProfit = filteredOrders.reduce(
-    (sum, o) => sum + (o.commission_amount || 0) + ((o.shipping_cost || 0) - (o.vendor_cost || 0)),
-    0
-  );
-
-  // Overall metrics integration
-  const totalRevenue =
-    filteredShipments.reduce((sum, s) => sum + (s.total_amount || 0), 0) +
-    shoppingOrdersTotalRevenue;
-
-  // Combine normal shipment profit with our newly calculated dropshipping true profit
-  const totalProfit =
-    filteredShipments.reduce((sum, s) => sum + (s.profit || 0), 0) + shoppingOrdersTrueProfit;
-
-  const totalExpensesAmount = filteredExpenses.reduce((sum, e) => sum + (e.amount || 0), 0);
-  const netProfit = totalProfit - totalExpensesAmount;
-  const totalWeight = filteredShipments.reduce((sum, s) => sum + (s.weight_kg || 0), 0);
-  const avgOrderValue = totalRevenue / (filteredShipments.length + filteredOrders.length) || 0;
-
-  // Revenue by service type
-  const revenueByService = new Map();
-  filteredShipments.forEach((s) => {
-    const type = s.service_type || 'other';
-    revenueByService.set(type, (revenueByService.get(type) || 0) + (s.total_amount || 0));
-  });
-
-  const serviceChartData = Array.from(revenueByService.entries()).map(([name, value]) => ({
-    name: name.replace('_', ' '),
-    value,
-  }));
-
-  // Daily revenue trend
-  const dailyRevenue = useMemo(() => {
-    const days = eachDayOfInterval({ start: dateRange.from, end: dateRange.to });
-    return days.map((date) => {
-      const dateStr = format(date, 'yyyy-MM-dd');
-      const shipmentRev = shipments
-        .filter((s) => s.created_date?.startsWith(dateStr))
-        .reduce((sum, s) => sum + (s.total_amount || 0), 0);
-      const orderRev = shoppingOrders
-        .filter((o) => o.created_date?.startsWith(dateStr))
-        .reduce((sum, o) => sum + (o.total_amount || 0), 0);
-      return {
-        date: format(date, 'MMM d'),
-        revenue: shipmentRev + orderRev,
-        shipments: shipmentRev,
-        shopping: orderRev,
-      };
-    });
-  }, [shipments, shoppingOrders, dateRange]);
-
-  // Customer acquisition by segment
-  const customersBySegment = useMemo(() => {
-    const segments = { individual: 0, online_shopper: 0, sme_importer: 0 };
-    customers.forEach((c) => {
-      if (!c.created_date) return;
-      const date = parseISO(c.created_date);
-      if (isWithinInterval(date, { start: dateRange.from, end: dateRange.to })) {
-        segments[c.customer_type || 'individual']++;
-      }
-    });
-    return [
-      { name: 'Individual', value: segments.individual, color: '#3b82f6' },
-      { name: 'Online Shopper', value: segments.online_shopper, color: '#8b5cf6' },
-      { name: 'SME Importer', value: segments.sme_importer, color: '#f59e0b' },
-    ];
-  }, [customers, dateRange]);
-
-  // Monthly comparison
-  const monthlyComparison = useMemo(() => {
-    const months = [];
-    for (let i = 5; i >= 0; i--) {
-      const monthStart = startOfMonth(subMonths(new Date(), i));
-      const monthEnd = endOfMonth(subMonths(new Date(), i));
-      const monthShipments = shipments.filter((s) => {
-        if (!s.created_date) return false;
-        const date = parseISO(s.created_date);
-        return isWithinInterval(date, { start: monthStart, end: monthEnd });
-      });
-      const monthOrders = shoppingOrders.filter((o) => {
-        if (!o.created_date) return false;
-        const date = parseISO(o.created_date);
-        return isWithinInterval(date, { start: monthStart, end: monthEnd });
-      });
-      months.push({
-        month: format(monthStart, 'MMM'),
-        revenue:
-          monthShipments.reduce((sum, s) => sum + (s.total_amount || 0), 0) +
-          monthOrders.reduce((sum, o) => sum + (o.total_amount || 0), 0),
-        shipments: monthShipments.length,
-        orders: monthOrders.length,
-      });
-    }
-    return months;
-  }, [shipments, shoppingOrders]);
-
-  // Campaign performance
-  const campaignPerformance = campaigns.map((c) => ({
-    name: c.name?.substring(0, 15) || 'Campaign',
-    sent: c.sent_count || 0,
-    conversions: c.conversion_count || 0,
-    rate: c.sent_count > 0 ? (((c.conversion_count || 0) / c.sent_count) * 100).toFixed(1) : 0,
-  }));
-
-  // Expenses by category
-  const expensesByCategoryMap = new Map();
-  filteredExpenses.forEach((e) => {
-    const cat = e.category || 'other';
-    expensesByCategoryMap.set(cat, (expensesByCategoryMap.get(cat) || 0) + (e.amount || 0));
-  });
-
-  const expenseChartData = Array.from(expensesByCategoryMap.entries()).map(([name, value]) => ({
-    name: name.replace('_', ' '),
-    value,
-  }));
 
   const categoryLabels = {
     registration: 'Registration',
@@ -440,45 +260,13 @@ export default function Reports() {
     other: 'Other',
   };
 
-  // Export data
-  const exportToCSV = (type) => {
-    let data, filename, headers;
-
-    switch (type) {
-      case 'shipments':
-        headers = ['Tracking', 'Customer', 'Service', 'Weight', 'Amount', 'Status', 'Date'];
-        data = filteredShipments.map((s) => [
-          s.tracking_number,
-          s.customer_name,
-          s.service_type,
-          s.weight_kg,
-          s.total_amount,
-          s.status,
-          s.created_date,
-        ]);
-        filename = 'shipments_report.csv';
-        break;
-      case 'revenue':
-        headers = ['Date', 'Total Revenue', 'Shipments', 'Shopping'];
-        data = dailyRevenue.map((d) => [d.date, d.revenue, d.shipments, d.shopping]);
-        filename = 'revenue_report.csv';
-        break;
-      case 'expenses':
-        headers = ['Title', 'Category', 'Amount', 'Date'];
-        data = filteredExpenses.map((e) => [e.title, e.category, e.amount, e.date]);
-        filename = 'expenses_report.csv';
-        break;
-      default:
-        return;
+  // Quick export handler
+  const handleQuickExport = (type) => {
+    if (['customers', 'campaigns', 'pricing'].includes(type)) {
+      exportQuickCSV(type, { customers, campaigns, servicePricing });
+    } else {
+      exportToCSV(type, { filteredShipments, dailyRevenue, filteredExpenses });
     }
-
-    const csvContent = [headers.join(','), ...data.map((row) => row.join(','))].join('\n');
-    const blob = new Blob([csvContent], { type: 'text/csv' });
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement('a');
-    a.href = url;
-    a.download = filename;
-    a.click();
   };
 
   return (
@@ -493,7 +281,6 @@ export default function Reports() {
             <p className="text-sm text-slate-500 mt-1">Comprehensive analytics and insights</p>
           </div>
           <div className="flex flex-wrap items-center gap-2 sm:gap-3">
-            {/* Date Range Picker */}
             <Popover>
               <PopoverTrigger asChild>
                 <Button
@@ -517,7 +304,6 @@ export default function Reports() {
               </PopoverContent>
             </Popover>
 
-            {/* Quick Ranges */}
             <Select
               onValueChange={(v) => {
                 const today = new Date();
@@ -548,8 +334,7 @@ export default function Reports() {
               </SelectContent>
             </Select>
 
-            {/* Export Dropdown */}
-            <Select onValueChange={exportToCSV}>
+            <Select onValueChange={handleQuickExport}>
               <SelectTrigger className="w-28 sm:w-36 text-xs sm:text-sm">
                 <Download className="w-3 h-3 sm:w-4 sm:h-4 mr-1 sm:mr-2" />
                 <SelectValue placeholder="Export" />
@@ -610,7 +395,6 @@ export default function Reports() {
 
           {/* Overview Tab */}
           <TabsContent value="overview" className="space-y-6">
-            {/* Key Metrics */}
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 sm:gap-4">
               <Card className="border-0 shadow-sm">
                 <CardContent className="p-3 sm:p-5">
@@ -662,7 +446,6 @@ export default function Reports() {
                   </div>
                 </CardContent>
               </Card>
-
               <Card className="border-0 shadow-sm">
                 <CardContent className="p-3 sm:p-5">
                   <div className="flex items-center justify-between">
@@ -678,7 +461,6 @@ export default function Reports() {
                   </div>
                 </CardContent>
               </Card>
-
               <Card className="border-0 shadow-sm">
                 <CardContent className="p-3 sm:p-5">
                   <div className="flex items-center justify-between">
@@ -694,7 +476,6 @@ export default function Reports() {
                   </div>
                 </CardContent>
               </Card>
-
               <Card className="border-0 shadow-sm">
                 <CardContent className="p-3 sm:p-5">
                   <div className="flex items-center justify-between">
@@ -710,7 +491,6 @@ export default function Reports() {
                   </div>
                 </CardContent>
               </Card>
-
               <Card className="border-0 shadow-sm col-span-2 sm:col-span-1">
                 <CardContent className="p-3 sm:p-5">
                   <div className="flex items-center justify-between">
@@ -734,7 +514,6 @@ export default function Reports() {
               </Card>
             </div>
 
-            {/* Charts Row */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card className="border-0 shadow-sm">
                 <CardHeader>
@@ -766,7 +545,6 @@ export default function Reports() {
                   </div>
                 </CardContent>
               </Card>
-
               <Card className="border-0 shadow-sm">
                 <CardHeader>
                   <CardTitle className="text-lg">Revenue by Service Type</CardTitle>
@@ -797,7 +575,6 @@ export default function Reports() {
               </Card>
             </div>
 
-            {/* Monthly Comparison */}
             <Card className="border-0 shadow-sm">
               <CardHeader>
                 <CardTitle className="text-lg">6-Month Comparison</CardTitle>
@@ -830,222 +607,12 @@ export default function Reports() {
             </Card>
           </TabsContent>
 
-          {/* Forecast Tab - AI-powered predictions */}
+          {/* Forecast Tab */}
           <TabsContent value="forecast" className="space-y-6">
-            {/* Forecast Summary */}
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
-              <Card className="border-0 shadow-sm bg-gradient-to-br from-blue-500 to-indigo-600 text-white">
-                <CardContent className="p-5">
-                  <div className="flex items-center gap-2 mb-2">
-                    <Sparkles className="w-5 h-5" />
-                    <span className="text-blue-100">6-Month Revenue Forecast</span>
-                  </div>
-                  <p className="text-3xl font-bold">
-                    ฿{forecast.summary.totalPredictedRevenue.toLocaleString()}
-                  </p>
-                  <p className="text-blue-200 text-sm mt-1">
-                    {forecast.summary.confidence}% confidence
-                  </p>
-                </CardContent>
-              </Card>
-              <Card className="border-0 shadow-sm">
-                <CardContent className="p-5">
-                  <p className="text-sm text-slate-500">Predicted Shipments</p>
-                  <p className="text-2xl font-bold text-slate-900">
-                    {forecast.summary.totalPredictedVolume}
-                  </p>
-                  <p className="text-sm text-slate-500">Next 6 months</p>
-                </CardContent>
-              </Card>
-              <Card className="border-0 shadow-sm">
-                <CardContent className="p-5">
-                  <p className="text-sm text-slate-500">Monthly Growth</p>
-                  <p
-                    className={`text-2xl font-bold ${forecast.summary.avgMonthlyGrowth >= 0 ? 'text-emerald-600' : 'text-rose-600'}`}
-                  >
-                    {forecast.summary.avgMonthlyGrowth >= 0 ? '+' : ''}
-                    {forecast.summary.avgMonthlyGrowth}%
-                  </p>
-                  <p className="text-sm text-slate-500">Avg per month</p>
-                </CardContent>
-              </Card>
-              <Card className="border-0 shadow-sm">
-                <CardContent className="p-5">
-                  <p className="text-sm text-slate-500">Trend</p>
-                  <div className="flex items-center gap-2">
-                    {forecast.summary.growthTrend === 'growing' && (
-                      <TrendingUp className="w-6 h-6 text-emerald-500" />
-                    )}
-                    {forecast.summary.growthTrend === 'declining' && (
-                      <TrendingDown className="w-6 h-6 text-rose-500" />
-                    )}
-                    {forecast.summary.growthTrend === 'stable' && (
-                      <BarChart3 className="w-6 h-6 text-blue-500" />
-                    )}
-                    <span className="text-xl font-bold capitalize">
-                      {forecast.summary.growthTrend}
-                    </span>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Forecast Charts */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <Card className="border-0 shadow-sm">
-                <CardHeader>
-                  <CardTitle className="text-lg flex items-center gap-2">
-                    <Sparkles className="w-5 h-5 text-blue-500" />
-                    Revenue Forecast (Next 6 Months)
-                  </CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-72">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <AreaChart
-                        data={[
-                          ...forecast.historicalData
-                            .slice(-6)
-                            .map((d) => ({ ...d, type: 'historical' })),
-                          ...forecast.forecasts.map((f) => ({
-                            month: f.shortMonth,
-                            revenue: f.predictedRevenue,
-                            revenueMin: f.revenueMin,
-                            revenueMax: f.revenueMax,
-                            type: 'forecast',
-                          })),
-                        ]}
-                      >
-                        <defs>
-                          <linearGradient id="colorForecast" x1="0" y1="0" x2="0" y2="1">
-                            <stop offset="5%" stopColor="#8b5cf6" stopOpacity={0.3} />
-                            <stop offset="95%" stopColor="#8b5cf6" stopOpacity={0} />
-                          </linearGradient>
-                        </defs>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                        <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-                        <YAxis tick={{ fontSize: 11 }} />
-                        <Tooltip formatter={(value) => `฿${value?.toLocaleString()}`} />
-                        <Area
-                          type="monotone"
-                          dataKey="revenue"
-                          stroke="#8b5cf6"
-                          fill="url(#colorForecast)"
-                          strokeWidth={2}
-                        />
-                      </AreaChart>
-                    </ResponsiveContainer>
-                  </div>
-                  <div className="flex items-center gap-4 mt-4 justify-center text-sm">
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 bg-slate-400 rounded"></div>
-                      <span className="text-slate-600">Historical</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <div className="w-3 h-3 bg-purple-500 rounded"></div>
-                      <span className="text-slate-600">Forecast</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-
-              <Card className="border-0 shadow-sm">
-                <CardHeader>
-                  <CardTitle className="text-lg">Volume Forecast</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <div className="h-72">
-                    <ResponsiveContainer width="100%" height="100%">
-                      <BarChart data={forecast.forecasts}>
-                        <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
-                        <XAxis dataKey="shortMonth" tick={{ fontSize: 11 }} />
-                        <YAxis tick={{ fontSize: 11 }} />
-                        <Tooltip />
-                        <Bar
-                          dataKey="predictedVolume"
-                          name="Shipments"
-                          fill="#3b82f6"
-                          radius={[4, 4, 0, 0]}
-                        />
-                      </BarChart>
-                    </ResponsiveContainer>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-
-            {/* Detailed Forecast Table */}
-            <Card className="border-0 shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-lg">Monthly Forecast Details</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="overflow-x-auto">
-                  <table className="w-full text-sm">
-                    <thead className="bg-slate-50">
-                      <tr>
-                        <th className="text-left p-3">Month</th>
-                        <th className="text-right p-3">Predicted Volume</th>
-                        <th className="text-right p-3">Predicted Revenue</th>
-                        <th className="text-right p-3">Revenue Range</th>
-                        <th className="text-center p-3">Confidence</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {forecast.forecasts.map((f, i) => (
-                        <tr key={f.month || i} className="border-t">
-                          <td className="p-3 font-medium">{f.month}</td>
-                          <td className="p-3 text-right">{f.predictedVolume} shipments</td>
-                          <td className="p-3 text-right font-semibold text-blue-600">
-                            ฿{f.predictedRevenue.toLocaleString()}
-                          </td>
-                          <td className="p-3 text-right text-slate-500">
-                            ฿{f.revenueMin.toLocaleString()} - ฿{f.revenueMax.toLocaleString()}
-                          </td>
-                          <td className="p-3 text-center">
-                            <Badge
-                              className={
-                                f.confidence >= 80
-                                  ? 'bg-emerald-100 text-emerald-800'
-                                  : f.confidence >= 60
-                                    ? 'bg-amber-100 text-amber-800'
-                                    : 'bg-slate-100 text-slate-800'
-                              }
-                            >
-                              {f.confidence}%
-                            </Badge>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* Service Trends */}
-            <Card className="border-0 shadow-sm">
-              <CardHeader>
-                <CardTitle className="text-lg">Service Type Trends</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                  {serviceTrends.slice(0, 4).map((service, i) => (
-                    <div key={service.type || i} className="p-4 bg-slate-50 rounded-xl">
-                      <div className="flex items-center justify-between mb-2">
-                        <span className="font-medium capitalize">{service.type}</span>
-                        <Badge>{service.percentage}%</Badge>
-                      </div>
-                      <p className="text-2xl font-bold text-slate-900">{service.count}</p>
-                      <p className="text-sm text-slate-500">Avg: {service.avgWeight} kg</p>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
+            <ForecastTab shipments={shipments} shoppingOrders={shoppingOrders} />
           </TabsContent>
 
-          {/* Procurement & Profitability Tab */}
+          {/* Procurement Tab */}
           <TabsContent value="procurement" className="space-y-6">
             <ProcurementProfitabilityDashboard
               purchaseOrders={purchaseOrders}
@@ -1092,7 +659,6 @@ export default function Reports() {
                   </div>
                 </CardContent>
               </Card>
-
               <Card className="border-0 shadow-sm">
                 <CardHeader>
                   <CardTitle className="text-lg">Summary</CardTitle>
@@ -1135,7 +701,6 @@ export default function Reports() {
 
           {/* Customers Tab */}
           <TabsContent value="customers" className="space-y-6">
-            {/* Value Tier Distribution */}
             <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
               <Card className="border-0 shadow-sm bg-purple-50">
                 <CardContent className="p-4">
@@ -1212,92 +777,45 @@ export default function Reports() {
             </div>
 
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              {/* Behavioral Segments */}
               <Card className="border-0 shadow-sm">
                 <CardHeader>
                   <CardTitle className="text-lg">Behavioral Segments</CardTitle>
                 </CardHeader>
                 <CardContent className="space-y-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Crown className="w-4 h-4 text-amber-500" />
-                      <span>Loyal</span>
+                  {[
+                    { icon: Crown, label: 'Loyal', key: 'loyal', color: 'amber' },
+                    { icon: Sparkles, label: 'New', key: 'new', color: 'sky' },
+                    { icon: ArrowUpRight, label: 'Returning', key: 'returning', color: 'green' },
+                    { icon: AlertTriangle, label: 'At Risk', key: 'at_risk', color: 'rose' },
+                    { icon: Clock, label: 'Lapsed', key: 'lapsed', color: 'gray' },
+                  ].map(({ icon: Icon, label, key, color }) => (
+                    <div key={key} className="flex items-center justify-between">
+                      <div className="flex items-center gap-2">
+                        <Icon className={`w-4 h-4 text-${color}-500`} />
+                        <span>{label}</span>
+                      </div>
+                      <div className="flex items-center gap-2">
+                        <div className="w-24 h-2 bg-slate-200 rounded-full overflow-hidden">
+                          <div
+                            className={`h-full bg-${color}-500`}
+                            style={{
+                              width: `${(segmentSummary.byBehavior[key].count / customers.length) * 100}%`,
+                            }}
+                          />
+                        </div>
+                        <span className="font-bold w-8">
+                          {segmentSummary.byBehavior[key].count}
+                        </span>
+                      </div>
                     </div>
-                    <div className="flex items-center gap-2">
-                      <Progress
-                        value={(segmentSummary.byBehavior.loyal.count / customers.length) * 100}
-                        className="w-24 h-2"
-                      />
-                      <span className="font-bold w-8">{segmentSummary.byBehavior.loyal.count}</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Sparkles className="w-4 h-4 text-sky-500" />
-                      <span>New</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Progress
-                        value={(segmentSummary.byBehavior.new.count / customers.length) * 100}
-                        className="w-24 h-2"
-                      />
-                      <span className="font-bold w-8">{segmentSummary.byBehavior.new.count}</span>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <ArrowUpRight className="w-4 h-4 text-green-500" />
-                      <span>Returning</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Progress
-                        value={(segmentSummary.byBehavior.returning.count / customers.length) * 100}
-                        className="w-24 h-2"
-                      />
-                      <span className="font-bold w-8">
-                        {segmentSummary.byBehavior.returning.count}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <AlertTriangle className="w-4 h-4 text-rose-500" />
-                      <span>At Risk</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Progress
-                        value={(segmentSummary.byBehavior.at_risk.count / customers.length) * 100}
-                        className="w-24 h-2"
-                      />
-                      <span className="font-bold w-8">
-                        {segmentSummary.byBehavior.at_risk.count}
-                      </span>
-                    </div>
-                  </div>
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-2">
-                      <Clock className="w-4 h-4 text-gray-500" />
-                      <span>Lapsed</span>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <Progress
-                        value={(segmentSummary.byBehavior.lapsed.count / customers.length) * 100}
-                        className="w-24 h-2"
-                      />
-                      <span className="font-bold w-8">
-                        {segmentSummary.byBehavior.lapsed.count}
-                      </span>
-                    </div>
-                  </div>
+                  ))}
                 </CardContent>
               </Card>
 
-              {/* AI Recommendations */}
               <Card className="border-0 shadow-sm">
                 <CardHeader>
                   <CardTitle className="text-lg flex items-center gap-2">
-                    <Sparkles className="w-5 h-5 text-blue-500" />
-                    AI Marketing Recommendations
+                    <Sparkles className="w-5 h-5 text-blue-500" /> AI Marketing Recommendations
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -1306,11 +824,7 @@ export default function Reports() {
                       {recommendations.map((rec, i) => (
                         <div
                           key={i}
-                          className={`p-3 rounded-lg ${
-                            rec.priority === 'high'
-                              ? 'bg-rose-50 border border-rose-100'
-                              : 'bg-blue-50 border border-blue-100'
-                          }`}
+                          className={`p-3 rounded-lg ${rec.priority === 'high' ? 'bg-rose-50 border border-rose-100' : 'bg-blue-50 border border-blue-100'}`}
                         >
                           <div className="flex items-start justify-between">
                             <div>
@@ -1339,7 +853,6 @@ export default function Reports() {
               </Card>
             </div>
 
-            {/* Customer Type & Stats */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card className="border-0 shadow-sm">
                 <CardHeader>
@@ -1383,7 +896,6 @@ export default function Reports() {
                   </div>
                 </CardContent>
               </Card>
-
               <Card className="border-0 shadow-sm">
                 <CardHeader>
                   <CardTitle className="text-lg">Customer Insights</CardTitle>
@@ -1464,7 +976,6 @@ export default function Reports() {
                   )}
                 </CardContent>
               </Card>
-
               <Card className="border-0 shadow-sm">
                 <CardHeader>
                   <CardTitle className="text-lg">Campaign Summary</CardTitle>
@@ -1501,7 +1012,7 @@ export default function Reports() {
           <TabsContent value="expenses" className="space-y-6">
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               <Card className="border-0 shadow-sm">
-                <CardHeader className="flex flex-row items-center justify-between">
+                <CardHeader>
                   <CardTitle className="text-lg">Expenses by Category</CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -1518,7 +1029,6 @@ export default function Reports() {
                   </div>
                 </CardContent>
               </Card>
-
               <Card className="border-0 shadow-sm">
                 <CardHeader>
                   <CardTitle className="text-lg">Recent Expenses</CardTitle>
@@ -1593,7 +1103,6 @@ export default function Reports() {
               sendingReportId={sendingReportId}
             />
 
-            {/* Quick Export Section */}
             <Card className="border-0 shadow-sm">
               <CardHeader>
                 <CardTitle className="text-lg">Quick Export</CardTitle>
@@ -1602,7 +1111,13 @@ export default function Reports() {
                 <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-3">
                   <Button
                     variant="outline"
-                    onClick={() => exportToCSV('shipments')}
+                    onClick={() =>
+                      exportToCSV('shipments', {
+                        filteredShipments,
+                        dailyRevenue,
+                        filteredExpenses,
+                      })
+                    }
                     className="flex-col h-auto py-4"
                   >
                     <Package className="w-5 h-5 mb-2" />
@@ -1610,7 +1125,9 @@ export default function Reports() {
                   </Button>
                   <Button
                     variant="outline"
-                    onClick={() => exportToCSV('revenue')}
+                    onClick={() =>
+                      exportToCSV('revenue', { filteredShipments, dailyRevenue, filteredExpenses })
+                    }
                     className="flex-col h-auto py-4"
                   >
                     <DollarSign className="w-5 h-5 mb-2" />
@@ -1618,7 +1135,9 @@ export default function Reports() {
                   </Button>
                   <Button
                     variant="outline"
-                    onClick={() => exportToCSV('expenses')}
+                    onClick={() =>
+                      exportToCSV('expenses', { filteredShipments, dailyRevenue, filteredExpenses })
+                    }
                     className="flex-col h-auto py-4"
                   >
                     <Receipt className="w-5 h-5 mb-2" />
@@ -1626,19 +1145,9 @@ export default function Reports() {
                   </Button>
                   <Button
                     variant="outline"
-                    onClick={() => {
-                      const csv = ['Name,Phone,Email,Type,Total Spent,Shipments'];
-                      customers.forEach((c) =>
-                        csv.push(
-                          `${c.name},${c.phone},${c.email || ''},${c.customer_type || ''},${c.total_spent || 0},${c.total_shipments || 0}`
-                        )
-                      );
-                      const blob = new Blob([csv.join('\n')], { type: 'text/csv' });
-                      const a = document.createElement('a');
-                      a.href = URL.createObjectURL(blob);
-                      a.download = 'customers.csv';
-                      a.click();
-                    }}
+                    onClick={() =>
+                      exportQuickCSV('customers', { customers, campaigns, servicePricing })
+                    }
                     className="flex-col h-auto py-4"
                   >
                     <Users className="w-5 h-5 mb-2" />
@@ -1646,19 +1155,9 @@ export default function Reports() {
                   </Button>
                   <Button
                     variant="outline"
-                    onClick={() => {
-                      const csv = ['Name,Type,Segment,Sent,Conversions,Status'];
-                      campaigns.forEach((c) =>
-                        csv.push(
-                          `${c.name},${c.campaign_type || ''},${c.target_segment || ''},${c.sent_count || 0},${c.conversion_count || 0},${c.status || ''}`
-                        )
-                      );
-                      const blob = new Blob([csv.join('\n')], { type: 'text/csv' });
-                      const a = document.createElement('a');
-                      a.href = URL.createObjectURL(blob);
-                      a.download = 'campaigns.csv';
-                      a.click();
-                    }}
+                    onClick={() =>
+                      exportQuickCSV('campaigns', { customers, campaigns, servicePricing })
+                    }
                     className="flex-col h-auto py-4"
                   >
                     <Megaphone className="w-5 h-5 mb-2" />
@@ -1666,21 +1165,9 @@ export default function Reports() {
                   </Button>
                   <Button
                     variant="outline"
-                    onClick={() => {
-                      const csv = [
-                        'Service Type,Display Name,Cost/kg,Price/kg,Min Weight,Max Weight,Active',
-                      ];
-                      servicePricing.forEach((p) =>
-                        csv.push(
-                          `${p.service_type},${p.display_name || ''},${p.cost_per_kg || 0},${p.price_per_kg || 0},${p.min_weight || 0},${p.max_weight || ''},${p.is_active}`
-                        )
-                      );
-                      const blob = new Blob([csv.join('\n')], { type: 'text/csv' });
-                      const a = document.createElement('a');
-                      a.href = URL.createObjectURL(blob);
-                      a.download = 'pricing.csv';
-                      a.click();
-                    }}
+                    onClick={() =>
+                      exportQuickCSV('pricing', { customers, campaigns, servicePricing })
+                    }
                     className="flex-col h-auto py-4"
                   >
                     <FileSpreadsheet className="w-5 h-5 mb-2" />
@@ -1701,7 +1188,7 @@ export default function Reports() {
             <form
               onSubmit={(e) => {
                 e.preventDefault();
-                createExpenseMutation.mutate(expenseForm);
+                handleCreateExpense(expenseForm);
               }}
               className="space-y-4 mt-4"
             >
