@@ -66,6 +66,10 @@ import { canTransitionShoppingOrder } from '@/domains/core/statusMachine';
 import { deductInventoryForOrder } from '@/services/inventoryService';
 import { appendE2EFixture } from '@/lib/e2e';
 import { buildShoppingOrderAllocationPlan } from '@/lib/shoppingOrderAllocation';
+import {
+  updateShoppingOrderWithPoRebalance,
+  deleteShoppingOrderWithPoDealloc,
+} from '@/api/shoppingOrderAllocationRpc';
 import { createInvoiceFromShoppingOrder } from '@/components/invoices/InvoiceService';
 const STATUS_CONFIG = {
   pending: { label: 'Pending', color: 'bg-amber-100 text-amber-800', icon: Clock },
@@ -169,6 +173,8 @@ export default function ShoppingOrders() {
     cancelled: [],
   };
 
+  // Legacy client-side plan apply — only used for createMutation (order doesn't exist in DB yet,
+  // so we can't use the RPC). Still has try/catch rollback for the create path.
   const applyPurchaseOrderAllocationPlan = async (plan) => {
     const applied = [];
     try {
@@ -177,17 +183,23 @@ export default function ShoppingOrders() {
         applied.push(step);
       }
     } catch (err) {
-      // Rollback already-applied steps in reverse
       for (const step of [...applied].reverse()) {
-        await db.purchaseOrders.update(step.poId, step.previousState).catch(() => {});
+        try {
+          await db.purchaseOrders.update(step.poId, step.previousState);
+        } catch (rollbackErr) {
+          const msg = `[ShoppingOrders] PO rollback failed for ${step.poId} after create error`;
+          console.error(msg, rollbackErr);
+          import('@sentry/react')
+            .then((Sentry) =>
+              Sentry.captureMessage(msg, {
+                level: 'error',
+                extra: { poId: step.poId, rollbackErr },
+              })
+            )
+            .catch(() => {});
+        }
       }
       throw err;
-    }
-  };
-
-  const rollbackPurchaseOrderAllocationPlan = async (plan) => {
-    for (const step of [...plan].reverse()) {
-      await db.purchaseOrders.update(step.poId, step.previousState);
     }
   };
 
@@ -228,13 +240,8 @@ export default function ShoppingOrders() {
   const updateMutation = useMutation({
     mutationFn: async ({ id, data, sendNotification, customerEmail }) => {
       const previousOrder = orders.find((order) => order.id === id);
-      const nextOrder = previousOrder ? { ...previousOrder, ...data } : data;
-      const plan = buildShoppingOrderAllocationPlan({
-        purchaseOrders,
-        previousOrder,
-        nextOrder,
-      });
 
+      // Status transition guard
       if (data.status && previousOrder?.status && data.status !== previousOrder.status) {
         const allowed = ALLOWED_STATUS_TRANSITIONS[previousOrder.status] ?? [];
         if (!allowed.includes(data.status)) {
@@ -242,39 +249,28 @@ export default function ShoppingOrders() {
         }
       }
 
-      if (plan.length > 0) {
-        await applyPurchaseOrderAllocationPlan(plan);
-      }
+      // Atomic update: PO rebalance + order update in a single DB transaction (fixes P0).
+      const result = await updateShoppingOrderWithPoRebalance(id, data, previousOrder);
 
-      let result;
-      try {
-        result = await db.shoppingOrders.update(id, data);
-      } catch (error) {
-        if (plan.length > 0) {
-          await rollbackPurchaseOrderAllocationPlan(plan);
-        }
-        throw error;
-      }
-      // Auto-deduct goods inventory when order moves to shipping
+      // Side effects (non-transactional, best-effort)
+      // Use `result` (RPC response) — not stale orders cache — for current order state
       if (data.status === 'shipping') {
-        const order = orders.find((o) => o.id === id);
-        if (order) {
-          deductInventoryForOrder(order);
+        if (result) {
+          deductInventoryForOrder(result);
           queryClient.invalidateQueries({ queryKey: ['inventory'] });
         }
       }
 
-      // Send notification if status changed to shipping or delivered
       if (
         sendNotification &&
         customerEmail &&
         (data.status === 'shipping' || data.status === 'delivered')
       ) {
-        const order = orders.find((o) => o.id === id);
-        if (order) {
-          await sendShoppingOrderNotification({ ...order, ...data }, data.status, customerEmail);
+        if (result) {
+          await sendShoppingOrderNotification(result, data.status, customerEmail);
         }
       }
+
       return result;
     },
     onSuccess: () => {
@@ -291,24 +287,8 @@ export default function ShoppingOrders() {
   const deleteMutation = useMutation({
     mutationFn: async (id) => {
       const order = orders.find((item) => item.id === id);
-      const plan = buildShoppingOrderAllocationPlan({
-        purchaseOrders,
-        previousOrder: order,
-        nextOrder: null,
-      });
-
-      if (plan.length > 0) {
-        await applyPurchaseOrderAllocationPlan(plan);
-      }
-
-      try {
-        return await db.shoppingOrders.delete(id);
-      } catch (error) {
-        if (plan.length > 0) {
-          await rollbackPurchaseOrderAllocationPlan(plan);
-        }
-        throw error;
-      }
+      // Atomic: dealloc PO weight + delete order in one DB transaction
+      return await deleteShoppingOrderWithPoDealloc(id, order);
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['shopping-orders'] });
