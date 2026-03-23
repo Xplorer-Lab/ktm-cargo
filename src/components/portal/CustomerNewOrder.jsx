@@ -51,6 +51,7 @@ export default function CustomerNewOrder({ customer, user, onOrderCreated }) {
 
   // ---- Cargo calculations ----
   const selectedService = SERVICE_TYPES.find((s) => s.value === cargoForm.service_type);
+  /* eslint-disable react-hooks/preserve-manual-memoization */
   const cargoCalc = useMemo(() => {
     const weight = parseFloat(cargoForm.weight_kg) || 0;
     const shippingCost = (selectedService?.price || 0) * weight;

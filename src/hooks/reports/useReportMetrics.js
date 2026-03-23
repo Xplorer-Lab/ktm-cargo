@@ -1,7 +1,7 @@
 import { useMemo } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { db } from '@/api/db';
-import { isWithinInterval, parseISO, subMonths, startOfMonth, endOfMonth } from 'date-fns';
+import { isWithinInterval, parseISO } from 'date-fns';
 
 export function useReportData() {
   const { data: shipments = [] } = useQuery({
