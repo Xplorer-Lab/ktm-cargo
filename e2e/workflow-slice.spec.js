@@ -44,16 +44,18 @@ test.describe('KTM workflow slice', () => {
   }) => {
     await page.goto('/ShoppingOrders?__e2e=workflow-staff');
 
-    // View button is opacity-0 on desktop until hover — use force:true to click
-    await page.getByRole('button', { name: /View/i }).first().click({ force: true });
+    // SHOP-202603-0002 has status=received + vendor_po_id → eligible for Convert to Shipment
+    const orderCard = page.locator('.group').filter({ hasText: 'SHOP-202603-0002' }).first();
+    await orderCard.getByRole('button', { name: /View/i }).click({ force: true });
     await expect(page.getByRole('heading', { name: /Order Details/i })).toBeVisible();
 
-    // Button may be below fold in dialog — scroll into view then force click
+    // Button may be below fold in dialog's scrollable container — dispatch click directly
     const convertBtn = page.getByRole('button', { name: /Convert to Shipment/i });
-    await convertBtn.scrollIntoViewIfNeeded();
-    await convertBtn.click({ force: true });
+    await convertBtn.waitFor({ state: 'attached' });
+    await convertBtn.dispatchEvent('click');
     await expect(page).toHaveURL(/\/Shipments\?__e2e=workflow-staff$/);
-    await expect(page.getByRole('heading', { name: /^Edit Shipment$/i })).toBeVisible();
+    // CardTitle renders as <div>, not a heading — use getByText
+    await expect(page.getByText(/^Edit Shipment$/i).first()).toBeVisible();
     await expect(page.getByRole('combobox').first()).toContainText(/Mya Mya/i);
   });
 
