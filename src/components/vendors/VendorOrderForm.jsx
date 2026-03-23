@@ -54,7 +54,7 @@ export default function VendorOrderForm({
   };
 
   return (
-    <DialogContent className="max-w-md">
+    <DialogContent className="max-w-md" aria-describedby={undefined}>
       <DialogHeader>
         <DialogTitle>Assign to Vendor</DialogTitle>
       </DialogHeader>

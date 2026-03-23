@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Card, CardContent } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import {
   Select,
   SelectContent,
@@ -776,6 +776,9 @@ export default function CustomerSegments() {
         {/* Campaign Form Dialog */}
         <Dialog open={showCampaignForm} onOpenChange={setShowCampaignForm}>
           <DialogContent className="max-w-2xl p-0 bg-transparent border-0 shadow-none">
+            <DialogHeader>
+              <DialogTitle className="sr-only">New Campaign</DialogTitle>
+            </DialogHeader>
             <CampaignForm
               targetCount={selectedCustomers.length || filteredCustomers.length}
               onSubmit={handleCreateCampaign}
@@ -793,6 +796,11 @@ export default function CustomerSegments() {
           }}
         >
           <DialogContent className="max-w-2xl p-0 bg-transparent border-0 shadow-none">
+            <DialogHeader>
+              <DialogTitle className="sr-only">
+                {editingSegment ? 'Edit Segment' : 'Create Segment'}
+              </DialogTitle>
+            </DialogHeader>
             <SegmentBuilder
               segment={editingSegment}
               onSubmit={handleSegmentSubmit}
@@ -808,6 +816,9 @@ export default function CustomerSegments() {
         {/* Campaign Launcher Dialog */}
         <Dialog open={showCampaignLauncher} onOpenChange={setShowCampaignLauncher}>
           <DialogContent className="max-w-2xl p-0 bg-transparent border-0 shadow-none">
+            <DialogHeader>
+              <DialogTitle className="sr-only">Launch Campaign</DialogTitle>
+            </DialogHeader>
             <CampaignLauncher
               targetCustomers={
                 selectedCustomers.length > 0

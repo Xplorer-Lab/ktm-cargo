@@ -884,7 +884,7 @@ export default function Invoices() {
           open={refundDialog.open}
           onOpenChange={(open) => setRefundDialog({ ...refundDialog, open })}
         >
-          <DialogContent>
+          <DialogContent aria-describedby={undefined}>
             <DialogHeader>
               <DialogTitle>Process Refund</DialogTitle>
             </DialogHeader>

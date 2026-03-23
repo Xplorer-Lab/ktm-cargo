@@ -206,7 +206,7 @@ export default function VendorPaymentPanel({ payments, onMarkPaid, onProcess }) 
 
       {/* Pay Dialog */}
       <Dialog open={showPayDialog} onOpenChange={setShowPayDialog}>
-        <DialogContent className="max-w-sm">
+        <DialogContent className="max-w-sm" aria-describedby={undefined}>
           <DialogHeader>
             <DialogTitle>Confirm Payment</DialogTitle>
           </DialogHeader>

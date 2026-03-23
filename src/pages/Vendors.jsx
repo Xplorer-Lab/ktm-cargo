@@ -6,7 +6,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent } from '@/components/ui/dialog';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import {
   Select,
@@ -774,6 +774,11 @@ export default function Vendors() {
           }}
         >
           <DialogContent className="max-w-lg p-0 border-0 bg-transparent">
+            <DialogHeader>
+              <DialogTitle className="sr-only">
+                {editingVendor ? 'Edit Vendor' : 'Add Vendor'}
+              </DialogTitle>
+            </DialogHeader>
             <VendorForm
               vendor={editingVendor}
               onSubmit={handleVendorSubmit}

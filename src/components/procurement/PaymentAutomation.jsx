@@ -282,7 +282,7 @@ export default function PaymentAutomation({
 
       {/* Payment Confirmation Dialog */}
       <Dialog open={showPaymentDialog} onOpenChange={setShowPaymentDialog}>
-        <DialogContent>
+        <DialogContent aria-describedby={undefined}>
           <DialogHeader>
             <DialogTitle>Confirm Payment</DialogTitle>
           </DialogHeader>

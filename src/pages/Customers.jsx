@@ -653,6 +653,9 @@ export default function Customers() {
         {/* Onboarding Modal for New Customers */}
         <Dialog open={showOnboarding} onOpenChange={setShowOnboarding}>
           <DialogContent className="max-w-2xl p-0 border-0 bg-transparent">
+            <DialogHeader>
+              <DialogTitle className="sr-only">Customer Onboarding</DialogTitle>
+            </DialogHeader>
             <CustomerOnboarding
               customer={newCustomer}
               onComplete={() => {
