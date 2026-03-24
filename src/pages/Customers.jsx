@@ -99,14 +99,10 @@ export default function Customers() {
       if (!hasPermission(user, 'manage_customers')) {
         throw new Error('You do not have permission to create customers');
       }
-      const customerData = {
-        ...data,
-        referral_code: data.referral_code || `REF${Date.now().toString(36).toUpperCase()}`,
-      };
       // Validate customer data
-      const validatedData = customerSchema.parse(customerData);
+      const validatedData = customerSchema.parse(data);
       const created = await db.customers.create(validatedData);
-      return { ...customerData, ...created };
+      return { ...validatedData, ...created };
     },
     onSuccess: async (createdCustomer) => {
       queryClient.invalidateQueries({ queryKey: ['customers'] });
@@ -175,7 +171,6 @@ export default function Customers() {
     address_bangkok: '',
     address_yangon: '',
     notes: '',
-    referred_by: '',
   });
 
   const handleSubmit = (e) => {
@@ -197,7 +192,6 @@ export default function Customers() {
       address_bangkok: customer.address_bangkok || '',
       address_yangon: customer.address_yangon || '',
       notes: customer.notes || '',
-      referred_by: customer.referred_by || '',
     });
     setShowForm(true);
   };
@@ -217,7 +211,6 @@ export default function Customers() {
       address_bangkok: '',
       address_yangon: '',
       notes: '',
-      referred_by: '',
     });
     setEditingCustomer(null);
   };
@@ -557,14 +550,6 @@ export default function Customers() {
                     value={form.address_yangon}
                     onChange={(e) => setForm({ ...form, address_yangon: e.target.value })}
                     placeholder="Delivery address in Yangon"
-                  />
-                </div>
-                <div className="space-y-2">
-                  <Label>Referred By (Code)</Label>
-                  <Input
-                    value={form.referred_by}
-                    onChange={(e) => setForm({ ...form, referred_by: e.target.value })}
-                    placeholder="Referral code"
                   />
                 </div>
                 <div className="col-span-2 space-y-2">

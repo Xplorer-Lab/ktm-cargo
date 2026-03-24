@@ -100,7 +100,7 @@ export default function Vendors() {
 
   const { data: vendors = [], isLoading } = useQuery({
     queryKey: ['vendors'],
-    queryFn: () => db.vendors.list('-created_date'),
+    queryFn: () => db.vendors.list('-created_at'),
     onError: (err) => handleError(err, 'Failed to fetch vendors'),
   });
 

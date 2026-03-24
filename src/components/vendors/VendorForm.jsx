@@ -184,10 +184,11 @@ export default function VendorForm({ vendor, onSubmit, onCancel }) {
                   <Wind className="w-4 h-4 text-slate-400" />
                   Carrier Mode <span className="text-rose-500">*</span>
                 </Label>
-                <div className="grid grid-cols-2 gap-3">
+                <div className="grid grid-cols-3 gap-3">
                   {[
                     { value: 'land', label: '🚛 Land', desc: 'Road transport' },
                     { value: 'air', label: '✈️ Air', desc: 'Air freight' },
+                    { value: 'both', label: '🌐 Both', desc: 'Land & Air' },
                   ].map((mode) => (
                     <button
                       key={mode.value}

@@ -17,7 +17,7 @@ const PURCHASE_ORDER_STATUS_ENUM = [
 ];
 
 const VENDOR_TYPE_ENUM = ['supplier', 'cargo_carrier'];
-const CARRIER_MODE_ENUM = ['land', 'air'];
+const CARRIER_MODE_ENUM = ['land', 'air', 'both'];
 
 const FEEDBACK_STATUS_ENUM = [
   'pending',
@@ -113,8 +113,6 @@ export const customerSchema = z.object({
   address_bangkok: z.string().optional(),
   address_yangon: z.string().optional(),
   notes: z.string().optional(),
-  referred_by: z.string().optional(),
-  referral_code: z.string().optional(),
 });
 
 export const shipmentSchema = z.object({
