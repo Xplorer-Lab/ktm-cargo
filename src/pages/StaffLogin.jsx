@@ -148,6 +148,10 @@ export default function StaffLogin() {
   }, [alreadySignedIn, loading, navigate, nextPath]);
 
   // ── Rate limiting helpers (localStorage-backed, per-email) ───────────────
+  // NOTE: This is UX-only friction — not a security control.
+  // Real brute-force protection is provided by Supabase Auth's server-side
+  // rate limits. localStorage can be cleared by the user or bypassed by HTTP
+  // clients; do not rely on this for security enforcement.
   const RATE_LIMIT_KEY = 'staff_login_attempts';
   const MAX_ATTEMPTS = 5;
   const LOCKOUT_WINDOW_MS = 15 * 60 * 1000; // 15 minutes

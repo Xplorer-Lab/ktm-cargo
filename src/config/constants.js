@@ -4,11 +4,12 @@ export const ROLES = Object.freeze({
   USER: 'user',
 });
 
+// Single source of truth for staff roles — must stay in sync with
+// src/components/auth/RolePermissions.jsx ROLES and Supabase profile.role values.
 export const STAFF_ROLES = Object.freeze({
+  MANAGING_DIRECTOR: 'managing_director',
   FINANCE_LEAD: 'finance_lead',
   MARKETING_MANAGER: 'marketing_manager',
-  OPERATIONS: 'operations',
-  SUPPORT: 'support',
 });
 
 export const STATUSES = Object.freeze({

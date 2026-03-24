@@ -6,7 +6,7 @@ let supabase;
 // __APP_IS_PROD__ is replaced at build time by Vite (vite.config.js define).
 // In production builds this entire block is dead-code-eliminated by Rollup,
 // so e2eSupabaseClient.js is not bundled in production.
-if (!__APP_IS_PROD__) {
+if (!__APP_IS_PROD__ && import.meta.env.VITE_ENABLE_E2E_FIXTURES === 'true') {
   const { createE2ESupabaseClient, getE2EFixtureFromLocation } =
     await import('./e2eSupabaseClient');
   const e2eFixture = getE2EFixtureFromLocation();

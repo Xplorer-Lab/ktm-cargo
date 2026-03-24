@@ -97,7 +97,7 @@ if (sentryDsn && !sentryDsn.includes('your_sentry_dsn_here')) {
   Sentry.init({
     dsn: sentryDsn,
     integrations: [Sentry.browserTracingIntegration(), Sentry.replayIntegration()],
-    tracesSampleRate: 1.0,
+    tracesSampleRate: 0.1,
     replaysSessionSampleRate: 0.1,
     replaysOnErrorSampleRate: 1.0,
   });

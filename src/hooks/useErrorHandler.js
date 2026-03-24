@@ -8,7 +8,7 @@ import * as Sentry from '@sentry/react';
 export const useErrorHandler = () => {
   const handleError = (error, customMessage = 'An unexpected error occurred', context = {}) => {
     // Log to console in development
-    if (import.meta.env.DEV) {
+    if (!__APP_IS_PROD__) {
       console.error('[Error Handler]', error, context);
     }
 
@@ -47,7 +47,7 @@ export const useErrorHandler = () => {
 
     // Extract user-friendly message
     let message = customMessage;
-    const isDev = import.meta.env.DEV;
+    const isDev = !__APP_IS_PROD__;
 
     // Handle Supabase/PostgREST errors (they have code, details, hint, message structure)
     if (error?.code && error?.message) {
@@ -97,7 +97,7 @@ export const useErrorHandler = () => {
     // Show user-friendly toast
     toast.error(message, {
       duration: 5000,
-      description: import.meta.env.DEV ? error?.stack?.split('\n')[0] : undefined,
+      description: !__APP_IS_PROD__ ? error?.stack?.split('\n')[0] : undefined,
     });
 
     return { message, error };
