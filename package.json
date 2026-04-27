@@ -6,6 +6,9 @@
   "overrides": {
     "@flydotio/dockerfile": {
       "diff": "^8.0.4"
+    },
+    "anymatch": {
+      "picomatch": "^2.3.2"
     }
   },
   "scripts": {
@@ -64,7 +67,7 @@
     "cmdk": "^1.0.0",
     "date-fns": "^4.1.0",
     "diff": "^8.0.4",
-    "dompurify": "^3.3.3",
+    "dompurify": "^3.4.1",
     "driver.js": "^1.4.0",
     "embla-carousel-react": "^8.5.2",
     "framer-motion": "^12.38.0",
@@ -117,12 +120,12 @@
     "jest-environment-jsdom": "^30.3.0",
     "lighthouse": "^13.0.3",
     "pg": "^8.20.0",
-    "postcss": "^8.5.8",
+    "postcss": "^8.5.12",
     "prettier": "^3.8.1",
     "snyk": "^1.1303.1",
     "tailwindcss": "^4.2.2",
     "typescript": "^5.9.3",
-    "vite": "^8.0.2",
+    "vite": "^8.0.10",
     "vite-bundle-visualizer": "^1.2.1"
   }
 }
