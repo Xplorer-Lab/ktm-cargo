@@ -26,7 +26,7 @@ export default defineConfig({
   webServer: shouldUseExternalBaseUrl
     ? undefined
     : {
-        command: 'npm run dev -- --host 127.0.0.1 --port 4173',
+        command: 'VITE_ENABLE_E2E_FIXTURES=true npm run dev -- --host 127.0.0.1 --port 4173',
         url: baseURL,
         reuseExistingServer: !process.env.CI,
         timeout: 120000,
