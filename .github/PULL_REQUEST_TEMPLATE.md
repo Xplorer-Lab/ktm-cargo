@@ -26,6 +26,7 @@ Closes #
 - [ ] I have tested this locally
 - [ ] I have added/updated tests
 - [ ] All existing tests pass
+- [ ] If DB/RLS/migrations changed, I ran `npm run db:verify:p0 -- --allow-mutation-checks` against a non-production Supabase project and redacted any secrets from logs
 
 ## Screenshots (if applicable)
 

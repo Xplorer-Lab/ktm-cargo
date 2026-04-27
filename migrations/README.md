@@ -1,5 +1,11 @@
 # Database Migrations — KTM Cargo Express
 
+> **Checkpoint 2 status:** `supabase/migrations/` is the intended canonical
+> Supabase CLI migration path going forward. The legacy `migrations/` directory
+> remains a manual SQL Editor runbook until the project has a verified fresh
+> schema baseline. Do not treat the current migration history as fully
+> `supabase db reset` reproducible yet.
+
 > **Runbook:** Apply migrations in the order below when setting up a new
 > environment or restoring from backup. Run each file in the
 > **Supabase SQL Editor** (Dashboard → SQL Editor → New query).
@@ -69,15 +75,29 @@ Order matters — later migrations depend on objects created by earlier ones.
 
 ### Verification
 
-After applying Phase 3, run:
+After applying Phase 3, run the discoverable package script:
 
 ```bash
-node scripts/verify_p0_migrations.mjs
+npm run db:verify:p0 -- --allow-mutation-checks
 ```
 
-This connects to your Supabase project (using `.env` credentials) and confirms
-critical P0 objects exist, including portal helpers (`my_customer_id`,
-`my_vendor_id`) required by Client Portal RLS.
+This connects to your non-production Supabase project (using `.env` credentials)
+and confirms critical P0 database functions and policies exist. The explicit
+`--allow-mutation-checks` flag is required because the invoice-number RPC check
+advances the invoice sequence.
+
+project for verification; `db:verify:p0` calls `next_invoice_number()` and can
+advance the invoice sequence.
+
+For a lightweight connectivity check, run:
+
+```bash
+npm run db:check:connection
+```
+
+Required environment variable names are safe to document, but never commit their
+values: `VITE_SUPABASE_URL`, `VITE_SUPABASE_ANON_KEY`, and optionally
+`SUPABASE_SERVICE_ROLE_KEY` for admin verification.
 
 ## Quick setup for a brand-new environment
 
@@ -91,8 +111,8 @@ cp .env.example .env
 # 3. Apply all migrations in order (Supabase SQL Editor)
 #    → Paste each .sql file from Phase 1 → 4 in sequence
 
-# 4. Verify P0 migrations
-node scripts/verify_p0_migrations.mjs
+# 4. Verify P0 migrations against non-production only
+npm run db:verify:p0 -- --allow-mutation-checks
 
 # 5. Start the app
 npm run dev
@@ -102,6 +122,8 @@ npm run dev
 
 - **Never** run migrations with the **anon key** — use the **service_role key** or the SQL Editor.
 - Keep `.env` out of version control (`.gitignore` already excludes it).
+- Keep Supabase local link/cache state out of version control (`supabase/.temp/` is ignored).
+- Do not run mutating one-off scripts such as `apply_*`, `seed_*`, `cleanup_*`, `promote_to_admin.js`, or `test_triggers.js` against production as PR validation.
 - After each migration, verify in the Supabase Dashboard that the expected
   tables / functions / triggers exist.
 - The shipment allocation RPC migration is the current integrity hardening path for shipment write operations. Apply it before switching the frontend away from client-coordinated PO writes.

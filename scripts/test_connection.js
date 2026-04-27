@@ -26,10 +26,8 @@ const supabaseUrl = process.env.VITE_SUPABASE_URL;
 const supabaseKey = process.env.VITE_SUPABASE_ANON_KEY;
 
 console.log('Testing connection to Supabase...');
-console.log(
-  `URL: ${supabaseUrl ? supabaseUrl.replace(/^(https?:\/\/[^.]+).+/, '$1...') : 'MISSING'}`
-);
-console.log(`Key: ${supabaseKey ? 'PRESENT' : 'MISSING'}`);
+console.log(`URL: ${supabaseUrl ? 'PRESENT (redacted)' : 'MISSING'}`);
+console.log(`Key: ${supabaseKey ? 'PRESENT (redacted)' : 'MISSING'}`);
 
 if (!supabaseUrl || !supabaseKey) {
   console.error('❌ Missing environment variables!');
@@ -53,6 +51,7 @@ async function testConnection() {
         '   (Hint: This might be a Row Level Security (RLS) issue if the table is private, but connection itself reached the server.)'
       );
     }
+    process.exitCode = 1;
   } else {
     console.log(`✅ Connection Successful! (Latency: ${duration}ms)`);
     console.log(

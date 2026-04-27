@@ -6,8 +6,10 @@
  * connected Supabase project.  Uses the anon/service-role key from .env.
  *
  * Usage:
- *   node scripts/verify_p0_migrations.mjs
+ *   npm run db:verify:p0 -- --allow-mutation-checks
  *
+ * The invoice-number check calls next_invoice_number(), which advances the
+ * sequence. Run only against a non-production/staging verification project.
  * What it checks:
  *   1. `is_admin_or_director()` function exists     (fix_rls_policies.sql)
  *   2. `my_customer_id()` function exists           (add_client_portal_rls.sql)
@@ -21,9 +23,44 @@
  */
 
 import { createClient } from '@supabase/supabase-js';
-import { config } from 'dotenv';
+import fs from 'node:fs';
 
-config(); // load .env
+function stripWrappingQuotes(value) {
+  const trimmed = value.trim();
+  if (
+    (trimmed.startsWith('"') && trimmed.endsWith('"')) ||
+    (trimmed.startsWith("'") && trimmed.endsWith("'"))
+  ) {
+    return trimmed.slice(1, -1).trim();
+  }
+  return trimmed;
+}
+
+function loadDotEnv() {
+  if (!fs.existsSync('.env')) return;
+
+  const knownKeys = ['VITE_SUPABASE_URL', 'SUPABASE_SERVICE_ROLE_KEY', 'VITE_SUPABASE_ANON_KEY'];
+
+  for (const line of fs.readFileSync('.env', 'utf8').split('\n')) {
+    for (const key of knownKeys) {
+      const prefix = `${key}=`;
+      if (!line.startsWith(prefix)) continue;
+
+      const value = stripWrappingQuotes(line.slice(prefix.length));
+      if (key === 'VITE_SUPABASE_URL' && !process.env.VITE_SUPABASE_URL) {
+        process.env.VITE_SUPABASE_URL = value;
+      }
+      if (key === 'SUPABASE_SERVICE_ROLE_KEY' && !process.env.SUPABASE_SERVICE_ROLE_KEY) {
+        process.env.SUPABASE_SERVICE_ROLE_KEY = value;
+      }
+      if (key === 'VITE_SUPABASE_ANON_KEY' && !process.env.VITE_SUPABASE_ANON_KEY) {
+        process.env.VITE_SUPABASE_ANON_KEY = value;
+      }
+    }
+  }
+}
+
+loadDotEnv(); // load .env without requiring extra runtime dependencies
 
 const supabaseUrl = (process.env.VITE_SUPABASE_URL || '').trim();
 const supabaseKey = (
@@ -35,6 +72,14 @@ const supabaseKey = (
 if (!supabaseUrl || !supabaseKey) {
   console.error(
     '❌  Missing VITE_SUPABASE_URL or SUPABASE_SERVICE_ROLE_KEY / VITE_SUPABASE_ANON_KEY in .env'
+  );
+  process.exit(1);
+}
+
+const allowMutationChecks = process.argv.includes('--allow-mutation-checks');
+if (!allowMutationChecks) {
+  console.error(
+    '❌  Refusing to run mutation checks without --allow-mutation-checks. Use only against a non-production Supabase project.'
   );
   process.exit(1);
 }

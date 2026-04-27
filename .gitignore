@@ -37,6 +37,7 @@ blob-report/
 .superpowers/
 .env
 .vercel
+supabase/.temp/
 test-results
 playwright-report
 .playwright-cli/

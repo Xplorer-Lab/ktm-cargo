@@ -21,6 +21,8 @@
     "format": "prettier --write .",
     "format:check": "prettier --check .",
     "analyze": "vite-bundle-visualizer",
+    "db:check:connection": "node scripts/test_connection.js",
+    "db:verify:p0": "node scripts/verify_p0_migrations.mjs",
     "test": "jest",
     "test:e2e": "playwright test",
     "test:e2e:headed": "playwright test --project=chromium --headed",
