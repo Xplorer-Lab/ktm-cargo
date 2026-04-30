@@ -44,6 +44,7 @@ const EXPECTED_ROUTES = [
   '/Invoices',
   '/operation',
   '/Operations',
+  '/PriceCalculator',
   '/Procurement',
   '/Reports',
   '/Settings',
@@ -69,14 +70,21 @@ describe('Route snapshot protection', () => {
     const source = fs.readFileSync(indexPath, 'utf-8');
     const actual = extractRoutePaths(source);
 
-    expect(actual).toHaveLength(25);
+    expect(actual).toHaveLength(26);
   });
 
   it('public routes are not wrapped in ProtectedRoute', () => {
     const source = fs.readFileSync(indexPath, 'utf-8');
 
     // These routes should appear without ProtectedRoute wrapper
-    const publicRoutes = ['/', '/ClientPortal', '/Feedback', '/StaffLogin', '/VendorRegistration'];
+    const publicRoutes = [
+      '/',
+      '/ClientPortal',
+      '/Feedback',
+      '/PriceCalculator',
+      '/StaffLogin',
+      '/VendorRegistration',
+    ];
 
     for (const route of publicRoutes) {
       // Match the Route definition and verify it does NOT contain ProtectedRoute
